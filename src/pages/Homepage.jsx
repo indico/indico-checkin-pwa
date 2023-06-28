@@ -34,8 +34,8 @@ const Homepage = () => {
     };
 
     return (
-        <Box sx={{ width: "100%", height: "100%" }}>
-            <Box sx={{ padding: 3 }}>
+        <div className="w-full h-full">
+            <div className="p-6">
                 <Typography variant="h4" color="white" sx={{ marginBottom: 3 }}>
                     Homepage
                 </Typography>
@@ -99,8 +99,8 @@ const Homepage = () => {
                         })}
                     </Grid>
                 </Box>
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 };
 
