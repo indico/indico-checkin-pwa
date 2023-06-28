@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import classes from "./Homepage.module.css";
-import Typography from "../Components/Typography";
+import { Typography, Checkbox } from "../Components/Tailwind/index.jsx";
 
 class Todo {
     constructor(id, text, completed = false) {
@@ -47,7 +45,7 @@ const Homepage = () => {
                             return (
                                 <div className="w-full" key={idx}>
                                     <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-600 rounded-md">
-                                        <Checkbox
+                                        {/* <Checkbox
                                             style={{
                                                 borderRadius: 20,
                                                 height: 25,
@@ -56,19 +54,16 @@ const Homepage = () => {
                                             }}
                                             checked={item.completed}
                                             onChange={() => toggleTodo(idx)}
+                                        /> */}
+                                        <Checkbox
+                                            checked={item.completed}
+                                            onChange={() => toggleTodo(idx)}
+                                            className="rounded-full h-4 w-4 bg-gray-800"
                                         />
 
                                         <div
                                             onClick={navigateToQrReader}
-                                            style={{
-                                                display: "flex",
-                                                flex: 1,
-                                                height: "100%",
-                                                alignItems: "center",
-                                            }}
-                                            className={
-                                                classes.todoTextContainer
-                                            }
+                                            className="flex flex-1 active:opacity-50 h-full items-center"
                                         >
                                             <Typography
                                                 variant="body1"
