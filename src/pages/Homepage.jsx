@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Box, Grid, Checkbox } from "@mui/material";
+import { useState } from "react";
+import { Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import classes from "./Homepage.module.css";
 import Typography from "../Components/Typography";
@@ -41,27 +41,12 @@ const Homepage = () => {
                     Homepage
                 </Typography>
 
-                <Box sx={{ flexGrow: 1 }}>
-                    <Grid container spacing={2}>
+                <div className="flex flex-1">
+                    <div className="grid grid-cols-1 w-full" spacing={2}>
                         {list.map((item, idx) => {
                             return (
-                                <Grid item xs={12} key={idx}>
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                            width: "80%",
-                                            height: 70,
-                                            margin: 1,
-                                            paddingLeft: 3,
-                                            paddingRight: 3,
-                                            marginLeft: "auto",
-                                            marginRight: "auto",
-                                            backgroundColor: "#404040",
-                                            borderRadius: 3,
-                                        }}
-                                    >
+                                <div className="w-full" key={idx}>
+                                    <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-600 rounded-md">
                                         <Checkbox
                                             style={{
                                                 borderRadius: 20,
@@ -86,20 +71,18 @@ const Homepage = () => {
                                             }
                                         >
                                             <Typography
-                                                sx={{
-                                                    color: "#fff",
-                                                    marginLeft: 4,
-                                                }}
+                                                variant="body1"
+                                                className="ml-3"
                                             >
                                                 {item.text}
                                             </Typography>
                                         </div>
-                                    </Box>
-                                </Grid>
+                                    </div>
+                                </div>
                             );
                         })}
-                    </Grid>
-                </Box>
+                    </div>
+                </div>
             </div>
         </div>
     );
