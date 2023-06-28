@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Box, Grid, Checkbox, Typography } from "@mui/material";
+import { Box, Grid, Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import classes from "./Homepage.module.css";
+import Typography from "../Components/Typography";
 
 class Todo {
     constructor(id, text, completed = false) {
@@ -36,7 +37,7 @@ const Homepage = () => {
     return (
         <div className="w-full h-full">
             <div className="p-6">
-                <Typography variant="h4" color="white" sx={{ marginBottom: 3 }}>
+                <Typography variant="h1" className="mb-6">
                     Homepage
                 </Typography>
 
