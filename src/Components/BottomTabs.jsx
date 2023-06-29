@@ -13,7 +13,7 @@ const BottomTabs = () => {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-gray-100 border-t border-gray-400 dark:bg-gray-700 dark:border-gray-600">
+        <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-gray-100 border-t border-gray-400 dark:bg-gray-800 dark:border-gray-600">
             <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
                 <button
                     type="button"

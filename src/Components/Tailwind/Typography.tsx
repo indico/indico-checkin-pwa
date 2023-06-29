@@ -29,7 +29,7 @@ interface TypographyProps {
 };
 
 const Typography = ({variant, children, className} : TypographyProps) => {
-    const variantClass = variants[variant] + " " + className;
+    const variantClass = variants[variant] + " " + (className ?? "");
 
     return (
         <p className={variantClass}>{children}</p>
