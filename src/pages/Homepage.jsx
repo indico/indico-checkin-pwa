@@ -45,16 +45,6 @@ const Homepage = () => {
                             return (
                                 <div className="w-full" key={idx}>
                                     <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-600 rounded-md">
-                                        {/* <Checkbox
-                                            style={{
-                                                borderRadius: 20,
-                                                height: 25,
-                                                width: 25,
-                                                color: "#34eb7a",
-                                            }}
-                                            checked={item.completed}
-                                            onChange={() => toggleTodo(idx)}
-                                        /> */}
                                         <Checkbox
                                             checked={item.completed}
                                             onChange={() => toggleTodo(idx)}
