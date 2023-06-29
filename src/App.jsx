@@ -4,22 +4,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import QrReader from "./pages/QrReader";
 import BottomTabs from "./Components/BottomTabs";
+import Background from "./Components/Background";
 
 const App = () => {
     return (
         <div>
-            {/* Background Color */}
-            <div
-                style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "#25292e",
-                    zIndex: -1,
-                }}
-            />
-
             <BrowserRouter basename="/">
+                <Background />
+
                 <Routes>
                     <Route path="/" element={<Homepage />} />
 
