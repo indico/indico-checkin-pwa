@@ -33,7 +33,7 @@ const Background = () => {
     return (
         <div
             {...swipeHandlers}
-            className="absolute w-full h-full bg-gray-900 z-[-1]"
+            className="absolute w-full h-full bg-white dark:bg-gray-700 z-[-1]"
         />
     );
 };

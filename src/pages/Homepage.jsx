@@ -44,11 +44,11 @@ const Homepage = () => {
                         {list.map((item, idx) => {
                             return (
                                 <div className="w-full" key={idx}>
-                                    <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-600 rounded-md">
+                                    <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-400 dark:bg-slate-600 rounded-md">
                                         <Checkbox
                                             checked={item.completed}
                                             onChange={() => toggleTodo(idx)}
-                                            className="rounded-full h-4 w-4 bg-gray-800"
+                                            className="rounded-full h-4 w-4"
                                         />
 
                                         <div
