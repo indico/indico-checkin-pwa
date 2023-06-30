@@ -1,32 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typography, Checkbox } from "../Components/Tailwind/index.jsx";
+import { Typography } from "../Components/Tailwind/index.jsx";
 
-class Todo {
-    constructor(id, text, completed = false) {
+class MockEvent {
+    /**
+     *
+     * @param {number} id
+     * @param {string} title
+     * @param {Date} date
+     * @param {List<string>} attendees
+     */
+    constructor(id, title, date = new Date(), attendees = []) {
         this.id = id;
-        this.text = text;
-        this.completed = completed;
+        this.title = title;
+        this.date = date;
+        this.attendees = attendees;
     }
-
-    toggle = () => {
-        this.completed = !this.completed;
-    };
 }
 
 const Homepage = () => {
     const [list, setList] = useState([
-        new Todo(1, "TODO 1", false),
-        new Todo(2, "TODO 2", false),
-        new Todo(3, "TODO 3", false),
+        new MockEvent(1, "MockEvent 1"),
+        new MockEvent(2, "MockEvent 2"),
+        new MockEvent(3, "MockEvent 3"),
     ]);
 
     const navigate = useNavigate();
-
-    const toggleTodo = (idx) => {
-        list[idx].toggle();
-        setList([...list]);
-    };
 
     const navigateToQrReader = () => {
         navigate("/qr-reader");
@@ -43,25 +42,18 @@ const Homepage = () => {
                     <div className="grid grid-cols-1 w-full" spacing={2}>
                         {list.map((item, idx) => {
                             return (
-                                <div className="w-full" key={idx}>
-                                    <div className="flex flex-row w-4/5 items-center py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-400 dark:bg-slate-600 rounded-md">
-                                        <Checkbox
-                                            checked={item.completed}
-                                            onChange={() => toggleTodo(idx)}
-                                            className="rounded-full h-4 w-4"
-                                        />
-
-                                        <div
-                                            onClick={navigateToQrReader}
-                                            className="flex flex-1 active:opacity-50 h-full items-center"
+                                <div
+                                    className="w-4/5 py-5 mb-5 pl-2 pr-2 mx-auto bg-slate-400 dark:bg-slate-600 rounded-md active:opacity-50"
+                                    key={idx}
+                                    onClick={navigateToQrReader}
+                                >
+                                    <div className="flex flex-row w-full items-center">
+                                        <Typography
+                                            variant="body1"
+                                            className="ml-3"
                                         >
-                                            <Typography
-                                                variant="body1"
-                                                className="ml-3"
-                                            >
-                                                {item.text}
-                                            </Typography>
-                                        </div>
+                                            {item.title}
+                                        </Typography>
                                     </div>
                                 </div>
                             );
