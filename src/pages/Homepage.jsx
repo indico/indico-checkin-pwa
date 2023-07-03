@@ -28,8 +28,8 @@ const Homepage = () => {
 
     const navigate = useNavigate();
 
-    const navigateToQrReader = () => {
-        navigate("/qr-reader");
+    const navigateToEvent = (item) => {
+        navigate(`/event/${item.id}`, { state: item });
     };
 
     return (
@@ -46,7 +46,7 @@ const Homepage = () => {
                                 <div
                                     className="w-full py-6 mb-3 px-4 mx-auto bg-blue-300 dark:bg-slate-600 rounded-xl active:opacity-50"
                                     key={idx}
-                                    onClick={navigateToQrReader}
+                                    onClick={() => navigateToEvent(item)}
                                 >
                                     <div className="flex flex-row w-full items-center">
                                         <Typography variant="body1">

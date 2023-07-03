@@ -6,10 +6,11 @@ import QrReader from "./pages/QrReader";
 import BottomTabs from "./Components/BottomTabs";
 import Background from "./Components/Background";
 import TopTab from "./Components/TopTab";
+import EventPage from "./pages/EventPage";
 
 const App = () => {
     return (
-        <div>
+        <div className="w-100 h-100">
             <BrowserRouter basename="/">
                 <Background />
 
@@ -19,6 +20,8 @@ const App = () => {
                     <Route path="/" element={<Homepage />} />
 
                     <Route path="/qr-reader" element={<QrReader />} />
+
+                    <Route path="/event/:id" element={<EventPage />} />
                 </Routes>
 
                 <BottomTabs />
