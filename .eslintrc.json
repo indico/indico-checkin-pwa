@@ -1,0 +1,31 @@
+{
+  "extends": ["plugin:react/recommended", "react-app", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "react/no-unescaped-entities": ["error", {"forbid": [">", "<"]}],
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "pathGroups": [
+          {
+            "pattern": "react*",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "{.,..}/**/*.+(css|scss)", // eslint-plugin-import#1239
+            "group": "sibling",
+            "position": "after"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "newlines-between": "never"
+      }
+    ]
+  }
+}
