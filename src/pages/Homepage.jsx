@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Typography} from '../Components/Tailwind/index.jsx';
 import {formatDateObj} from '../utils/date.ts';
@@ -20,6 +20,19 @@ class MockEvent {
 }
 
 const Homepage = () => {
+  useEffect(() => {
+    // On render, check if the user has a theme preference. If not, check if their system is set to dark mode. If so, set the theme to dark.
+    // If neither, set the theme to light.
+    if (
+      localStorage.theme === 'dark' ||
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   const [list, setList] = useState([
     new MockEvent(1, 'MockEvent 1'),
     new MockEvent(2, 'MockEvent 2'),
