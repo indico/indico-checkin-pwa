@@ -1,4 +1,4 @@
-import Checkbox from "./Checkbox";
-import Typography from "./Typography";
+import Checkbox from './Checkbox';
+import Typography from './Typography';
 
-export { Checkbox, Typography };
+export {Checkbox, Typography};
