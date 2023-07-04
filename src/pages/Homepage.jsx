@@ -34,7 +34,7 @@ const Homepage = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="p-6">
+      <div className="px-6 py-3">
         <Typography variant="h2" className="mb-6">
           Events
         </Typography>
