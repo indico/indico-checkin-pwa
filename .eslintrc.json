@@ -26,6 +26,8 @@
         "pathGroupsExcludedImportTypes": ["builtin"],
         "newlines-between": "never"
       }
-    ]
+    ],
+    /* Rules to make it not necessary to include React as it is done automatically since React 17 */
+    "react/react-in-jsx-scope": "off"
   }
 }
