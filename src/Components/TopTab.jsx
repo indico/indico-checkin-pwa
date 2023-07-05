@@ -1,7 +1,7 @@
 import {Cog8ToothIcon} from '@heroicons/react/24/solid';
 import Logo from '../assets/logo.png';
-import WaveDark from '../assets/wave_dark4.svg';
-import WaveLight from '../assets/wave_light4.svg';
+import WaveDark from '../assets/wave_dark_custom.svg';
+import WaveLight from '../assets/wave_light_custom.svg';
 import useSettings from '../hooks/useSettings';
 import {Typography} from './Tailwind';
 
@@ -9,7 +9,7 @@ const TopTab = () => {
   const {darkMode} = useSettings();
 
   return (
-    <div className="h-32 w-full relative">
+    <div className="h-28 w-full relative">
       <div className="flex flex-row h-2/3 w-full justify-between items-center px-4">
         <div className="flex flex-row h-full relative items-center">
           <img src={Logo} alt="Logo" className="h-2/3 mr-6"></img>
@@ -27,7 +27,7 @@ const TopTab = () => {
         <img
           src={darkMode ? WaveDark : WaveLight}
           alt="background"
-          className="absolute h-full w-full object-cover"
+          className="absolute w-full h-full object-cover"
         />
       </div>
     </div>
