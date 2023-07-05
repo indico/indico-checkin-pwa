@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import EventItem from '../Components/Events/EventItem.tsx';
-import {Typography} from '../Components/Tailwind/index.jsx';
+import {Button, Typography} from '../Components/Tailwind/index.jsx';
 import useSettings from '../hooks/useSettings.jsx';
 import {formatDateObj} from '../utils/date.ts';
 
@@ -54,9 +54,13 @@ const Homepage = () => {
   return (
     <div className="w-full h-full">
       <div className="px-6 pt-1">
-        <Typography variant="h2" className="mb-6">
-          Events
-        </Typography>
+        <div className="flex flex-row justify-between">
+          <Typography variant="h2" className="mb-6">
+            Events
+          </Typography>
+
+          <Button onClick={() => console.log('clicked btn')}>Add event</Button>
+        </div>
 
         <div className="flex flex-1">
           <div className="grid grid-cols-1 w-full" spacing={2}>
