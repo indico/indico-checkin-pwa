@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Button, Typography} from '../Components/Tailwind/index.jsx';
+import useLongPress from '../hooks/useLongPress.tsx';
 import useSettings from '../hooks/useSettings.jsx';
 import {formatDateObj} from '../utils/date.ts';
 
@@ -55,6 +56,11 @@ const Homepage = () => {
     navigate('/event/new');
   };
 
+  const {handlers} = useLongPress({
+    onLongPress: () => console.log('long press'),
+    onPress: () => console.log('press'),
+  });
+
   return (
     <div className="w-full h-full">
       <div className="px-6 pt-1">
@@ -62,6 +68,8 @@ const Homepage = () => {
           <Typography variant="h2">Events</Typography>
 
           <Button onClick={onAddEvent}>Add event</Button>
+
+          <button {...handlers}>Long press</button>
         </div>
 
         <div className="flex flex-1">
