@@ -2,7 +2,7 @@ import {useState} from 'react';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 
-const QrReaderPage = () => {
+const AddEventPage = () => {
   const [data, setData] = useState('No Result');
   const [hasPermission, setHasPermission] = useState(true);
 
@@ -20,7 +20,7 @@ const QrReaderPage = () => {
     <div>
       <div className="justify-center items-center flex py-6">
         <Typography variant="h4" color="white">
-          QrReader
+          Scan the Event QR Code
         </Typography>
       </div>
 
@@ -58,4 +58,4 @@ const QrReaderPage = () => {
   );
 };
 
-export default QrReaderPage;
+export default AddEventPage;

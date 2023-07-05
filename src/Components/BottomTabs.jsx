@@ -9,7 +9,7 @@ const BottomTabs = () => {
   };
 
   const onQrCodeClick = () => {
-    navigation('/qr-reader');
+    navigation('/check-in');
   };
 
   return (

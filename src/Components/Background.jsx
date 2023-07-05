@@ -1,7 +1,7 @@
 import {useLocation, useNavigate} from 'react-router-dom';
 import useSwipe from '../hooks/useSwipe';
 
-const bottomTabs = ['/', '/qr-reader'];
+const bottomTabs = ['/', '/check-in'];
 
 const Background = () => {
   const navigation = useNavigate();

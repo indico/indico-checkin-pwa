@@ -3,9 +3,10 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Background from './Components/Background';
 import BottomTabs from './Components/BottomTabs';
 import TopTab from './Components/TopTab';
+import AddEventPage from './pages/AddEventPage';
+import CheckInPage from './pages/CheckIn';
 import EventPage from './pages/EventPage';
 import Homepage from './pages/Homepage';
-import QrReader from './pages/QrReader';
 
 const App = () => {
   return (
@@ -18,9 +19,11 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Homepage />} />
 
-          <Route path="/qr-reader" element={<QrReader />} />
+          <Route path="/check-in" element={<CheckInPage />} />
 
           <Route path="/event/:id" element={<EventPage />} />
+
+          <Route path="/event/new" element={<AddEventPage />} />
         </Routes>
 
         <BottomTabs />

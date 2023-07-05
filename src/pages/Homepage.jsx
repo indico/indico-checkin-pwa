@@ -51,15 +51,17 @@ const Homepage = () => {
     navigate(`/event/${item.id}`, {state: item});
   };
 
+  const onAddEvent = () => {
+    navigate('/event/new');
+  };
+
   return (
     <div className="w-full h-full">
       <div className="px-6 pt-1">
-        <div className="flex flex-row justify-between">
-          <Typography variant="h2" className="mb-6">
-            Events
-          </Typography>
+        <div className="flex flex-row justify-between items-center mb-6">
+          <Typography variant="h2">Events</Typography>
 
-          <Button onClick={() => console.log('clicked btn')}>Add event</Button>
+          <Button onClick={onAddEvent}>Add event</Button>
         </div>
 
         <div className="flex flex-1">

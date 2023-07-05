@@ -14,7 +14,8 @@ interface EventItemProps {
 const EventItem = ({key, item, onClick}: EventItemProps) => {
   return (
     <div
-      className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50"
+      className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50 shadow-sm border-[1px] 
+        border-blue-400 shadow-slate-700 dark:border-slate-400 dark:shadow-slate-500"
       key={key}
       onClick={onClick}
     >
