@@ -1,4 +1,4 @@
-import {ComponentProps} from 'react';
+import {ComponentProps, ReactNode} from 'react';
 
 interface variantProps {
   h1: ComponentProps<'div'>['className'];
@@ -24,8 +24,8 @@ const variants: variantProps = {
 
 interface TypographyProps {
   variant: 'h1' | 'h2' | 'h3' | 'h4' | 'body1' | 'body2' | 'body3';
-  children: string;
-  className: ComponentProps<'div'>['className'];
+  children: ReactNode;
+  className?: ComponentProps<'div'>['className'];
 }
 
 const Typography = ({variant, children, className}: TypographyProps) => {

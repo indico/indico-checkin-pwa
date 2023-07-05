@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import EventItem from '../Components/Events/EventItem.tsx';
 import {Typography} from '../Components/Tailwind/index.jsx';
 import useSettings from '../hooks/useSettings.jsx';
 import {formatDateObj} from '../utils/date.ts';
@@ -60,21 +61,7 @@ const Homepage = () => {
         <div className="flex flex-1">
           <div className="grid grid-cols-1 w-full" spacing={2}>
             {list.map((item, idx) => {
-              return (
-                <div
-                  className="w-full py-6 mb-3 px-4 mx-auto bg-blue-300 dark:bg-slate-600 rounded-xl active:opacity-50"
-                  key={idx}
-                  onClick={() => navigateToEvent(item)}
-                >
-                  <div className="flex flex-row w-full items-center">
-                    <Typography variant="body1">{item.title}</Typography>
-                  </div>
-
-                  <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
-                    {item.date}
-                  </Typography>
-                </div>
-              );
+              return <EventItem key={idx} item={item} onClick={() => navigateToEvent(item)} />;
             })}
           </div>
         </div>
