@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 
@@ -6,9 +7,32 @@ const AddEventPage = () => {
   const [data, setData] = useState('No Result');
   const [hasPermission, setHasPermission] = useState(true);
 
-  const onScanResult = (decodedText, decodedResult) => {
+  const onScanResult = (decodedText, _decodedResult) => {
     // handle scanned result
-    console.log(decodedText, decodedResult);
+    // parse json object and detect if it is a valid event
+    let eventData;
+    try {
+      eventData = JSON.parse(decodedText);
+    } catch (e) {
+      console.error('error parsing JSON', e);
+      return;
+    }
+    console.log('event data: ', eventData);
+
+    const {
+      event_id,
+      title,
+      date,
+      server: {base_url, client_id, scope},
+    } = eventData;
+
+    // Perform OAuth2 Authorization Code Flow
+    const client = new OAuth2Client({
+      server: base_url,
+      clientId: client_id,
+      // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
+    });
+
     setData(decodedText);
   };
 
@@ -32,20 +56,6 @@ const AddEventPage = () => {
         qrCodeSuccessCallback={onScanResult}
         onPermRefused={onPermRefused}
       />
-
-      {/* <QrReader
-                onResult={(result, error) => {
-                    if (!!result) {
-                        setData(result?.text);
-                    }
-
-                    if (!!error) {
-                        console.info(error);
-                    }
-                }}
-                sx={{ width: "100%" }}
-                constraints={{ facingMode: "environment", aspectRatio: 1 }}
-            /> */}
 
       <div className="justify-center items-center flex py-6 mx-6">
         <Typography variant="body1" className="text-center">
