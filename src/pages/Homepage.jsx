@@ -67,14 +67,7 @@ const Homepage = () => {
         <div className="flex flex-1">
           <div className="grid grid-cols-1 w-full" spacing={2}>
             {list.map((item, idx) => {
-              return (
-                <EventItem
-                  key={idx}
-                  item={item}
-                  onClick={() => navigateToEvent(item)}
-                  onLongPress={() => console.log('Long Press')}
-                />
-              );
+              return <EventItem key={idx} item={item} onClick={() => navigateToEvent(item)} />;
             })}
           </div>
         </div>

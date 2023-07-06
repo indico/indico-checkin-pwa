@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import {TrashIcon} from '@heroicons/react/24/solid';
 import useLongPress from '../../hooks/useLongPress';
 import {CardFlip, Typography} from '../Tailwind/';
@@ -10,17 +11,22 @@ interface EventItemProps {
     attendes: string[];
   };
   onClick: () => void;
-  onLongPress: () => void;
 }
 
-const EventItem = ({item, onClick, onLongPress}: EventItemProps) => {
+const EventItem = ({item, onClick}: EventItemProps) => {
+  const onLongPress = () => {
+    setIsFlipped(!isFlipped);
+  };
+
   const {handlers} = useLongPress({
     onLongPress: onLongPress,
     onPress: onClick,
   });
 
+  const [isFlipped, setIsFlipped] = useState(false);
+
   return (
-    <CardFlip isFlipped={true}>
+    <CardFlip isFlipped={isFlipped}>
       {/* FRONT COMPONENT */}
       <button
         className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50 shadow-sm border-[1px] 
@@ -37,12 +43,15 @@ const EventItem = ({item, onClick, onLongPress}: EventItemProps) => {
       </button>
 
       {/* BACK COMPONENT */}
-      <div
+      <button
         className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50 shadow-sm border-[1px] 
-        border-blue-400 shadow-slate-700 dark:border-slate-400 dark:shadow-slate-500 text-start"
-        {...handlers}
+        border-blue-400 shadow-slate-700 dark:border-slate-400 dark:shadow-slate-500 text-start relative"
+        onMouseDown={handlers.onMouseDown}
+        onMouseUp={handlers.onMouseUp}
+        onTouchStart={handlers.onTouchStart}
+        onTouchEnd={handlers.onTouchEnd}
       >
-        <div className="flex flex-row w-full justify-between items-center">
+        <div className="flex flex-row w-full justify-between items-center h-full">
           <div>
             <div className="flex flex-row w-full items-center">
               <Typography variant="body1">{item.title}</Typography>
@@ -54,10 +63,13 @@ const EventItem = ({item, onClick, onLongPress}: EventItemProps) => {
           </div>
 
           <div className="mr-6">
-            <TrashIcon className="h-7 w-7 text-red-600 hover:opacity-50" />
+            <TrashIcon
+              className="h-7 w-7 text-red-600 hover:opacity-50"
+              onClick={() => console.log('Delete event')}
+            />
           </div>
         </div>
-      </div>
+      </button>
     </CardFlip>
   );
 };

@@ -6,7 +6,7 @@ const actionStates = {
   NONE: 'none',
 };
 
-const LongPressTime = 1000; // Time in ms
+const LongPressTime = 600; // Time in ms
 
 interface useLongPressProps {
   onLongPress: () => void;

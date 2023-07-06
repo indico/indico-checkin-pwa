@@ -49,7 +49,7 @@ const CardFlip = (props: ReactFlipCardProps) => {
   const backRotateX = `rotateX(${infinite ? rotation + 180 : isFlipped ? 0 : -180}deg)`;
 
   const styles: any = {
-    back: {
+    back: (isFlipped: boolean) => ({
       WebkitBackfaceVisibility: 'hidden',
       backfaceVisibility: 'hidden',
       height: '100%',
@@ -60,8 +60,9 @@ const CardFlip = (props: ReactFlipCardProps) => {
       transformStyle: 'preserve-3d',
       transition: `${flipSpeedFrontToBack}s`,
       width: '100%',
+      pointerEvents: isFlipped ? 'auto' : 'none', // Disable pointer events on the back side of the card when not flipped
       ...back,
-    },
+    }),
     container: {
       perspective: '1000px',
       zIndex: `${cardZIndex}`,
@@ -71,7 +72,7 @@ const CardFlip = (props: ReactFlipCardProps) => {
       position: 'relative',
       width: '100%',
     },
-    front: {
+    front: (isFlipped: boolean) => ({
       WebkitBackfaceVisibility: 'hidden',
       backfaceVisibility: 'hidden',
       height: '100%',
@@ -83,18 +84,24 @@ const CardFlip = (props: ReactFlipCardProps) => {
       transition: `${flipSpeedBackToFront}s`,
       width: '100%',
       zIndex: '2',
+      pointerEvents: isFlipped ? 'none' : 'auto', // Disable pointer events on the front side of the card when flipped
       ...front,
-    },
+    }),
   };
+
+  /* TODO: Fix the click events inside the cards. Right now, both cards are rendered. We can render the cards only while the animations are in progress
+  and hide the backface card when it's not. 
+  Could be a good idea to find an animation library
+  */
 
   return (
     <div className={getContainerClassName} style={{...styles.container, ...containerStyle}}>
       <div className="card-flipper" style={styles.flipper}>
-        <div className="card-front" style={styles.front}>
+        <div className="card-front" style={styles.front(isFlipped)}>
           {getComponent(0)}
         </div>
 
-        <div className="card-back" style={styles.back}>
+        <div className="card-back" style={styles.back(isFlipped)}>
           {getComponent(1)}
         </div>
       </div>

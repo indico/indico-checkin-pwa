@@ -26,6 +26,7 @@ const AddEventPage = () => {
       server: {base_url, client_id, scope},
     } = eventData;
 
+    console.log('server data:', base_url, client_id);
     // Perform OAuth2 Authorization Code Flow
     const client = new OAuth2Client({
       server: base_url,
@@ -52,7 +53,7 @@ const AddEventPage = () => {
     // In a browser this might work as follows:
     document.location = await client.authorizationCode.getAuthorizeUri({
       // URL in the app that the user should get redirected to after authenticating
-      redirectUri: 'https://localhost:3000',
+      redirectUri: 'https://localhost:3000', // TODO: Check this later
 
       // Optional string that can be sent along to the auth server. This value will
       // be sent along with the redirect back to the app verbatim.
