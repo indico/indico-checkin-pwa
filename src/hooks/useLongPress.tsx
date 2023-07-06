@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {MouseEventHandler, useRef, useState} from 'react';
 
 const actionStates = {
   LONGPRESS: 'longpress',
@@ -29,7 +29,7 @@ const useLongPress = ({onLongPress, onPress}: useLongPressProps) => {
     }, LongPressTime);
   };
 
-  const handleOnClick = (_e: Event) => {
+  const handleOnClick: MouseEventHandler = _e => {
     // console.log('handleOnClick');
     if (isLongPress.current) {
       // console.log('Is long press - not continuing.');
