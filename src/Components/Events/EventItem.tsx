@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {MouseEventHandler, useState} from 'react';
 import {TrashIcon} from '@heroicons/react/24/solid';
 import useLongPress from '../../hooks/useLongPress';
 import {CardFlip, Typography} from '../Tailwind/';
@@ -24,6 +24,11 @@ const EventItem = ({item, onClick}: EventItemProps) => {
   });
 
   const [isFlipped, setIsFlipped] = useState(false);
+
+  const onTrashClick: MouseEventHandler = e => {
+    e.stopPropagation();
+    console.log('Delete event...'); // TODO: Implement delete event
+  };
 
   return (
     <CardFlip isFlipped={isFlipped}>
@@ -62,12 +67,9 @@ const EventItem = ({item, onClick}: EventItemProps) => {
             </Typography>
           </div>
 
-          <div className="mr-6">
-            <TrashIcon
-              className="h-7 w-7 text-red-600 hover:opacity-50"
-              onClick={() => console.log('Delete event')}
-            />
-          </div>
+          <button className="mr-6">
+            <TrashIcon className="h-7 w-7 text-red-600 active:opacity-50" onClick={onTrashClick} />
+          </button>
         </div>
       </button>
     </CardFlip>
