@@ -3,6 +3,8 @@ import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 
+const redirectURI = 'https://localhost:3000';
+
 const AddEventPage = () => {
   const [data, setData] = useState('No Result');
   const [hasPermission, setHasPermission] = useState(true);
@@ -35,8 +37,8 @@ const AddEventPage = () => {
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
       // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
-      /* authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
-      tokenEndpoint: 'https://sg1.cern.ch/oauth/token', */
+      authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
+      tokenEndpoint: 'https://sg1.cern.ch/oauth/token',
     });
 
     /**
@@ -50,15 +52,32 @@ const AddEventPage = () => {
      */
     const codeVerifier = await generateCodeVerifier();
 
+    console.log('Going to perform authentication...');
     // In a browser this might work as follows:
-    document.location = await client.authorizationCode.getAuthorizeUri({
+    const authRes = await client.authorizationCode.getAuthorizeUri({
       // URL in the app that the user should get redirected to after authenticating
-      redirectUri: 'https://localhost:3000', // TODO: Check this later
-
+      redirectUri: redirectURI, // TODO: Check this later
       codeVerifier,
-
       scope: [scope],
     });
+    console.log('authRes: ', authRes);
+    document.location = authRes;
+    // todo: find a react example to redirect and get the code
+
+    console.log('Finished redirect...');
+    console.log('document location:', document.location);
+
+    // The user is now at the redirectUri (Back to the App), so we can now get the access token
+    const oauth2Token = await client.authorizationCode.getTokenFromCodeRedirect(document.location, {
+      /**
+       * The redirect URI is not actually used for any redirects, but MUST be the
+       * same as what you passed earlier to "authorizationCode"
+       */
+      redirectUri: redirectURI,
+      codeVerifier,
+    });
+
+    console.log('oauth2Token: ', oauth2Token);
 
     setData(decodedText);
   };
