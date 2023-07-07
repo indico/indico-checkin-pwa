@@ -21,6 +21,8 @@ const useLongPress = ({onLongPress, onPress}: useLongPressProps) => {
 
   const startPressTimer = () => {
     isLongPress.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+
     timerRef.current = setTimeout(() => {
       // console.log('Long press triggered');
       isLongPress.current = true;
