@@ -35,8 +35,8 @@ const AddEventPage = () => {
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
       // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
-      authorizationEndpoint: 'https://indico.cern.ch/oauth/authorize',
-      tokenEndpoint: 'https://indico.cern.ch/oauth/token',
+      /* authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
+      tokenEndpoint: 'https://sg1.cern.ch/oauth/token', */
     });
 
     /**
@@ -54,10 +54,6 @@ const AddEventPage = () => {
     document.location = await client.authorizationCode.getAuthorizeUri({
       // URL in the app that the user should get redirected to after authenticating
       redirectUri: 'https://localhost:3000', // TODO: Check this later
-
-      // Optional string that can be sent along to the auth server. This value will
-      // be sent along with the redirect back to the app verbatim.
-      state: 'some-string',
 
       codeVerifier,
 
