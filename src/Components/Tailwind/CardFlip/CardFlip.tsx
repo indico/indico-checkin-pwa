@@ -20,11 +20,14 @@ const CardFlip = (props: ReactFlipCardProps) => {
 
   const [isFlipped, setFlipped] = useState(props.isFlipped); // isFlipped is the current state of the card. This is used to detect when to change the flip direction.
   const [rotation, setRotation] = useState(0);
+  // isRotating is used to detect when the card is in the middle of a flip animation. It is used to only render the card that is facing the front.
+  const [isRotating, setRotating] = useState(false);
 
   useEffect(() => {
     if (props.isFlipped !== isFlipped) {
       setFlipped(props.isFlipped);
       setRotation(c => c + 180);
+      setRotating(true); // isRotating started
     }
   }, [props.isFlipped, isFlipped]);
 
@@ -49,9 +52,9 @@ const CardFlip = (props: ReactFlipCardProps) => {
   const backRotateX = `rotateX(${infinite ? rotation + 180 : isFlipped ? 0 : -180}deg)`;
 
   const styles: any = {
-    back: (isFlipped: boolean) => ({
+    back: (isFlipped: boolean, isRotating: boolean) => ({
       WebkitBackfaceVisibility: 'hidden',
-      backfaceVisibility: 'hidden',
+      backfaceVisibility: 'hidden', // Pointer events will not be fired on the back face of the card while it is hidden
       height: '100%',
       left: '0',
       position: isFlipped ? 'relative' : 'absolute',
@@ -72,7 +75,7 @@ const CardFlip = (props: ReactFlipCardProps) => {
       position: 'relative',
       width: '100%',
     },
-    front: (isFlipped: boolean) => ({
+    front: (isFlipped: boolean, isRotating: boolean) => ({
       WebkitBackfaceVisibility: 'hidden',
       backfaceVisibility: 'hidden',
       height: '100%',
@@ -97,10 +100,19 @@ const CardFlip = (props: ReactFlipCardProps) => {
   return (
     <div className={getContainerClassName} style={{...styles.container, ...containerStyle}}>
       <div className="card-flipper" style={styles.flipper}>
-        <div className="card-front" style={styles.front(isFlipped)}>
+        {/* Front Card */}
+        {/* TODO: PUT LOGIC TO RENDER ONLY 1 face */}
+        <div
+          className="card-front"
+          style={styles.front(isFlipped)}
+          onTransitionEnd={() => {
+            setRotating(false);
+          }}
+        >
           {getComponent(0)}
         </div>
 
+        {/* Back Card */}
         <div className="card-back" style={styles.back(isFlipped)}>
           {getComponent(1)}
         </div>
