@@ -978,10 +978,6 @@ code {
   background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 
-.hover\:opacity-50:hover {
-  opacity: 0.5;
-}
-
 .focus\:ring-blue-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity));

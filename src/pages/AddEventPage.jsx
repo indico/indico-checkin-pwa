@@ -3,7 +3,7 @@ import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 
-const redirectURI = 'https://localhost:3000';
+const redirectURI = 'https://localhost:3000/auth/redirect';
 
 const AddEventPage = () => {
   const [data, setData] = useState('No Result');
@@ -52,7 +52,11 @@ const AddEventPage = () => {
      */
     const codeVerifier = await generateCodeVerifier();
 
-    console.log('Going to perform authentication...');
+    // Store the codeVerifier in the browser's session storage
+    // This is used later to verify the code challenge
+    sessionStorage.setItem('codeVerifier', codeVerifier);
+
+    console.log('Going to perform authentication...', codeVerifier);
     // In a browser this might work as follows:
     const authRes = await client.authorizationCode.getAuthorizeUri({
       // URL in the app that the user should get redirected to after authenticating
@@ -61,25 +65,10 @@ const AddEventPage = () => {
       scope: [scope],
     });
     console.log('authRes: ', authRes);
+
+    // Redirect the user to the Authentication Server (OAuth2 Server)
+    // Which will redirect the user back to the redirectUri (Back to the App)
     document.location = authRes;
-    // todo: find a react example to redirect and get the code
-
-    console.log('Finished redirect...');
-    console.log('document location:', document.location);
-
-    // The user is now at the redirectUri (Back to the App), so we can now get the access token
-    const oauth2Token = await client.authorizationCode.getTokenFromCodeRedirect(document.location, {
-      /**
-       * The redirect URI is not actually used for any redirects, but MUST be the
-       * same as what you passed earlier to "authorizationCode"
-       */
-      redirectUri: redirectURI,
-      codeVerifier,
-    });
-
-    console.log('oauth2Token: ', oauth2Token);
-
-    setData(decodedText);
   };
 
   const onPermRefused = () => {
