@@ -2,8 +2,7 @@ import {useState} from 'react';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
-
-const redirectURI = 'https://localhost:3000/auth/redirect';
+import {discoveryEndpoint, redirectURI} from './Auth/utils';
 
 const AddEventPage = () => {
   const [data, setData] = useState('No Result');
@@ -33,7 +32,7 @@ const AddEventPage = () => {
     const client = new OAuth2Client({
       server: base_url,
       clientId: client_id,
-      discoveryEndpoint: '.well-known/oauth-authorization-server',
+      discoveryEndpoint: discoveryEndpoint,
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
       // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
@@ -52,10 +51,6 @@ const AddEventPage = () => {
      */
     const codeVerifier = await generateCodeVerifier();
 
-    // Store the codeVerifier in the browser's session storage
-    // This is used later to verify the code challenge
-    sessionStorage.setItem('codeVerifier', codeVerifier);
-
     console.log('Going to perform authentication...', codeVerifier);
     // In a browser this might work as follows:
     const authRes = await client.authorizationCode.getAuthorizeUri({
@@ -65,6 +60,12 @@ const AddEventPage = () => {
       scope: [scope],
     });
     console.log('authRes: ', authRes);
+
+    // Store the codeVerifier, base_url and client_Id in the browser's session storage
+    // This is used later to verify the code challenge
+    sessionStorage.setItem('codeVerifier', codeVerifier);
+    sessionStorage.setItem('base_url', base_url); // TODO: is it safe to store this in the browser's session storage?
+    sessionStorage.setItem('client_id', client_id);
 
     // Redirect the user to the Authentication Server (OAuth2 Server)
     // Which will redirect the user back to the redirectUri (Back to the App)
