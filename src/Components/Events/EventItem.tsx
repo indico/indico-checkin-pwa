@@ -8,7 +8,6 @@ interface EventItemProps {
     id: string;
     title: string;
     date: string;
-    attendes: string[];
   };
   onClick: () => void;
 }
