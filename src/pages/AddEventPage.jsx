@@ -18,7 +18,7 @@ const AddEventPage = () => {
       console.error('error parsing JSON', e);
       return;
     }
-    console.log('event data: ', JSON.stringify(eventData));
+    console.log('event data: ', decodedText);
 
     const {
       event_id,
@@ -27,6 +27,8 @@ const AddEventPage = () => {
       server: {base_url, client_id, scope},
     } = eventData;
 
+    // TODO: Check if the server data is already in IndexedDB
+
     // Perform OAuth2 Authorization Code Flow
     const client = new OAuth2Client({
       server: base_url,
@@ -34,6 +36,7 @@ const AddEventPage = () => {
       discoveryEndpoint: discoveryEndpoint,
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
+      // TODO: Remove these hard-coded values after CORS issues are solved
       // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
       authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
       tokenEndpoint: 'https://sg1.cern.ch/oauth/token',
@@ -50,7 +53,6 @@ const AddEventPage = () => {
      */
     const codeVerifier = await generateCodeVerifier();
 
-    console.log('Going to perform authentication...', codeVerifier);
     // In a browser this might work as follows:
     const authRes = await client.authorizationCode.getAuthorizeUri({
       // URL in the app that the user should get redirected to after authenticating
@@ -60,12 +62,12 @@ const AddEventPage = () => {
     });
     console.log('authRes: ', authRes);
 
-    // Store the codeVerifier, base_url, scope and client_Id in the browser's session storage
-    // This is used later to verify the code challenge
-    sessionStorage.setItem('codeVerifier', codeVerifier);
-    sessionStorage.setItem('base_url', base_url); // TODO: is it safe to store this in the browser's session storage?
-    sessionStorage.setItem('client_id', client_id);
-    sessionStorage.setItem('scope', scope);
+    // Store the eventData in the browser's session storage. This is used later to verify the code challenge
+    const sessionObj = structuredClone(eventData);
+    sessionObj.codeVerifier = codeVerifier;
+    const sessionStr = JSON.stringify(sessionObj);
+    console.log('sessionStr: ', sessionStr);
+    sessionStorage.setItem('eventData', sessionStr);
 
     // Redirect the user to the Authentication Server (OAuth2 Server)
     // Which will redirect the user back to the redirectUri (Back to the App)

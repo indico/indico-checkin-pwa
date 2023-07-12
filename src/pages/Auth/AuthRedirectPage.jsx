@@ -6,24 +6,38 @@ import {discoveryEndpoint, redirectURI} from './utils';
 const AuthRedirectPage = () => {
   useEffect(() => {
     const onLoad = async () => {
-      // Get the code verifier, base_url and client_id from the browser's session storage
-      const codeVerifier = sessionStorage.getItem('codeVerifier');
-      const base_url = sessionStorage.getItem('base_url');
-      const client_id = sessionStorage.getItem('client_id');
-      const scope = sessionStorage.getItem('scope');
-      console.log('SessionStorage data: ', codeVerifier, base_url, client_id, scope);
-
-      // Check if these variables are null
-      if (codeVerifier === null || base_url === null || client_id === null || scope === null) {
-        // The user is not authenticated, so ignore
+      // Get the event data from the browser's session storage
+      const sessionStorageData = JSON.parse(sessionStorage.getItem('eventData'));
+      if (sessionStorageData === null) {
+        // The eventData is not in the browser's session storage, so ignore
         return;
       }
 
-      // Delete the code verifier from the browser's session storage
-      sessionStorage.removeItem('codeVerifier');
-      sessionStorage.removeItem('base_url');
-      sessionStorage.removeItem('client_id');
-      sessionStorage.removeItem('scope');
+      const {
+        codeVerifier,
+        event_id,
+        title,
+        date,
+        server: {base_url, client_id, scope},
+      } = sessionStorageData;
+      console.log('SessionStorage data: ', sessionStorageData);
+
+      // Check if these variables are null
+      if (
+        codeVerifier === null ||
+        base_url === null ||
+        client_id === null ||
+        scope === null ||
+        event_id === null ||
+        title === null ||
+        date === null
+      ) {
+        // The stored data is not complete, so ignore
+        return;
+      }
+
+      // Delete the eventData from the browser's session storage
+      sessionStorage.removeItem('eventData');
 
       const client = new OAuth2Client({
         server: base_url,
@@ -60,8 +74,9 @@ const AuthRedirectPage = () => {
         // Add the server to IndexedDB if it doesn't already exist
         addServer({base_url, client_id, scope, auth_token: oauth2Token.accessToken});
 
-        // Add the Event to IndexedDB
-        // addEvent()
+        // Add the Event to IndexedDB if it doesn't already exist
+        // TODO: Change to logic to add RegistrationForm even if event already exists
+        addEvent({id: event_id, title, date, server_base_url: base_url});
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
       }
