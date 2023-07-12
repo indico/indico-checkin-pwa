@@ -18,7 +18,7 @@ const AddEventPage = () => {
       console.error('error parsing JSON', e);
       return;
     }
-    console.log('event data: ', eventData);
+    console.log('event data: ', JSON.stringify(eventData));
 
     const {
       event_id,
@@ -27,7 +27,6 @@ const AddEventPage = () => {
       server: {base_url, client_id, scope},
     } = eventData;
 
-    console.log('server data:', base_url, client_id);
     // Perform OAuth2 Authorization Code Flow
     const client = new OAuth2Client({
       server: base_url,
@@ -61,11 +60,12 @@ const AddEventPage = () => {
     });
     console.log('authRes: ', authRes);
 
-    // Store the codeVerifier, base_url and client_Id in the browser's session storage
+    // Store the codeVerifier, base_url, scope and client_Id in the browser's session storage
     // This is used later to verify the code challenge
     sessionStorage.setItem('codeVerifier', codeVerifier);
     sessionStorage.setItem('base_url', base_url); // TODO: is it safe to store this in the browser's session storage?
     sessionStorage.setItem('client_id', client_id);
+    sessionStorage.setItem('scope', scope);
 
     // Redirect the user to the Authentication Server (OAuth2 Server)
     // Which will redirect the user back to the redirectUri (Back to the App)

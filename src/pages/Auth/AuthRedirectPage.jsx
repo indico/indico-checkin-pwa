@@ -1,5 +1,6 @@
 import {useEffect} from 'react';
 import {OAuth2Client} from '@badgateway/oauth2-client';
+import {addEvent, addServer} from '../../db/utils';
 import {discoveryEndpoint, redirectURI} from './utils';
 
 const AuthRedirectPage = () => {
@@ -9,10 +10,11 @@ const AuthRedirectPage = () => {
       const codeVerifier = sessionStorage.getItem('codeVerifier');
       const base_url = sessionStorage.getItem('base_url');
       const client_id = sessionStorage.getItem('client_id');
-      console.log('SessionStorage data: ', codeVerifier, base_url, client_id);
+      const scope = sessionStorage.getItem('scope');
+      console.log('SessionStorage data: ', codeVerifier, base_url, client_id, scope);
 
       // Check if these variables are null
-      if (codeVerifier === null || base_url === null || client_id === null) {
+      if (codeVerifier === null || base_url === null || client_id === null || scope === null) {
         // The user is not authenticated, so ignore
         return;
       }
@@ -21,6 +23,7 @@ const AuthRedirectPage = () => {
       sessionStorage.removeItem('codeVerifier');
       sessionStorage.removeItem('base_url');
       sessionStorage.removeItem('client_id');
+      sessionStorage.removeItem('scope');
 
       const client = new OAuth2Client({
         server: base_url,
@@ -46,9 +49,22 @@ const AuthRedirectPage = () => {
         }
       );
 
-      console.log('oauth2Token: ', oauth2Token);
+      // Check if there is a token
+      if (oauth2Token.accessToken === null) {
+        // The user is not authenticated, so ignore
+        return;
+      }
 
-      // setData(decodedText);
+      // Store the data in IndexedDB
+      try {
+        // Add the server to IndexedDB if it doesn't already exist
+        addServer({base_url, client_id, scope, auth_token: oauth2Token.accessToken});
+
+        // Add the Event to IndexedDB
+        // addEvent()
+      } catch (err) {
+        console.log('Error adding data to IndexedDB: ', err);
+      }
     };
 
     onLoad(); // Run on page load
