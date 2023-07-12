@@ -1,12 +1,17 @@
 import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
+import db from '../db/db';
+import {addEvent, addRegistrationForm} from '../db/utils';
 import {discoveryEndpoint, redirectURI} from './Auth/utils';
 
 const AddEventPage = () => {
   const [data, setData] = useState('No Result');
   const [hasPermission, setHasPermission] = useState(true);
+
+  const navigation = useNavigate();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     // handle scanned result
@@ -29,7 +34,27 @@ const AddEventPage = () => {
       server: {base_url, client_id, scope},
     } = eventData;
 
-    // TODO: Check if the server data is already in IndexedDB
+    // Check if the serverData is already in indexedDB
+    const serverExists = await db.servers.get({base_url: base_url});
+    if (serverExists) {
+      // No need to perform authentication
+      try {
+        addEvent({id: event_id, title, date, server_base_url: base_url});
+
+        addRegistrationForm({
+          id: regform_id,
+          label: regform_title,
+          event_id: event_id,
+          participants: [],
+        });
+
+        // Navigate to homepage
+        navigation('/');
+      } catch (err) {
+        console.log('Error adding data to IndexedDB: ', err);
+      }
+      return;
+    }
 
     // Perform OAuth2 Authorization Code Flow
     const client = new OAuth2Client({

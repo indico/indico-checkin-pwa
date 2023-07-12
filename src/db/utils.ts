@@ -33,6 +33,10 @@ export const addEvent = async ({id, title, date, server_base_url}: EventTable) =
   }
 };
 
+/**
+ * Add a RegistrationForm to the IndexedDB if it doesn't already exist
+ * @param {RegFormTable} regForm - The registrationForm to add
+ */
 export const addRegistrationForm = async ({
   id,
   label,

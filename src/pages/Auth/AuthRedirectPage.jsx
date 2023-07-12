@@ -1,9 +1,12 @@
 import {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {OAuth2Client} from '@badgateway/oauth2-client';
-import {addEvent, addServer} from '../../db/utils';
+import {addEvent, addRegistrationForm, addServer} from '../../db/utils';
 import {discoveryEndpoint, redirectURI} from './utils';
 
 const AuthRedirectPage = () => {
+  const navigation = useNavigate();
+
   useEffect(() => {
     const onLoad = async () => {
       // Get the event data from the browser's session storage
@@ -22,7 +25,7 @@ const AuthRedirectPage = () => {
         regform_title,
         server: {base_url, client_id, scope},
       } = sessionStorageData;
-      console.log('SessionStorage data: ', sessionStorageData);
+      // console.log('SessionStorage data: ', sessionStorageData);
 
       // Check if these variables are null
       if (
@@ -75,19 +78,25 @@ const AuthRedirectPage = () => {
 
       // Store the data in IndexedDB
       try {
-        // Add the server to IndexedDB if it doesn't already exist
         addServer({base_url, client_id, scope, auth_token: oauth2Token.accessToken});
 
-        // Add the Event to IndexedDB if it doesn't already exist
-        // TODO: Change to logic to add RegistrationForm even if event already exists
         addEvent({id: event_id, title, date, server_base_url: base_url});
+
+        addRegistrationForm({
+          id: regform_id,
+          label: regform_title,
+          event_id: event_id,
+          participants: [],
+        });
+
+        navigation('/');
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
       }
     };
 
     onLoad(); // Run on page load
-  }, []);
+  }, [navigation]);
 
   return <div>Auth Redirect page</div>;
 };
