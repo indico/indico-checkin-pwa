@@ -18,6 +18,8 @@ const AuthRedirectPage = () => {
         event_id,
         title,
         date,
+        regform_id,
+        regform_title,
         server: {base_url, client_id, scope},
       } = sessionStorageData;
       console.log('SessionStorage data: ', sessionStorageData);
@@ -30,7 +32,9 @@ const AuthRedirectPage = () => {
         scope === null ||
         event_id === null ||
         title === null ||
-        date === null
+        date === null ||
+        regform_id === null ||
+        regform_title === null
       ) {
         // The stored data is not complete, so ignore
         return;

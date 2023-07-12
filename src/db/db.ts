@@ -39,7 +39,7 @@ export class MyDexie extends Dexie {
     this.version(1).stores({
       servers: 'id++, base_url, &indexName, client_id, scope, auth_token', // base_url is indexed
       events: 'id, title, date, server_base_url', // Primary key and indexed props
-      regForms: 'id++, label, event_id, participants',
+      regForms: 'id, label, event_id, participants',
       participants: 'id++, name, checked_in, regForm_id',
     });
   }

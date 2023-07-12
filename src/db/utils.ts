@@ -1,4 +1,4 @@
-import db, {ServerTable, EventTable} from './db';
+import db, {ServerTable, EventTable, RegFormTable} from './db';
 
 /**
  * Add a server to the IndexedDB if it doesn't already exist
@@ -29,6 +29,23 @@ export const addEvent = async ({id, title, date, server_base_url}: EventTable) =
       title: title,
       date: date,
       server_base_url: server_base_url,
+    });
+  }
+};
+
+export const addRegistrationForm = async ({
+  id,
+  label,
+  event_id,
+  participants = [],
+}: RegFormTable) => {
+  const regFormExists = await db.regForms.get({id: id});
+  if (!regFormExists) {
+    await db.regForms.add({
+      id: id,
+      label: label,
+      event_id: event_id,
+      participants: participants,
     });
   }
 };

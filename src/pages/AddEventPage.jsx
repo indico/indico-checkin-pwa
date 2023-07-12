@@ -24,6 +24,8 @@ const AddEventPage = () => {
       event_id,
       title,
       date,
+      regform_id,
+      regform_title,
       server: {base_url, client_id, scope},
     } = eventData;
 
@@ -66,7 +68,6 @@ const AddEventPage = () => {
     const sessionObj = structuredClone(eventData);
     sessionObj.codeVerifier = codeVerifier;
     const sessionStr = JSON.stringify(sessionObj);
-    console.log('sessionStr: ', sessionStr);
     sessionStorage.setItem('eventData', sessionStr);
 
     // Redirect the user to the Authentication Server (OAuth2 Server)
