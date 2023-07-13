@@ -113,7 +113,7 @@ const AddEventPage = () => {
       </div>
 
       <QrScannerPlugin
-        fps={10}
+        fps={15}
         qrbox={250}
         aspectRatio={1}
         disableFlip={false}

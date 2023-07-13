@@ -56,7 +56,7 @@ const Homepage = () => {
           <Button onClick={onAddEvent}>Add event</Button>
         </div>
 
-        {events ? (
+        {events?.length > 0 ? (
           <div className="flex flex-1">
             <div className="grid grid-cols-1 w-full" spacing={2}>
               {events.map((item, idx) => {

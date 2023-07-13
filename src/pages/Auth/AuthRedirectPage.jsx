@@ -1,11 +1,15 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client} from '@badgateway/oauth2-client';
+import {Typography} from '../../Components/Tailwind';
+import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {addEvent, addRegistrationForm, addServer} from '../../db/utils';
 import {discoveryEndpoint, redirectURI} from './utils';
 
 const AuthRedirectPage = () => {
   const navigation = useNavigate();
+
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const onLoad = async () => {
@@ -13,6 +17,7 @@ const AuthRedirectPage = () => {
       const sessionStorageData = JSON.parse(sessionStorage.getItem('eventData'));
       if (sessionStorageData === null) {
         // The eventData is not in the browser's session storage, so ignore
+        setError('Event Data not found. Please try again.');
         return;
       }
 
@@ -40,6 +45,7 @@ const AuthRedirectPage = () => {
         regform_title === null
       ) {
         // The stored data is not complete, so ignore
+        setError('Event Data not complete. Please try again.');
         return;
       }
 
@@ -73,6 +79,7 @@ const AuthRedirectPage = () => {
       // Check if there is a token
       if (oauth2Token.accessToken === null) {
         // The user is not authenticated, so ignore
+        setError('Authorization failed. Please try again.');
         return;
       }
 
@@ -92,13 +99,27 @@ const AuthRedirectPage = () => {
         navigation('/');
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
+        setError('Error storing the new Event. Please try again.');
       }
     };
 
     onLoad(); // Run on page load
   }, [navigation]);
 
-  return <div>Auth Redirect page</div>;
+  return (
+    <div className="flex flex-1 w-full h-full min-h-[15rem] justify-center items-center">
+      {error ? (
+        <Typography variant="h3">{error}</Typography>
+      ) : (
+        <div>
+          <LoadingIndicator size="lg" />
+          <Typography variant="h3" className="mt-6">
+            Loading...
+          </Typography>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default AuthRedirectPage;
