@@ -11,20 +11,16 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
-      const response = await authFetch(
-        `${server_base_url}/api/checkin/event/83`,
-        null,
-        server_base_url
-      ); // TODO: Get the event ID
-      console.log('Response: ', response);
+      const response = await authFetch(server_base_url, `/api/checkin/event/83`); // TODO: Get the event ID
+      // console.log('Response: ', response);
     };
 
     fetchEventData();
 
-    return () => {
+    /* return () => {
       // TODO: Abort the fetch request
-    };
-  }, []);
+    }; */
+  }, [server_base_url]);
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-6">
