@@ -5,7 +5,7 @@ import {authFetch} from '../utils/network';
 
 const EventPage = () => {
   const {state} = useLocation();
-  const {title, date, server_base_url} = state; // Destructure the state object containing the Event object
+  const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
 
   const [event, setEvent] = useState(new EventData(title, date));
 
@@ -14,7 +14,7 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
-      const response = await authFetch(server_base_url, `/api/checkin/event/83`); // TODO: Get the event ID
+      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`); // TODO: Get the event ID
       // console.log('Response: ', response);
     };
 
