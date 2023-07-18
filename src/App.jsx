@@ -8,6 +8,7 @@ import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
 import CheckInPage from './pages/CheckIn';
 import EventPage from './pages/EventPage';
 import Homepage from './pages/Homepage';
+import SettingsPage from './pages/Settings';
 
 const App = () => {
   return (
@@ -27,6 +28,8 @@ const App = () => {
           <Route path="/event/new" element={<AddEventPage />} />
 
           <Route path="/auth/redirect" element={<AuthRedirectPage />} />
+
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
 
         <BottomTabs />
