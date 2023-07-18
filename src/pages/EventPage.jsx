@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useLocation} from 'react-router-dom';
+import {Breadcrumbs} from '../Components/Tailwind/Breadcrumbs';
 import {getRegistrationForms} from '../db/utils';
 import EventData from '../Models/EventData';
 import {authFetch} from '../utils/network';
@@ -29,11 +30,11 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [server_base_url, eventID]);
+  }, [server_base_url, eventID, title, date]);
 
   return (
-    <div className="mx-auto w-full h-full justify-center align-center mt-6">
-      <h1 className="text-center">{event.title}</h1>
+    <div className="mx-auto w-full h-full justify-center align-center mt-3">
+      <Breadcrumbs className="ml-5" routeNames={[event.title]} />
 
       {event.registrationForms.map((regForm, idx) => (
         <div className="mx-auto w-full h-full justify-center align-center mt-6" key={idx}>
