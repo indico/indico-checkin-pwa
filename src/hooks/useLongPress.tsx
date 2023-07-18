@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {MouseEventHandler, useRef, useState} from 'react';
 
 const actionStates = {
   LONGPRESS: 'longpress',
@@ -6,7 +6,7 @@ const actionStates = {
   NONE: 'none',
 };
 
-const LongPressTime = 1000; // Time in ms
+const LongPressTime = 600; // Time in ms
 
 interface useLongPressProps {
   onLongPress: () => void;
@@ -21,6 +21,8 @@ const useLongPress = ({onLongPress, onPress}: useLongPressProps) => {
 
   const startPressTimer = () => {
     isLongPress.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+
     timerRef.current = setTimeout(() => {
       // console.log('Long press triggered');
       isLongPress.current = true;
@@ -29,7 +31,7 @@ const useLongPress = ({onLongPress, onPress}: useLongPressProps) => {
     }, LongPressTime);
   };
 
-  const handleOnClick = (_e: Event) => {
+  const handleOnClick: MouseEventHandler = _e => {
     // console.log('handleOnClick');
     if (isLongPress.current) {
       // console.log('Is long press - not continuing.');
