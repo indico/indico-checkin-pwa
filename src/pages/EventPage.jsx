@@ -1,10 +1,13 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useLocation} from 'react-router-dom';
+import EventData from '../Models/EventData';
 import {authFetch} from '../utils/network';
 
 const EventPage = () => {
   const {state} = useLocation();
   const {title, date, server_base_url} = state; // Destructure the state object containing the Event object
+
+  const [event, setEvent] = useState(new EventData(title, date));
 
   console.log('Server Base url:', server_base_url);
 
@@ -24,7 +27,7 @@ const EventPage = () => {
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-6">
-      <h1 className="text-center">{title}</h1>
+      <h1 className="text-center">{event.title}</h1>
     </div>
   );
 };
