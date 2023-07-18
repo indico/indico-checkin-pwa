@@ -53,3 +53,13 @@ export const addRegistrationForm = async ({
     });
   }
 };
+
+/**
+ * Get all the RegistrationForms that belong to an Event
+ * @param eventId Event ID
+ * @returns {RegFormTable[]}
+ */
+export const getRegistrationForms = async (eventId: string) => {
+  const regForms = await db.regForms.where({event_id: eventId}).toArray();
+  return regForms;
+};
