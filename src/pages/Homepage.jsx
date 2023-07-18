@@ -1,15 +1,11 @@
-import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useLiveQuery} from 'dexie-react-hooks';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Button, Typography} from '../Components/Tailwind/index.jsx';
 import db from '../db/db';
-import useSettings from '../hooks/useSettings.jsx';
 import {formatDateObj} from '../utils/date.ts';
 
 const Homepage = () => {
-  const {setDarkMode} = useSettings();
-
   // Listen to events updates
   const events = useLiveQuery(() =>
     db.events.toArray().then(currEvents =>
@@ -21,21 +17,6 @@ const Homepage = () => {
     )
   );
   // console.log('events:', JSON.stringify(events));
-
-  useEffect(() => {
-    // On render, check if the user has a theme preference. If not, check if their system is set to dark mode. If so, set the theme to dark.
-    // If neither, set the theme to light.
-    if (
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark');
-      setDarkMode(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      setDarkMode(false);
-    }
-  }, [setDarkMode]);
 
   const navigate = useNavigate();
 

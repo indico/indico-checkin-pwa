@@ -16,7 +16,7 @@ export const Breadcrumbs = ({routeNames = [], routeLinks, className = ''}: Bread
 
   return (
     <div className={parentClassName} aria-label="Breadcrumb">
-      <CalendarIcon className="w-5 h-5 mr-2 text-primary" />
+      <CalendarIcon className="w-5 h-5 mr-1 text-primary" />
 
       <ol
         className="inline-flex items-center space-x-1 md:space-x-3 px-2 py-2 border border-gray-200 

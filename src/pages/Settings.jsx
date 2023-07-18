@@ -1,19 +1,21 @@
-import {useState} from 'react';
 import {Toggle} from '../Components/Tailwind/Toggle';
+import useSettings from '../hooks/useSettings';
 
 const SettingsPage = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const {darkMode, setDarkMode} = useSettings();
 
   const toggleDarkMode = () => {
-    console.log('clicked');
-    setIsDarkMode(!isDarkMode);
+    // Set the theme preference in localStorage and in the SettingsContext
+    const newDarkMode = !darkMode;
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+    setDarkMode(newDarkMode);
   };
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <h1 className="text-center">Settings</h1>
 
-      <Toggle checked={isDarkMode} onClick={toggleDarkMode} />
+      <Toggle checked={darkMode} onClick={toggleDarkMode} />
     </div>
   );
 };

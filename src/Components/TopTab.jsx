@@ -1,3 +1,4 @@
+import {useNavigate} from 'react-router-dom';
 import {Cog8ToothIcon} from '@heroicons/react/24/solid';
 import Logo from '../assets/logo.png';
 import WaveDark from '../assets/wave_dark_custom.svg';
@@ -7,6 +8,11 @@ import {Typography} from './Tailwind';
 
 const TopTab = () => {
   const {darkMode} = useSettings();
+  const navigate = useNavigate();
+
+  const onSettingsClick = () => {
+    navigate('/settings');
+  };
 
   return (
     <div className="h-28 w-full relative">
@@ -19,7 +25,7 @@ const TopTab = () => {
 
         <Cog8ToothIcon
           className="h-7 dark:text-white active:opacity-50 hover:cursor-pointer"
-          onClick={() => console.log('clicked')}
+          onClick={onSettingsClick}
         />
       </div>
 
