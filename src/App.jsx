@@ -5,10 +5,11 @@ import Background from './Components/Background';
 import BottomTabs from './Components/BottomTabs';
 import TopTab from './Components/TopTab';
 import useSettings from './hooks/useSettings';
-import AddEventPage from './pages/AddEventPage';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
 import CheckInPage from './pages/CheckIn';
-import EventPage from './pages/EventPage';
+import AddEventPage from './pages/Events/AddEventPage';
+import EventPage from './pages/Events/EventPage';
+import RegistrationFormPage from './pages/Events/RegFormPage';
 import Homepage from './pages/Homepage';
 import SettingsPage from './pages/Settings';
 
@@ -42,9 +43,13 @@ const App = () => {
 
           <Route path="/check-in" element={<CheckInPage />} />
 
-          <Route path="/event/:id" element={<EventPage />} />
+          <Route path="/event">
+            <Route path="/event/:id" element={<EventPage />} />
 
-          <Route path="/event/new" element={<AddEventPage />} />
+            <Route path="/event/new" element={<AddEventPage />} />
+
+            <Route path="/event/:id/:regFormId" element={<RegistrationFormPage />} />
+          </Route>
 
           <Route path="/auth/redirect" element={<AuthRedirectPage />} />
 

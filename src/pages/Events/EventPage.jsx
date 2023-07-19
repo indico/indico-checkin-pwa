@@ -1,12 +1,13 @@
 import {useEffect, useState} from 'react';
-import {useLocation} from 'react-router-dom';
-import {Breadcrumbs} from '../Components/Tailwind/Breadcrumbs';
-import {getRegistrationForms} from '../db/utils';
-import EventData from '../Models/EventData';
-import {authFetch} from '../utils/network';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
+import {getRegistrationForms} from '../../db/utils';
+import EventData from '../../Models/EventData';
+import {authFetch} from '../../utils/network';
 
 const EventPage = () => {
   const {state} = useLocation();
+  const navigate = useNavigate();
   const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
 
   const [event, setEvent] = useState(new EventData(title, date));
@@ -16,13 +17,21 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
-      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
-      // console.log('Response: ', response);
-
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
-      console.log('Registration Forms:', regForms);
-      setEvent(new EventData(title, date, regForms));
+      // console.log('Registration Forms:', regForms);
+      const newEventData = new EventData(title, date, regForms);
+
+      if (regForms.length === 1) {
+        // Navigate to the registration form page if there is only one registration form
+        navigate(`/event/${eventID}/${regForms[0].id}`, {state: newEventData.getRegFormData(0)});
+        return;
+      }
+      setEvent(newEventData);
+
+      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
+      // TODO: Update with the info from the endpoint
+      // console.log('Response: ', response);
     };
 
     fetchEventData();
@@ -30,7 +39,7 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [server_base_url, eventID, title, date]);
+  }, [server_base_url, eventID, title, date, navigate]);
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
