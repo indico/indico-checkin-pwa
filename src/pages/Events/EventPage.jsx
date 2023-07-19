@@ -43,7 +43,9 @@ const EventPage = () => {
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
-      <Breadcrumbs className="ml-5" routeNames={[event.title]} />
+      <div className="flex flex-row w-100">
+        <Breadcrumbs className="ml-5" routeNames={[event.title]} />
+      </div>
 
       {event.registrationForms.map((regForm, idx) => (
         <div className="mx-auto w-full h-full justify-center align-center mt-6" key={idx}>
