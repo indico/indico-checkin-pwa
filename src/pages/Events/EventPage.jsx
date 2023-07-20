@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
+import IconFeather from '../../Components/Icons/Feather';
+import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {getRegistrationForms} from '../../db/utils';
 import EventData from '../../Models/EventData';
@@ -47,17 +49,26 @@ const EventPage = () => {
         <Breadcrumbs className="ml-5" routeNames={[event.title]} />
       </div>
 
-      {event.registrationForms.length > 0 ? (
-        event.registrationForms.map((regForm, idx) => (
-          <div className="mx-auto w-full h-full justify-center align-center mt-6" key={idx}>
-            <h1 className="text-center">{regForm.label}</h1>
+      <div className="mt-6 ml-5">
+        <Typography variant="h3">Registration Forms</Typography>
+
+        {event.registrationForms.length > 0 ? (
+          event.registrationForms.map((regForm, idx) => (
+            <div
+              className="flex mx-auto w-3/4 rounded-md bg-white h-full align-center mt-6 py-4 px-4 shadow-lg"
+              key={idx}
+            >
+              <IconFeather className="w-6 h-6 mr-3" />
+
+              <h1 className="text-center">{regForm.label}</h1>
+            </div>
+          ))
+        ) : (
+          <div className="mx-auto w-full h-full justify-center align-center mt-6">
+            <h1 className="text-center">No Registration Forms Available.</h1>
           </div>
-        ))
-      ) : (
-        <div className="mx-auto w-full h-full justify-center align-center mt-6">
-          <h1 className="text-center">No Registration Forms Available.</h1>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
