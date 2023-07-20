@@ -22,7 +22,7 @@ export const Breadcrumbs = ({routeNames = [], routeLinks, className = ''}: Bread
         {routeNames.map((item, idx) => (
           <li className="inline-flex items-center" key={idx}>
             <>
-              {idx > 0 && <ChevronRightIcon className="w-4 h-4 text-white" />}
+              {idx > 0 && <ChevronRightIcon className="w-4 h-4 text-gray-600 dark:text-white" />}
 
               <Typography
                 variant="body3"
