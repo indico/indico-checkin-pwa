@@ -34,15 +34,15 @@ const AuthRedirectPage = () => {
 
       // Check if these variables are null
       if (
-        codeVerifier === null ||
-        base_url === null ||
-        client_id === null ||
-        scope === null ||
-        event_id === null ||
-        title === null ||
-        date === null ||
-        regform_id === null ||
-        regform_title === null
+        codeVerifier == null ||
+        base_url == null ||
+        client_id == null ||
+        scope == null ||
+        event_id == null ||
+        title == null ||
+        date == null ||
+        regform_id == null ||
+        regform_title == null
       ) {
         // The stored data is not complete, so ignore
         setError('Event Data not complete. Please try again.');

@@ -19,7 +19,7 @@ const EventPage = () => {
     const fetchEventData = async () => {
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
-      // console.log('Registration Forms:', regForms);
+      console.log('Registration Forms:', regForms);
       const newEventData = new EventData(title, date, regForms);
 
       if (regForms.length === 1) {
@@ -47,11 +47,17 @@ const EventPage = () => {
         <Breadcrumbs className="ml-5" routeNames={[event.title]} />
       </div>
 
-      {event.registrationForms.map((regForm, idx) => (
-        <div className="mx-auto w-full h-full justify-center align-center mt-6" key={idx}>
-          <h1 className="text-center">{regForm.label}</h1>
+      {event.registrationForms.length > 0 ? (
+        event.registrationForms.map((regForm, idx) => (
+          <div className="mx-auto w-full h-full justify-center align-center mt-6" key={idx}>
+            <h1 className="text-center">{regForm.label}</h1>
+          </div>
+        ))
+      ) : (
+        <div className="mx-auto w-full h-full justify-center align-center mt-6">
+          <h1 className="text-center">No Registration Forms Available.</h1>
         </div>
-      ))}
+      )}
     </div>
   );
 };

@@ -34,6 +34,22 @@ const AddEventPage = () => {
       server: {base_url, client_id, scope},
     } = eventData;
 
+    // Check if these variables are null
+    if (
+      base_url == null ||
+      client_id == null ||
+      scope == null ||
+      event_id == null ||
+      title == null ||
+      date == null ||
+      regform_id == null ||
+      regform_title == null
+    ) {
+      // The QRCode data is not complete, so ignore
+      console.log('QRCode Data is not valid. Please try again.');
+      return;
+    }
+
     // Check if the serverData is already in indexedDB
     const serverExists = await db.servers.get({base_url: base_url});
     if (serverExists) {
