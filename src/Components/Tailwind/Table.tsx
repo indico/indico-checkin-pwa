@@ -1,9 +1,12 @@
+import {ElementType} from 'react';
 import Typography from './Typography';
 
 interface TableProps {
   columnLabels: string[];
   rows: string[][];
   className?: HTMLDivElement['className'];
+  RightIcon?: ElementType;
+  useRightIcon?: boolean[];
 }
 
 const defaultParentClassName: HTMLDivElement['className'] =
@@ -14,7 +17,7 @@ const defaultParentClassName: HTMLDivElement['className'] =
  * @param param0
  * @returns
  */
-const Table = ({columnLabels, rows, className = ''}: TableProps) => {
+const Table = ({columnLabels, rows, className = '', RightIcon, useRightIcon = []}: TableProps) => {
   const parentClassName = defaultParentClassName + ' ' + className;
 
   return (
@@ -52,18 +55,31 @@ const Table = ({columnLabels, rows, className = ''}: TableProps) => {
             const lastRowClass: HTMLElement['className'] =
               idx === rows.length - 1 ? 'rounded-b-xl' : '';
 
+            let showIcon = false;
+            if (idx >= 0 && idx < useRightIcon.length) {
+              showIcon = useRightIcon[idx];
+            }
+
             return (
               <tr
                 key={idx}
                 className={`border-b ${alternatingClass} dark:border-gray-700 active:bg-gray-300 dark:active:bg-gray-600`}
               >
-                {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className={`w-4 p-4 ${lastRowClass}`}>
-                    <div className="flex items-center">
-                      <Typography variant="body2">{cell}</Typography>
-                    </div>
-                  </td>
-                ))}
+                {row.map((cell, cellIdx) => {
+                  const isLastCell = cellIdx === row.length - 1;
+
+                  return (
+                    <td key={cellIdx} className={`py-4 pl-4 pr-6 ${lastRowClass}`}>
+                      <div className="flex items-center justify-between">
+                        <Typography variant="body2">{cell}</Typography>
+
+                        {showIcon && isLastCell && RightIcon && (
+                          <RightIcon className="w-5 h-5 text-green-500" />
+                        )}
+                      </div>
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}

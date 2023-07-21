@@ -1,4 +1,5 @@
 import {useLocation} from 'react-router-dom';
+import {ShieldCheckIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table from '../../Components/Tailwind/Table';
@@ -22,6 +23,8 @@ const RegistrationFormPage = () => {
         columnLabels={['Attendees']}
         rows={[['Joao Mesquita'], ['John Doe']]}
         className="w-5/6 m-auto mt-6"
+        RightIcon={ShieldCheckIcon}
+        useRightIcon={[true, false]}
       />
     </div>
   );

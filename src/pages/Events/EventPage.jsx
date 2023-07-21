@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {UserIcon} from '@heroicons/react/20/solid';
+import {UserGroupIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
@@ -21,6 +21,11 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
+      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
+      // TODO: Update with the info from the endpoint
+      // Might need to update local data if the server data is different
+      // console.log('Response: ', response);
+
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
       console.log('Registration Forms:', regForms);
@@ -32,10 +37,6 @@ const EventPage = () => {
         return;
       }
       setEvent(newEventData);
-
-      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
-      // TODO: Update with the info from the endpoint
-      // console.log('Response: ', response);
     };
 
     fetchEventData();
@@ -88,7 +89,7 @@ const EventPage = () => {
               </div>
 
               <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-white text-primary dark:bg-darkSecondary dark:text-secondary">
-                <UserIcon className="w-4 h-4 mr-1" />
+                <UserGroupIcon className="w-4 h-4 mr-1" />
 
                 <Typography variant="body1">{regForm.participants.length}</Typography>
               </div>
