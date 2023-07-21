@@ -6,6 +6,7 @@ import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {getRegistrationForms} from '../../db/utils';
 import EventData from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
+import {clickableClassname} from '../../utils/styles';
 
 const EventPage = () => {
   const {state} = useLocation();
@@ -43,29 +44,52 @@ const EventPage = () => {
     }; */
   }, [server_base_url, eventID, title, date, navigate]);
 
+  /**
+   * Handle the click event on a registration form
+   * @param {*} idx
+   * @returns
+   */
+  const onFormClick = (idx = 0) => {
+    if (idx < 0 || idx >= event?.registrationForms?.length) {
+      // Invalid index
+      return;
+    }
+
+    navigate(`/event/${eventID}/${event.registrationForms[idx].id}`, {
+      state: event.getRegFormData(idx),
+    });
+  };
+
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100">
         <Breadcrumbs className="ml-5" routeNames={[event.title]} />
       </div>
 
-      <div className="mt-6 ml-5">
-        <Typography variant="h3">Registration Forms</Typography>
+      <div className="mt-6">
+        <Typography variant="h3" className="ml-5">
+          Registration Forms
+        </Typography>
 
         {event.registrationForms.length > 0 ? (
           event.registrationForms.map((regForm, idx) => (
             <div
-              className="flex mx-auto w-3/4 rounded-md bg-white h-full align-center mt-6 py-4 px-4 shadow-lg"
+              className={`flex mx-auto w-4/5 rounded-lg h-full align-center mt-6 py-5 pl-4 shadow-lg dark:bg-gray-800 ${clickableClassname}`}
               key={idx}
+              onClick={() => onFormClick(idx)}
             >
-              <IconFeather className="w-6 h-6 mr-3" />
+              <IconFeather className="w-6 h-6 mr-3 dark:text-white" />
 
-              <h1 className="text-center">{regForm.label}</h1>
+              <Typography variant="body1" className="text-center dark:text-white">
+                {regForm.label}
+              </Typography>
             </div>
           ))
         ) : (
           <div className="mx-auto w-full h-full justify-center align-center mt-6">
-            <h1 className="text-center">No Registration Forms Available.</h1>
+            <Typography variant="body1" className="text-center">
+              No Registration Forms Available.
+            </Typography>
           </div>
         )}
       </div>
