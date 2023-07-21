@@ -31,7 +31,7 @@ const EventPage = () => {
       // Compare the data from the server with the local data
       if (mockResponse.title !== title || mockResponse.start_dt !== date) {
         // Update the local data
-        updateEvent(eventID, mockResponse.title, mockResponse.start_dt);
+        await updateEvent(eventID, mockResponse.title, mockResponse.start_dt);
       }
 
       // Get the data of each Stored Registration Form that belongs to this event

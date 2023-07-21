@@ -72,21 +72,25 @@ export const getRegistrationForms = async (eventId: string) => {
  * @param newDate
  */
 export const updateEvent = async (eventId: number, newTitle?: string, newDate?: string) => {
-  const event = await db.events.get({id: eventId});
-  if (event) {
-    const updateObj: {title?: string; date?: string} = {};
-    if (event.title !== newTitle) {
-      updateObj['title'] = newTitle;
-    }
+  try {
+    const event = await db.events.get({id: eventId});
+    if (event) {
+      const updateObj: {title?: string; date?: string} = {};
+      if (event.title !== newTitle) {
+        updateObj['title'] = newTitle;
+      }
 
-    if (event.date !== newDate) {
-      updateObj['date'] = newDate;
-    }
-    if (Object.keys(updateObj).length === 0) {
-      // Nothing to update
-      return;
-    }
+      if (event.date !== newDate) {
+        updateObj['date'] = newDate;
+      }
+      if (Object.keys(updateObj).length === 0) {
+        // Nothing to update
+        return;
+      }
 
-    await db.events.update(eventId, updateObj);
+      await db.events.update(eventId, updateObj);
+    }
+  } catch (err) {
+    console.log(`Error updating event: ${err}`);
   }
 };
