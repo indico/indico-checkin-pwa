@@ -10,7 +10,7 @@ export interface ServerTable {
 export interface EventTable {
   id?: number;
   title: string;
-  date: Date;
+  date: string;
   server_base_url: string; // Reference to parent server
 }
 export interface RegFormTable {

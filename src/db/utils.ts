@@ -63,3 +63,30 @@ export const getRegistrationForms = async (eventId: string) => {
   const regForms = await db.regForms.where({event_id: eventId}).toArray();
   return regForms;
 };
+
+/**
+ * Updates the title and date of an event if defined
+ * TODO: Check if this can throw errors
+ * @param eventId
+ * @param newTitle
+ * @param newDate
+ */
+export const updateEvent = async (eventId: number, newTitle?: string, newDate?: string) => {
+  const event = await db.events.get({id: eventId});
+  if (event) {
+    const updateObj: {title?: string; date?: string} = {};
+    if (event.title !== newTitle) {
+      updateObj['title'] = newTitle;
+    }
+
+    if (event.date !== newDate) {
+      updateObj['date'] = newDate;
+    }
+    if (Object.keys(updateObj).length === 0) {
+      // Nothing to update
+      return;
+    }
+
+    await db.events.update(eventId, updateObj);
+  }
+};

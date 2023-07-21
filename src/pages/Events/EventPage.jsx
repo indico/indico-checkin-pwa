@@ -4,8 +4,9 @@ import {UserGroupIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
-import {getRegistrationForms} from '../../db/utils';
+import {getRegistrationForms, updateEvent} from '../../db/utils';
 import EventData from '../../Models/EventData';
+import {mockEventDetailsResponse} from '../../Models/mockResponses';
 import {authFetch} from '../../utils/network';
 import {clickableClassname} from '../../utils/styles';
 
@@ -21,10 +22,17 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
-      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
+      //const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
       // TODO: Update with the info from the endpoint
       // Might need to update local data if the server data is different
       // console.log('Response: ', response);
+      // TODO: Remove this after
+      const mockResponse = mockEventDetailsResponse;
+      // Compare the data from the server with the local data
+      if (mockResponse.title !== title || mockResponse.start_dt !== date) {
+        // Update the local data
+        updateEvent(eventID, mockResponse.title, mockResponse.start_dt);
+      }
 
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
