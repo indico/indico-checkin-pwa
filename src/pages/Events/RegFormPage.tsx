@@ -1,4 +1,4 @@
-import {useLocation} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {ShieldCheckIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
@@ -9,13 +9,23 @@ const RegistrationFormPage = () => {
   const {state: eventData}: {state: RegFormData} = useLocation(); // Get the state object passed from the previous page
   console.log('eventData:', eventData);
 
+  const navigate = useNavigate();
+
+  const navigateBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100 items-center justify-between">
-        <Breadcrumbs className="ml-2" routeNames={[eventData.event.title, eventData.label]} />
+        <Breadcrumbs
+          className="ml-2"
+          routeNames={[eventData.event?.title, eventData.label]}
+          routeHandlers={[navigateBack, null]}
+        />
 
         <Typography variant="body3" className="mr-2">
-          {eventData.event.date}
+          {eventData.event?.date}
         </Typography>
       </div>
 

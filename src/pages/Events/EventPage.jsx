@@ -73,7 +73,7 @@ const EventPage = () => {
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100">
-        <Breadcrumbs className="ml-5" routeNames={[event.title]} />
+        <Breadcrumbs className="ml-5" routeNames={[event.title]} routeHandlers={[null]} />
       </div>
 
       <div className="mt-6">
