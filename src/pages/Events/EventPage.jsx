@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
+import {UserIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
@@ -74,15 +75,23 @@ const EventPage = () => {
         {event.registrationForms.length > 0 ? (
           event.registrationForms.map((regForm, idx) => (
             <div
-              className={`flex mx-auto w-4/5 rounded-lg h-full align-center mt-6 py-5 pl-4 shadow-lg dark:bg-gray-800 ${clickableClassname}`}
+              className={`flex justify-between mx-auto w-4/5 rounded-lg h-full mt-6 py-5 pl-4 pr-8 shadow-lg bg-gray-200 dark:bg-gray-800 ${clickableClassname}`}
               key={idx}
               onClick={() => onFormClick(idx)}
             >
-              <IconFeather className="w-6 h-6 mr-3 dark:text-white" />
+              <div className="flex items-center">
+                <IconFeather className="w-6 h-6 mr-3 text-primary " />
 
-              <Typography variant="body1" className="text-center dark:text-white">
-                {regForm.label}
-              </Typography>
+                <Typography variant="body1" className="text-center dark:text-white">
+                  {regForm.label}
+                </Typography>
+              </div>
+
+              <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-white text-primary dark:bg-darkSecondary dark:text-secondary">
+                <UserIcon className="w-4 h-4 mr-1" />
+
+                <Typography variant="body1">{regForm.participants.length}</Typography>
+              </div>
             </div>
           ))
         ) : (
