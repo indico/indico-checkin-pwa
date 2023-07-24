@@ -10,10 +10,17 @@ import {discoveryEndpoint, redirectURI} from '../Auth/utils';
 const AddEventPage = () => {
   const [data, setData] = useState('No Result');
   const [hasPermission, setHasPermission] = useState(true);
+  const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
 
   const navigation = useNavigate();
 
   const onScanResult = async (decodedText, _decodedResult) => {
+    if (processing) {
+      // Prevent multiple scans at the same time
+      return;
+    }
+    setProcessing(true);
+
     // handle scanned result
     // parse json object and detect if it is a valid event
     let eventData;
@@ -21,6 +28,7 @@ const AddEventPage = () => {
       eventData = JSON.parse(decodedText);
     } catch (e) {
       console.error('error parsing JSON', e);
+      setProcessing(false);
       return;
     }
     console.log('event data: ', decodedText);
@@ -47,6 +55,7 @@ const AddEventPage = () => {
     ) {
       // The QRCode data is not complete, so ignore
       console.log('QRCode Data is not valid. Please try again.');
+      setProcessing(false);
       return;
     }
 
@@ -69,6 +78,7 @@ const AddEventPage = () => {
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
       }
+      setProcessing(false);
       return;
     }
 
@@ -110,6 +120,8 @@ const AddEventPage = () => {
     sessionObj.codeVerifier = codeVerifier;
     const sessionStr = JSON.stringify(sessionObj);
     sessionStorage.setItem('eventData', sessionStr);
+
+    setProcessing(false);
 
     // Redirect the user to the Authentication Server (OAuth2 Server)
     // Which will redirect the user back to the redirectUri (Back to the App)
