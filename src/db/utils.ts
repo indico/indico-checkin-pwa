@@ -94,3 +94,30 @@ export const updateEvent = async (eventId: number, newTitle?: string, newDate?: 
     console.log(`Error updating event: ${err}`);
   }
 };
+
+/**
+ * Updates the label of a registration form if defined
+ * @param regFormId
+ * @param newLabel
+ * @returns
+ */
+export const updateRegForm = async (regFormId: number, newLabel?: string) => {
+  try {
+    const regForm = await db.regForms.get({id: regFormId});
+    if (regForm) {
+      const updateObj: {label?: string} = {};
+      if (regForm.label !== newLabel) {
+        updateObj['label'] = newLabel;
+      }
+
+      if (Object.keys(updateObj).length === 0) {
+        // Nothing to update
+        return;
+      }
+
+      await db.regForms.update(regFormId, updateObj);
+    }
+  } catch (err) {
+    console.log(`Error updating registration form: ${err}`);
+  }
+};

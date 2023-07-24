@@ -8,19 +8,19 @@ export interface ServerTable {
   auth_token: string;
 }
 export interface EventTable {
-  id?: number;
+  id: number;
   title: string;
   date: string;
   server_base_url: string; // Reference to parent server
 }
 export interface RegFormTable {
-  id?: number;
+  id: number;
   label: string;
   event_id: number;
   participants: number[]; // array of user ids
 }
 export interface ParticipantTable {
-  id?: number;
+  id: number;
   name: string;
   checked_in: boolean;
   regForm_id: number;

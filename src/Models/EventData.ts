@@ -5,8 +5,9 @@ export interface RegFormData {
     id: number;
     title: string;
     date: string | null;
+    serverBaseUrl: string;
   };
-  id?: number;
+  id: number;
   label: string;
   participants: number[];
 }
@@ -14,11 +15,13 @@ export interface RegFormData {
 export default class EventData {
   public title: string;
   public date: string | null;
+  public serverBaseUrl: string;
   public registrationForms: RegFormTable[];
 
-  constructor(title = '', date = null, registrationForms = []) {
+  constructor(title = '', date = null, serverBaseUrl = '', registrationForms = []) {
     this.title = title;
     this.date = date;
+    this.serverBaseUrl = serverBaseUrl;
     this.registrationForms = registrationForms;
   }
 
@@ -39,6 +42,7 @@ export default class EventData {
         title: this.title,
         date: this.date,
         id: currRegForm.event_id,
+        serverBaseUrl: this.serverBaseUrl,
       },
       id: currRegForm.id,
       label: currRegForm.label,

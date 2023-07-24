@@ -15,7 +15,7 @@ const EventPage = () => {
   const navigate = useNavigate();
   const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
 
-  const [event, setEvent] = useState(new EventData(title, date));
+  const [event, setEvent] = useState(new EventData(title, date, server_base_url));
 
   console.log('Server Base url:', server_base_url);
 
@@ -37,7 +37,7 @@ const EventPage = () => {
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
       console.log('Registration Forms:', regForms);
-      const newEventData = new EventData(title, date, regForms);
+      const newEventData = new EventData(title, date, server_base_url, regForms);
 
       if (regForms.length === 1) {
         // Navigate to the registration form page if there is only one registration form
