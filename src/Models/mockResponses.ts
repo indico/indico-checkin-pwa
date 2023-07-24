@@ -12,7 +12,7 @@ export const mockEventDetailsResponse: {
   title: 'Check-in app testing',
 };
 
-export const mockRegFormResponse: {
+export const mockRegFormDetailsResponse: {
   end_dt: string | null;
   introduction: string;
   regform_id: number;
