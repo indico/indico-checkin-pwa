@@ -1,4 +1,4 @@
-import db, {ServerTable, EventTable, RegFormTable} from './db';
+import db, {ServerTable, EventTable, RegFormTable, ParticipantTable} from './db';
 
 /**
  * Add a server to the IndexedDB if it doesn't already exist
@@ -51,6 +51,62 @@ export const addRegistrationForm = async ({
       event_id: event_id,
       participants: participants,
     });
+  }
+};
+
+/**
+ * Adds a participant to a registration form if it doesn't already exist
+ * @param participant
+ */
+export const addRegFormParticipant = async (participant: ParticipantTable) => {
+  try {
+    // Check if the Reg. Form exists
+    const regFormExists = await db.regForms.get({id: participant.regForm_id});
+    if (regFormExists) {
+      const participantExists = await db.participants.get({id: participant.id});
+      if (!participantExists || participantExists.regForm_id !== participant.regForm_id) {
+        await db.participants.add({
+          id: participant.id,
+          name: participant.name,
+          checked_in: participant.checked_in,
+          regForm_id: participant.regForm_id,
+        });
+
+        // Add the participant to the registration form
+        await db.regForms.update(participant.regForm_id, {
+          participants: [...regFormExists.participants, participant.id],
+        });
+      }
+    }
+  } catch (err) {
+    console.log(`Error adding participant to registration form: ${err}`);
+  }
+};
+
+/**
+ * Adds a participant to a registration form if it doesn't already exist
+ * @param participantID
+ */
+export const removeRegFormParticipant = async (participantID: number) => {
+  try {
+    // Check if the participant exists
+    const participantExists = await db.participants.get({id: participantID});
+    if (participantExists) {
+      // Get the registration form
+      const regFormExists = await db.regForms.get({id: participantExists.regForm_id});
+
+      if (regFormExists) {
+        // Remove the participant from the registration form
+        await db.regForms.update(participantExists.regForm_id, {
+          participants: regFormExists.participants.filter(id => id !== participantID),
+        });
+      }
+
+      // Remove the participant from the IndexedDB
+      await db.participants.delete(participantID);
+    }
+  } catch (err) {
+    console.log(`Error adding participant to registration form: ${err}`);
   }
 };
 
@@ -119,5 +175,26 @@ export const updateRegForm = async (regFormId: number, newLabel?: string) => {
     }
   } catch (err) {
     console.log(`Error updating registration form: ${err}`);
+  }
+};
+
+/**
+ * Get The list of participants for a registration form
+ * @param regFormUserIds
+ * @returns
+ */
+export const getRegFormParticipants = async (regFormUserIds: number[]) => {
+  try {
+    const participants: ParticipantTable[] = [];
+    for (const userId of regFormUserIds) {
+      const participant = await db.participants.get({id: userId});
+      if (participant) {
+        participants.push(participant);
+      }
+    }
+
+    return participants;
+  } catch (err) {
+    console.log(`Error getting participants for registration form: ${err}`);
   }
 };

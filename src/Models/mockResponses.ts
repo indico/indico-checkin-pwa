@@ -25,3 +25,29 @@ export const mockRegFormDetailsResponse: {
   start_dt: null,
   title: 'Participants',
 };
+
+export const mockParticipantsResponse: Array<{
+  checked_in: boolean;
+  checkin_secret: string;
+  full_name: string;
+  registration_id: number;
+  state: string;
+  tags: Array<string>;
+}> = [
+  {
+    checked_in: false,
+    checkin_secret: '4135c6a6-abac-424c-8175-8959a4608a42',
+    full_name: 'Joao Mesquita',
+    registration_id: 307,
+    state: 'complete',
+    tags: [],
+  },
+  {
+    checked_in: false,
+    checkin_secret: '60b68ef6-0e38-4388-8d8d-b2ed3adc73ab',
+    full_name: 'Renuka Rajput-Ghoshal',
+    registration_id: 308,
+    state: 'complete',
+    tags: [],
+  },
+];

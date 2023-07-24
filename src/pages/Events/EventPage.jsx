@@ -4,9 +4,20 @@ import {UserGroupIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
-import {getRegistrationForms, updateEvent} from '../../db/utils';
+import {
+  addRegFormParticipant,
+  getRegFormParticipants,
+  getRegistrationForms,
+  removeRegFormParticipant,
+  updateEvent,
+  updateRegForm,
+} from '../../db/utils';
 import EventData from '../../Models/EventData';
-import {mockEventDetailsResponse} from '../../Models/mockResponses';
+import {
+  mockEventDetailsResponse,
+  mockParticipantsResponse,
+  mockRegFormDetailsResponse,
+} from '../../Models/mockResponses';
 import {authFetch} from '../../utils/network';
 import {clickableClassname} from '../../utils/styles';
 
@@ -16,8 +27,6 @@ const EventPage = () => {
   const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
 
   const [event, setEvent] = useState(new EventData(title, date, server_base_url));
-
-  console.log('Server Base url:', server_base_url);
 
   useEffect(() => {
     // Fetch the event data from the server
@@ -36,7 +45,81 @@ const EventPage = () => {
 
       // Get the data of each Stored Registration Form that belongs to this event
       const regForms = await getRegistrationForms(eventID);
-      console.log('Registration Forms:', regForms);
+      // console.log('Registration Forms:', regForms);
+
+      // Compare the data from the server's Registration Forms with the local data
+      for (let i = 0; i < regForms.length; i++) {
+        const regForm = regForms[i];
+
+        // Update Reg. Form Details if they are different
+        /* const response = await authFetch(
+        server_base_url,
+        `/api/checkin/event/${eventID}/registration/${regForm.id}`
+      ); */
+        // console.log('Response: ', response);
+
+        // TODO: Remove this after
+        const mockResponse = mockRegFormDetailsResponse;
+        // Compare the data from the server with the local data
+        if (mockResponse.title !== regForm.label) {
+          // Update the variable
+          regForm.label = mockResponse.title;
+          // Update the IndexedDB data
+          await updateRegForm(eventID, mockResponse.title);
+        }
+
+        // Update the list of participants if they are different
+        /* const response = await authFetch(
+          server_base_url,
+          `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
+        ); */
+        // console.log('Response: ', response);
+        const mockResponse2 = mockParticipantsResponse;
+        // Compare the data from the server with the local data
+        const currParticipants = await getRegFormParticipants(regForm.participants);
+        // console.log('Current Participants:', currParticipants);
+
+        // Find the participants that are no longer in the server's list
+        const currParticipantIDs = currParticipants.map(p => p.id);
+        const serverParticipantIDs = mockResponse2.map(p => p.registration_id);
+        const addedParticipants = mockResponse2.filter(
+          participant => !currParticipantIDs.includes(participant.registration_id)
+        );
+        const removedParticipants = currParticipants.filter(
+          participant => !serverParticipantIDs.includes(participant.id)
+        );
+
+        // Add the new participants to the IndexedDB
+        for (const participant of addedParticipants) {
+          // console.log('Adding new participant...');
+          // Add the participant to the IndexedDB
+          const participantData = {
+            id: participant.registration_id,
+            name: participant.full_name,
+            checked_in: participant.checked_in,
+            regForm_id: regForm.id,
+          };
+          await addRegFormParticipant(participantData);
+          // Update the variable
+          regForm.participants.push(participantData.id);
+        }
+
+        // Remove the participants that are no longer in the server's list
+        for (const participant of removedParticipants) {
+          // console.log('Removing participant...');
+          // Remove the participant from the IndexedDB
+          await removeRegFormParticipant(participant.id);
+        }
+        // Update the variable
+        regForm.participants = regForm.participants.filter(id => {
+          const removedIDs = removedParticipants.map(p => p.id);
+          return !removedIDs.includes(id);
+        });
+
+        // TODO: Instead of updating the IndexedDB and local variable, could just update the IndexedDB and then get the updated data from the IndexedDB
+      }
+
+      // Create a new EventData object with the data from the server
       const newEventData = new EventData(title, date, server_base_url, regForms);
 
       if (regForms.length === 1) {
