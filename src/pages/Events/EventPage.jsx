@@ -61,17 +61,17 @@ const EventPage = () => {
         // TODO: Remove this after
         const mockResponse = mockRegFormDetailsResponse;
         // Compare the data from the server with the local data
-        if (mockResponse.title !== regForm.label) {
+        if (regFormResponse.title !== regForm.label) {
           // Update the IndexedDB data
-          await updateRegForm(eventID, mockResponse.title);
+          await updateRegForm(eventID, regFormResponse.title);
         }
 
         // Update the list of participants if they are different
-        /* const response = await authFetch(
+        const formRegistrationsResponse = await authFetch(
           server_base_url,
           `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
-        ); */
-        // console.log('Response: ', response);
+        );
+        console.log('formRegistrationsResponse: ', formRegistrationsResponse);
         const mockResponse2 = mockParticipantsResponse;
         // Compare the data from the server with the local data
         const currParticipants = await getRegFormParticipants(regForm.participants);
@@ -79,8 +79,8 @@ const EventPage = () => {
 
         // Find the participants that are no longer in the server's list
         const currParticipantIDs = currParticipants.map(p => p.id);
-        const serverParticipantIDs = mockResponse2.map(p => p.registration_id);
-        const addedParticipants = mockResponse2.filter(
+        const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
+        const addedParticipants = formRegistrationsResponse.filter(
           participant => !currParticipantIDs.includes(participant.registration_id)
         );
         const removedParticipants = currParticipants.filter(
