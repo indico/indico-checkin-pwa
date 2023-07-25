@@ -31,16 +31,16 @@ const EventPage = () => {
   useEffect(() => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
-      //const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
-      // TODO: Update with the info from the endpoint
-      // Might need to update local data if the server data is different
-      // console.log('Response: ', response);
+      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
+      console.log('Response: ', response);
+
       // TODO: Remove this after
-      const mockResponse = mockEventDetailsResponse;
+      // const mockResponse = mockEventDetailsResponse;
+
       // Compare the data from the server with the local data
-      if (mockResponse.title !== title || mockResponse.start_dt !== date) {
+      if (response.title !== title || response.start_dt !== date) {
         // Update the local data
-        await updateEvent(eventID, mockResponse.title, mockResponse.start_dt);
+        await updateEvent(eventID, response.title, response.start_dt);
       }
 
       // Get the data of each Stored Registration Form that belongs to this event

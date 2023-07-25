@@ -19,11 +19,11 @@ export const authFetch = async (
       throw new Error('Unable to retrieve the server');
     }
     const token = server.auth_token;
-    console.log('token:', token);
+    // console.log('token:', token);
 
     // TODO: Fix this
     const fullUrl = serverBaseUrl + urlSuffix;
-    console.log('fullUrl:', fullUrl);
+    // console.log('fullUrl:', fullUrl);
 
     const response = await fetch(fullUrl, {
       ...options,
@@ -31,7 +31,7 @@ export const authFetch = async (
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log('response:', response);
+    // console.log('response:', response);
     const data = await response.json();
     console.log('data:', data);
 
