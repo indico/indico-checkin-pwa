@@ -1,4 +1,4 @@
-import {ElementType} from 'react';
+import {ElementType, ChangeEvent, useState, useMemo} from 'react';
 import Typography from './Typography';
 
 interface TableProps {
@@ -19,6 +19,18 @@ const defaultParentClassName: HTMLDivElement['className'] =
  */
 const Table = ({columnLabels, rows, className = '', RightIcon, useRightIcon = []}: TableProps) => {
   const parentClassName = defaultParentClassName + ' ' + className;
+  const [searchValue, setSearchValue] = useState('');
+
+  const shownRows = useMemo(() => {
+    if (rows.length === 0) return rows;
+
+    // The first column is the searchable row (TODO: Can pass the index by param to the Component)
+    return rows.filter(row => row[0].toLowerCase().includes(searchValue));
+  }, [searchValue, rows]);
+
+  const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value.toLowerCase());
+  };
 
   return (
     <div className={parentClassName}>
@@ -44,12 +56,13 @@ const Table = ({columnLabels, rows, className = '', RightIcon, useRightIcon = []
               id="table-search"
               className="block p-2 pl-4 text-sm text-gray-900 border border-gray-300 rounded-lg w-full bg-gray-50 active:ring-blue-500 active:border-blue-500 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:active:ring-blue-500 dark:active:border-blue-500"
               placeholder="Type to search..."
+              onChange={onSearchChange}
             />
           </div>
         </div>
 
         <tbody>
-          {rows.map((row, idx) => {
+          {shownRows.map((row, idx) => {
             const alternatingClass: HTMLElement['className'] =
               idx % 2 === 0 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-gray-200 dark:bg-gray-800';
             const lastRowClass: HTMLElement['className'] =
