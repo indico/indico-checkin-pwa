@@ -44,12 +44,12 @@ const EventPage = () => {
       }
 
       // Get the data of each Stored Registration Form that belongs to this event
-      const regForms = await getRegistrationForms(eventID);
-      // console.log('Registration Forms:', regForms);
+      const prevRegForms = await getRegistrationForms(eventID);
+      // console.log('Registration Forms:', prevRegForms);
 
       // Compare the data from the server's Registration Forms with the local data
-      for (let i = 0; i < regForms.length; i++) {
-        const regForm = regForms[i];
+      for (let i = 0; i < prevRegForms.length; i++) {
+        const regForm = prevRegForms[i];
 
         // Update Reg. Form Details if they are different
         const regFormResponse = await authFetch(
@@ -62,8 +62,6 @@ const EventPage = () => {
         const mockResponse = mockRegFormDetailsResponse;
         // Compare the data from the server with the local data
         if (mockResponse.title !== regForm.label) {
-          // Update the variable
-          regForm.label = mockResponse.title;
           // Update the IndexedDB data
           await updateRegForm(eventID, mockResponse.title);
         }
@@ -100,8 +98,6 @@ const EventPage = () => {
             regForm_id: regForm.id,
           };
           await addRegFormParticipant(participantData);
-          // Update the variable
-          regForm.participants.push(participantData.id);
         }
 
         // Remove the participants that are no longer in the server's list
@@ -110,21 +106,19 @@ const EventPage = () => {
           // Remove the participant from the IndexedDB
           await removeRegFormParticipant(participant.id);
         }
-        // Update the variable
-        regForm.participants = regForm.participants.filter(id => {
-          const removedIDs = removedParticipants.map(p => p.id);
-          return !removedIDs.includes(id);
-        });
-
-        // TODO: Instead of updating the IndexedDB and local variable, could just update the IndexedDB and then get the updated data from the IndexedDB
       }
 
-      // Create a new EventData object with the data from the server
-      const newEventData = new EventData(title, date, server_base_url, regForms);
+      // Get the updated list of Registration Forms of this event from the IndexedDB
+      const updatedRegForms = await getRegistrationForms(eventID);
 
-      if (regForms.length === 1) {
+      // Create a new EventData object with the data from the server
+      const newEventData = new EventData(title, date, server_base_url, updatedRegForms);
+
+      if (updatedRegForms.length === 1) {
         // Navigate to the registration form page if there is only one registration form
-        navigate(`/event/${eventID}/${regForms[0].id}`, {state: newEventData.getRegFormData(0)});
+        navigate(`/event/${eventID}/${updatedRegForms[0].id}`, {
+          state: newEventData.getRegFormData(0),
+        });
         return;
       }
       setEvent(newEventData);
