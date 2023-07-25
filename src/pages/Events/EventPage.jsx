@@ -33,14 +33,14 @@ const EventPage = () => {
     const fetchEventData = async () => {
       const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
       console.log('Response: ', response);
-
       // TODO: Remove this after
       // const mockResponse = mockEventDetailsResponse;
-
-      // Compare the data from the server with the local data
-      if (response.title !== title || response.start_dt !== date) {
-        // Update the local data
-        await updateEvent(eventID, response.title, response.start_dt);
+      if (response) {
+        // Compare the data from the server with the local data
+        if (response.title !== title || response.start_dt !== date) {
+          // Update the local data
+          await updateEvent(eventID, response.title, response.start_dt);
+        }
       }
 
       // Get the data of each Stored Registration Form that belongs to this event
@@ -52,11 +52,11 @@ const EventPage = () => {
         const regForm = regForms[i];
 
         // Update Reg. Form Details if they are different
-        /* const response = await authFetch(
-        server_base_url,
-        `/api/checkin/event/${eventID}/registration/${regForm.id}`
-      ); */
-        // console.log('Response: ', response);
+        const regFormResponse = await authFetch(
+          server_base_url,
+          `/api/checkin/event/${eventID}/registration/${regForm.id}`
+        );
+        console.log('regFormResponse: ', i, regFormResponse);
 
         // TODO: Remove this after
         const mockResponse = mockRegFormDetailsResponse;
