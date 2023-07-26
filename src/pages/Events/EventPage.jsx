@@ -13,11 +13,6 @@ import {
   updateRegForm,
 } from '../../db/utils';
 import EventData from '../../Models/EventData';
-import {
-  mockEventDetailsResponse,
-  mockParticipantsResponse,
-  mockRegFormDetailsResponse,
-} from '../../Models/mockResponses';
 import {authFetch} from '../../utils/network';
 import {clickableClassname} from '../../utils/styles';
 
@@ -32,8 +27,7 @@ const EventPage = () => {
     // Fetch the event data from the server
     const fetchEventData = async () => {
       const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
-      console.log('Response: ', response);
-      // TODO: Remove this after
+      // console.log('Response: ', response);
       // const mockResponse = mockEventDetailsResponse;
       if (response) {
         // Compare the data from the server with the local data
@@ -56,14 +50,15 @@ const EventPage = () => {
           server_base_url,
           `/api/checkin/event/${eventID}/registration/${regForm.id}`
         );
-        console.log('regFormResponse: ', i, regFormResponse);
+        // console.log('regFormResponse: ', i, regFormResponse);
 
-        // TODO: Remove this after
-        const mockResponse = mockRegFormDetailsResponse;
-        // Compare the data from the server with the local data
-        if (regFormResponse.title !== regForm.label) {
-          // Update the IndexedDB data
-          await updateRegForm(eventID, regFormResponse.title);
+        // const mockResponse = mockRegFormDetailsResponse;
+        if (regFormResponse) {
+          // Compare the data from the server with the local data
+          if (regFormResponse.title !== regForm.label) {
+            // Update the IndexedDB data
+            await updateRegForm(eventID, regFormResponse.title);
+          }
         }
 
         // Update the list of participants if they are different
@@ -71,40 +66,42 @@ const EventPage = () => {
           server_base_url,
           `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
         );
-        console.log('formRegistrationsResponse: ', formRegistrationsResponse);
-        const mockResponse2 = mockParticipantsResponse;
-        // Compare the data from the server with the local data
-        const currParticipants = await getRegFormParticipants(regForm.participants);
-        // console.log('Current Participants:', currParticipants);
+        // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
+        // const mockResponse2 = mockParticipantsResponse;
+        if (formRegistrationsResponse) {
+          // Compare the data from the server with the local data
+          const currParticipants = await getRegFormParticipants(regForm.participants);
+          // console.log('Current Participants:', currParticipants);
 
-        // Find the participants that are no longer in the server's list
-        const currParticipantIDs = currParticipants.map(p => p.id);
-        const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
-        const addedParticipants = formRegistrationsResponse.filter(
-          participant => !currParticipantIDs.includes(participant.registration_id)
-        );
-        const removedParticipants = currParticipants.filter(
-          participant => !serverParticipantIDs.includes(participant.id)
-        );
+          // Find the participants that are no longer in the server's list
+          const currParticipantIDs = currParticipants.map(p => p.id);
+          const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
+          const addedParticipants = formRegistrationsResponse.filter(
+            participant => !currParticipantIDs.includes(participant.registration_id)
+          );
+          const removedParticipants = currParticipants.filter(
+            participant => !serverParticipantIDs.includes(participant.id)
+          );
 
-        // Add the new participants to the IndexedDB
-        for (const participant of addedParticipants) {
-          // console.log('Adding new participant...');
-          // Add the participant to the IndexedDB
-          const participantData = {
-            id: participant.registration_id,
-            name: participant.full_name,
-            checked_in: participant.checked_in,
-            regForm_id: regForm.id,
-          };
-          await addRegFormParticipant(participantData);
-        }
+          // Add the new participants to the IndexedDB
+          for (const participant of addedParticipants) {
+            // console.log('Adding new participant...');
+            // Add the participant to the IndexedDB
+            const participantData = {
+              id: participant.registration_id,
+              name: participant.full_name,
+              checked_in: participant.checked_in,
+              regForm_id: regForm.id,
+            };
+            await addRegFormParticipant(participantData);
+          }
 
-        // Remove the participants that are no longer in the server's list
-        for (const participant of removedParticipants) {
-          // console.log('Removing participant...');
-          // Remove the participant from the IndexedDB
-          await removeRegFormParticipant(participant.id);
+          // Remove the participants that are no longer in the server's list
+          for (const participant of removedParticipants) {
+            // console.log('Removing participant...');
+            // Remove the participant from the IndexedDB
+            await removeRegFormParticipant(participant.id);
+          }
         }
       }
 
