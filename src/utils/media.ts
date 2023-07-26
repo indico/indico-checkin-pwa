@@ -7,7 +7,7 @@ export const checkCameraPermissions: () => Promise<boolean> = async () => {
     // The necessary APIs are supported
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {facingMode: 'environment'}, // Prefer the back camera
       });
       console.log('Camera Permission Granted. stream: ', stream);
       return true;
