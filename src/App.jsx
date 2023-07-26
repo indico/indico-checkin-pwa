@@ -9,6 +9,7 @@ import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
 import CheckInPage from './pages/CheckIn';
 import AddEventPage from './pages/Events/AddEventPage';
 import EventPage from './pages/Events/EventPage';
+import ParticipantPage from './pages/Events/ParticipantPage';
 import RegistrationFormPage from './pages/Events/RegFormPage';
 import Homepage from './pages/Homepage';
 import SettingsPage from './pages/Settings';
@@ -49,6 +50,8 @@ const App = () => {
             <Route path="/event/new" element={<AddEventPage />} />
 
             <Route path="/event/:id/:regFormId" element={<RegistrationFormPage />} />
+
+            <Route path="/event/:id/:regFormId/:registrantId" element={<ParticipantPage />} />
           </Route>
 
           <Route path="/auth/redirect" element={<AuthRedirectPage />} />
