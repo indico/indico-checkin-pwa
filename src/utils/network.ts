@@ -25,7 +25,8 @@ export const authFetch = async (
     const response = await fetch(fullUrl, {
       ...options,
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
     // console.log('response:', response);

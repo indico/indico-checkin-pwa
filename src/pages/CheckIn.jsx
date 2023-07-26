@@ -6,7 +6,7 @@ import db from '../db/db';
 import {authFetch} from '../utils/network';
 
 const CheckInPage = () => {
-  const [data, setData] = useState('No Result');
+  const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const navigate = useNavigate();
@@ -29,9 +29,15 @@ const CheckInPage = () => {
     }
     console.log('event data: ', decodedText);
 
-    const {checkin_secret, event_id, registrant_id, server_url} = eventData;
+    const {checkin_secret, event_id, registrant_id, server_url, regform_id} = eventData;
     // Check if these variables are null
-    if (checkin_secret == null || event_id == null || registrant_id == null || server_url == null) {
+    if (
+      checkin_secret == null ||
+      event_id == null ||
+      registrant_id == null ||
+      server_url == null ||
+      regform_id == null
+    ) {
       // The QRCode data is not complete, so ignore
       console.log('QRCode Data is not valid. Please try again.');
       setProcessing(false);
@@ -49,12 +55,11 @@ const CheckInPage = () => {
 
     // Server is registered so we can check in the user
     try {
-      // Get the Registration Form ID
-
       const body = JSON.stringify({checked_in: true});
+      // console.log('body: ', body);
       const response = await authFetch(
         server_url,
-        `/api/checkin/event/${event_id}/registration/${eventData.id}/${registrant_id}`,
+        `/api/checkin/event/${event_id}/registration/${regform_id}/${registrant_id}`,
         {
           method: 'PATCH',
           body: body,
@@ -117,7 +122,7 @@ const CheckInPage = () => {
       <div className="justify-center items-center flex py-6 mx-6">
         <Typography variant="body1" className="text-center">
           {hasPermission
-            ? data
+            ? message
             : 'Please give permission to access the camera and refresh the page'}
         </Typography>
       </div>

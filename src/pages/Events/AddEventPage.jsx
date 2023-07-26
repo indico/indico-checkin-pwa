@@ -8,7 +8,7 @@ import {addEvent, addRegistrationForm} from '../../db/utils';
 import {discoveryEndpoint, redirectURI} from '../Auth/utils';
 
 const AddEventPage = () => {
-  const [data, setData] = useState('No Result');
+  const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
 
@@ -152,7 +152,7 @@ const AddEventPage = () => {
       <div className="justify-center items-center flex py-6 mx-6">
         <Typography variant="body1" className="text-center">
           {hasPermission
-            ? data
+            ? message
             : 'Please give permission to access the camera and refresh the page'}
         </Typography>
       </div>
