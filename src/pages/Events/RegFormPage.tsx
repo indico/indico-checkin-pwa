@@ -5,8 +5,9 @@ import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table from '../../Components/Tailwind/Table';
 import {ParticipantTable} from '../../db/db';
-import {getRegFormParticipants} from '../../db/utils';
+import {changeRegFormParticipant, getRegFormParticipants} from '../../db/utils';
 import {RegFormData} from '../../Models/EventData';
+import {authFetch} from '../../utils/network';
 
 const RegistrationFormPage = () => {
   const {state: eventData}: {state: RegFormData} = useLocation(); // Get the state object passed from the previous page
@@ -15,8 +16,34 @@ const RegistrationFormPage = () => {
 
   useEffect(() => {
     const getAttendees = async () => {
-      const attendees = await getRegFormParticipants(eventData.participants);
-      if (attendees) setAttendees(attendees);
+      let newAttendees = await getRegFormParticipants(eventData.participants);
+      if (!newAttendees) return; // If the event is not defined, then return
+
+      // Update the attendees data by comparing with the server
+      const response = await authFetch(
+        eventData.event?.serverBaseUrl,
+        `/api/checkin/event/${eventData.event?.id}/registration/${eventData.id}/registrations`
+      );
+      if (response) {
+        let updatedParticipant = false;
+        for (const attendee of newAttendees) {
+          const serverAttendee = response.find(
+            (serverAttendee: any) => serverAttendee.registration_id === attendee.id
+          );
+          // Update the checked_in status
+          if (serverAttendee && serverAttendee.checked_in !== attendee.checked_in) {
+            await changeRegFormParticipant(attendee, serverAttendee.checked_in); // Update the checked_in status in the database
+            updatedParticipant = true;
+          }
+        }
+
+        if (updatedParticipant) {
+          // Re-fetch the attendees
+          newAttendees = await getRegFormParticipants(eventData.participants);
+        }
+      }
+
+      if (newAttendees) setAttendees(newAttendees);
     };
 
     getAttendees();

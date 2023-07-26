@@ -198,3 +198,22 @@ export const getRegFormParticipants = async (regFormUserIds: number[]) => {
     console.log(`Error getting participants for registration form: ${err}`);
   }
 };
+
+/**
+ * Updates the check-in status of a participant
+ * @param participant
+ * @param newCheckedIn
+ */
+export const changeRegFormParticipant = async (
+  participant: ParticipantTable,
+  newCheckedIn: boolean
+) => {
+  try {
+    const participantExists = await db.participants.get({id: participant.id});
+    if (participantExists) {
+      await db.participants.update(participant.id, {checked_in: newCheckedIn});
+    }
+  } catch (err) {
+    console.log(`Error changing participant check-in status: ${err}`);
+  }
+};
