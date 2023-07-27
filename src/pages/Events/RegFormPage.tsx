@@ -57,7 +57,12 @@ const RegistrationFormPage = () => {
       onClick: () => {
         // Navigate to the Participant Details Page
         navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
-          state: attendee,
+          state: {
+            eventTitle: eventData.event?.title,
+            regFormLabel: eventData.label,
+            eventDate: eventData.event?.date,
+            attendee: attendee,
+          },
         });
       },
     }));

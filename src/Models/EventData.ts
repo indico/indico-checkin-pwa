@@ -1,5 +1,6 @@
-import {RegFormTable} from '../db/db';
+import {ParticipantTable, RegFormTable} from '../db/db';
 
+// Interface for the data sent to the Registration Form Details Page
 export interface RegFormData {
   event: {
     id: number;
@@ -10,6 +11,14 @@ export interface RegFormData {
   id: number;
   label: string;
   participants: number[];
+}
+
+// Interface for the data sent to the Participant Details Page
+export interface ParticipantPageData {
+  eventTitle: string;
+  regFormLabel: string;
+  eventDate: string | null;
+  attendee: ParticipantTable;
 }
 
 export default class EventData {
