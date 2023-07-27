@@ -54,9 +54,14 @@ const RegistrationFormPage = () => {
     return attendees.map(attendee => ({
       columns: [attendee.name],
       useRightIcon: attendee.checked_in,
-      onClick: () => console.log('test click'),
+      onClick: () => {
+        // Navigate to the Participant Details Page
+        navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
+          state: attendee,
+        });
+      },
     }));
-  }, [attendees]);
+  }, [attendees, eventData, navigate]);
 
   const navigateBack = () => {
     navigate(-1);
