@@ -15,22 +15,11 @@ import Homepage from './pages/Homepage';
 import SettingsPage from './pages/Settings';
 
 const App = () => {
-  const {darkMode, setDarkMode} = useSettings();
+  const {darkMode} = useSettings();
 
   useEffect(() => {
-    // On render, check if the user has a theme preference. If not, check if their system is set to dark mode. If so, set the theme to dark.
-    // If neither, set the theme to light.
-    if (
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark');
-      setDarkMode(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      setDarkMode(false);
-    }
-  }, [darkMode, setDarkMode]);
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   return (
     <div className="w-100 h-100">
