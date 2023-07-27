@@ -17,6 +17,10 @@ const ParticipantPage = () => {
     navigate(-1);
   };
 
+  const onCheckInToggle = () => {
+    console.log('Check in toggle');
+  };
+
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100 items-center justify-between ml-2">
@@ -38,9 +42,10 @@ const ParticipantPage = () => {
         </Typography>
         <Toggle
           checked={eventData.attendee.checked_in}
-          onClick={() => console.log('hello')}
+          onClick={onCheckInToggle}
           rounded={false}
-          className="rounded"
+          className="rounded after:rounded"
+          size="lg"
         />
       </div>
     </div>
