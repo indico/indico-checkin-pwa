@@ -4,6 +4,7 @@ import {UserGroupIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
+import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {
   addRegFormParticipant,
   getRegFormParticipants,
@@ -20,10 +21,11 @@ const EventPage = () => {
   const {state} = useLocation();
   const navigate = useNavigate();
   const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
-
   const [event, setEvent] = useState(new EventData(title, date, server_base_url));
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     // Fetch the event data from the server
     const fetchEventData = async () => {
       const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
@@ -121,7 +123,7 @@ const EventPage = () => {
       setEvent(newEventData);
     };
 
-    fetchEventData();
+    fetchEventData().finally(() => setIsLoading(false));
 
     /* return () => {
       // TODO: Abort the fetch request
@@ -144,6 +146,25 @@ const EventPage = () => {
     });
   };
 
+  const regforms = event.registrationForms.map((regForm, idx) => (
+    <div
+      className={`flex justify-between mx-auto w-4/5 rounded-lg h-full mt-6 py-5 pl-4 pr-8 shadow-lg bg-gray-200 dark:bg-gray-800 ${clickableClassname}`}
+      key={idx}
+      onClick={() => onFormClick(idx)}
+    >
+      <div className="flex items-center">
+        <IconFeather className="w-6 h-6 mr-3 text-primary " />
+        <Typography variant="body1" className="text-center dark:text-white">
+          {regForm.label}
+        </Typography>
+      </div>
+      <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-white text-primary dark:bg-darkSecondary dark:text-secondary">
+        <UserGroupIcon className="w-4 h-4 mr-1" />
+        <Typography variant="body1">{regForm.participants.length}</Typography>
+      </div>
+    </div>
+  ));
+
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100">
@@ -151,33 +172,16 @@ const EventPage = () => {
       </div>
 
       <div className="mt-6">
-        <Typography variant="h3" className="ml-5">
-          Registration Forms
-        </Typography>
-
-        {event.registrationForms.length > 0 ? (
-          event.registrationForms.map((regForm, idx) => (
-            <div
-              className={`flex justify-between mx-auto w-4/5 rounded-lg h-full mt-6 py-5 pl-4 pr-8 shadow-lg bg-gray-200 dark:bg-gray-800 ${clickableClassname}`}
-              key={idx}
-              onClick={() => onFormClick(idx)}
-            >
-              <div className="flex items-center">
-                <IconFeather className="w-6 h-6 mr-3 text-primary " />
-
-                <Typography variant="body1" className="text-center dark:text-white">
-                  {regForm.label}
-                </Typography>
-              </div>
-
-              <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-white text-primary dark:bg-darkSecondary dark:text-secondary">
-                <UserGroupIcon className="w-4 h-4 mr-1" />
-
-                <Typography variant="body1">{regForm.participants.length}</Typography>
-              </div>
-            </div>
-          ))
-        ) : (
+        {isLoading && <LoadingIndicator />}
+        {!isLoading && event.registrationForms.length > 0 && (
+          <>
+            <Typography variant="h3" className="ml-5">
+              Registration Forms
+            </Typography>
+            {regforms}
+          </>
+        )}
+        {!isLoading && event.registrationForms.length === 0 && (
           <div className="mx-auto w-full h-full justify-center align-center mt-6">
             <Typography variant="body1" className="text-center">
               No Registration Forms Available.
