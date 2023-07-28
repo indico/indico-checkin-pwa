@@ -46,7 +46,9 @@ const ParticipantPage = () => {
           <div className="mx-auto w-full">
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center">
-                <ShieldCheckIcon className="w-6 h-6 text-green-500 mr-2" />
+                <ShieldCheckIcon
+                  className={`w-6 h-6 mr-2 ${checkedIn ? 'text-green-500' : 'text-gray-400'}`}
+                />
                 <Typography variant="body2" className="font-bold">
                   Checked In
                 </Typography>
@@ -70,7 +72,7 @@ const ParticipantPage = () => {
 
             <div className="flex flex-row items-center justify-between mt-6">
               <div className="flex flex-row items-center">
-                <CalendarDaysIcon className="w-6 h-6 text-secondary mr-2" />
+                <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-secondary mr-2" />
                 <Typography variant="body2" className="font-bold">
                   Registration Date
                 </Typography>
