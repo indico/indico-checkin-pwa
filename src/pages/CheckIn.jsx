@@ -4,12 +4,13 @@ import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
 import {getEventDetailsFromIds} from '../db/utils';
-import {authFetch} from '../utils/network';
+import useSettings from '../hooks/useSettings';
 
 const CheckInPage = () => {
   const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
+  const {autoCheckin} = useSettings();
   const navigate = useNavigate();
 
   const onScanResult = async (decodedText, _decodedResult) => {
@@ -76,7 +77,7 @@ const CheckInPage = () => {
         id: fullData.regForm?.id,
       },
       attendee: fullData.participant,
-      performCheckIn: true,
+      performCheckIn: autoCheckin,
     };
     setProcessing(false);
     navigate(`/event/${event_id}/${regform_id}/${registrant_id}`, {
