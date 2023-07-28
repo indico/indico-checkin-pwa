@@ -220,9 +220,9 @@ export const changeRegFormParticipant = async (
 };
 
 export interface fullParticipantDetails {
-  participant: ParticipantTable;
-  regForm: RegFormTable;
-  event: EventTable;
+  participant?: ParticipantTable;
+  regForm?: RegFormTable;
+  event?: EventTable;
 }
 
 /**
@@ -231,31 +231,48 @@ export interface fullParticipantDetails {
  * @param regFormId
  * @param participantId
  */
-export const getEventDetailsFromIds = async (
-  eventId: number,
-  regFormId: number,
-  participantId: number
-): Promise<fullParticipantDetails | null> => {
+export const getEventDetailsFromIds = async ({
+  eventId,
+  regFormId,
+  participantId,
+}: {
+  eventId?: number | null;
+  regFormId?: number | null;
+  participantId?: number | null;
+}): Promise<fullParticipantDetails | null> => {
   try {
-    // Get the Event
-    const event = await db.events.get({id: Number(eventId)});
-    if (!event) {
-      return null;
-    }
-    // Format the date
-    event.date = formatDateObj(new Date(event.date));
-    // Get the Registration Form
-    const regForm = await db.regForms.get({id: Number(regFormId)});
-    if (!regForm) {
-      return null;
-    }
-    // Get the Participant
-    const participant = await db.participants.get({id: Number(participantId)});
-    if (!participant) {
-      return null;
+    const response: fullParticipantDetails = {};
+
+    if (eventId) {
+      // Get the Event
+      const event = await db.events.get({id: Number(eventId)});
+      if (!event) {
+        return null;
+      }
+      // Format the date
+      event.date = formatDateObj(new Date(event.date));
+      response.event = event;
     }
 
-    return {event, regForm, participant};
+    if (regFormId) {
+      // Get the Registration Form
+      const regForm = await db.regForms.get({id: Number(regFormId)});
+      if (!regForm) {
+        return null;
+      }
+      response.regForm = regForm;
+    }
+
+    if (participantId) {
+      // Get the Participant
+      const participant = await db.participants.get({id: Number(participantId)});
+      if (!participant) {
+        return null;
+      }
+      response.participant = participant;
+    }
+
+    return response;
   } catch (err) {
     return null;
   }

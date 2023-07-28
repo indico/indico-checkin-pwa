@@ -1,21 +1,62 @@
 import {useEffect, useMemo, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {ShieldCheckIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
 import {ParticipantTable} from '../../db/db';
-import {changeRegFormParticipant, getRegFormParticipants} from '../../db/utils';
+import {
+  changeRegFormParticipant,
+  getEventDetailsFromIds,
+  getRegFormParticipants,
+} from '../../db/utils';
 import {ParticipantPageData, RegFormData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
 const RegistrationFormPage = () => {
-  const {state: eventData}: {state: RegFormData} = useLocation(); // Get the state object passed from the previous page
+  const {id, regFormId} = useParams();
+  const [eventData, setEventData] = useState<RegFormData | null>(null);
   const navigate = useNavigate();
   const [attendees, setAttendees] = useState<ParticipantTable[]>([]);
 
+  // TODO: Keep changing from using HIstory state to IndexedDB
+
+  useEffect(() => {
+    // Fetch the RegistrationFormPage data from IndexedDB
+    const getRegFormPageData = async () => {
+      // Get the full event data
+      const fullData = await getEventDetailsFromIds({
+        eventId: Number(id),
+        regFormId: Number(regFormId),
+      });
+
+      if (!fullData || !fullData.event || !fullData.regForm) {
+        console.log('Error getting full event details from ids');
+        return;
+      }
+
+      // Set the eventData
+      const newEventData: RegFormData = {
+        event: {
+          id: fullData.event.id,
+          title: fullData.event.title,
+          date: fullData.event.date,
+          serverBaseUrl: fullData.event.server_base_url,
+        },
+        id: fullData.regForm.id,
+        label: fullData.regForm.label,
+        participants: fullData.regForm.participants,
+      };
+      setEventData(newEventData);
+    };
+
+    getRegFormPageData();
+  }, [id, regFormId]);
+
   useEffect(() => {
     const getAttendees = async () => {
+      if (!eventData) return;
+
       let newAttendees = await getRegFormParticipants(eventData.participants);
       if (!newAttendees) return; // If the event is not defined, then return
 
@@ -51,29 +92,31 @@ const RegistrationFormPage = () => {
 
   // Build the table rows array
   const tableRows: rowProps[] = useMemo(() => {
-    return attendees.map(attendee => ({
-      columns: [attendee.name],
-      useRightIcon: attendee.checked_in,
-      onClick: () => {
-        const navigationData: ParticipantPageData = {
-          event: {
-            id: eventData.event?.id,
-            title: eventData.event?.title,
-            date: eventData.event?.date,
-            serverBaseUrl: eventData.event?.serverBaseUrl,
+    return eventData
+      ? attendees.map(attendee => ({
+          columns: [attendee.name],
+          useRightIcon: attendee.checked_in,
+          onClick: () => {
+            const navigationData: ParticipantPageData = {
+              event: {
+                id: eventData.event?.id,
+                title: eventData.event?.title,
+                date: eventData.event?.date,
+                serverBaseUrl: eventData.event?.serverBaseUrl,
+              },
+              regForm: {
+                id: eventData.id,
+                label: eventData.label,
+              },
+              attendee: attendee,
+            };
+            // Navigate to the Participant Details Page
+            navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
+              state: navigationData,
+            });
           },
-          regForm: {
-            id: eventData.id,
-            label: eventData.label,
-          },
-          attendee: attendee,
-        };
-        // Navigate to the Participant Details Page
-        navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
-          state: navigationData,
-        });
-      },
-    }));
+        }))
+      : [];
   }, [attendees, eventData, navigate]);
 
   const navigateBack = () => {
@@ -82,25 +125,29 @@ const RegistrationFormPage = () => {
 
   return (
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
-      <div className="flex flex-row w-100 items-center justify-between">
-        <Breadcrumbs
-          className="ml-2"
-          routeNames={[eventData.event?.title, eventData.label]}
-          routeHandlers={[navigateBack, null]}
-        />
+      {eventData && (
+        <>
+          <div className="flex flex-row w-100 items-center justify-between">
+            <Breadcrumbs
+              className="ml-2"
+              routeNames={[eventData.event?.title, eventData.label]}
+              routeHandlers={[navigateBack, null]}
+            />
 
-        <Typography variant="body3" className="mr-2">
-          {eventData.event?.date}
-        </Typography>
-      </div>
+            <Typography variant="body3" className="mr-2">
+              {eventData.event?.date}
+            </Typography>
+          </div>
 
-      <Table
-        columnLabels={['Attendees']}
-        searchColIdx={0}
-        rows={tableRows}
-        className="w-5/6 m-auto mt-6"
-        RightIcon={ShieldCheckIcon}
-      />
+          <Table
+            columnLabels={['Attendees']}
+            searchColIdx={0}
+            rows={tableRows}
+            className="w-5/6 m-auto mt-6"
+            RightIcon={ShieldCheckIcon}
+          />
+        </>
+      )}
     </div>
   );
 };

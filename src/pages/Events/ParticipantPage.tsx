@@ -24,12 +24,19 @@ const ParticipantPage = () => {
     // Fetch the Participant Page data from IndexedDB
     const getParticipantPageData = async () => {
       // Get the full event data
-      const fullData = await getEventDetailsFromIds(
-        Number(id),
-        Number(regFormId),
-        Number(registrantId)
-      );
+      const fullData = await getEventDetailsFromIds({
+        eventId: Number(id),
+        regFormId: Number(regFormId),
+        participantId: Number(registrantId),
+      });
+
       if (!fullData) {
+        console.log('Error getting full event details from ids');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!fullData.event || !fullData.regForm || !fullData.participant) {
         console.log('Error getting full event details from ids');
         setIsLoading(false);
         return;
