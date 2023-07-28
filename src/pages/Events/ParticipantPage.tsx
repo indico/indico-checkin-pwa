@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {ShieldCheckIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
@@ -8,8 +8,44 @@ import {ParticipantPageData} from '../../Models/EventData';
 
 const ParticipantPage = () => {
   const {state: eventData}: {state: ParticipantPageData} = useLocation();
-
   const [checkedIn, setCheckedIn] = useState<boolean>(eventData.attendee?.checked_in);
+
+  useEffect(() => {
+    const performAutoCheckIn = async () => {
+      // If performCheckIn is true, then automatically check in the user
+      if (eventData.performCheckIn === true) {
+        // Send the check in request to the backend
+        console.log('Performing check in...');
+
+        /* try {
+          const body = JSON.stringify({checked_in: true});
+          // console.log('body: ', body);
+          const response = await authFetch(
+            server_url,
+            `/api/checkin/event/${event_id}/registration/${regform_id}/${registrant_id}`,
+            {
+              method: 'PATCH',
+              body: body,
+            }
+          );
+          if (!response) {
+            console.log('Error checking in user');
+
+            return;
+          }
+
+          // Navigate to homepage
+        } catch (err) {
+          console.log('Error checking in the user: ', err);
+          return;
+        } */
+
+        setCheckedIn(true);
+      }
+    };
+
+    performAutoCheckIn();
+  }, [eventData.performCheckIn]);
 
   const navigate = useNavigate();
 
@@ -22,7 +58,6 @@ const ParticipantPage = () => {
   };
 
   const onCheckInToggle = () => {
-    console.log('Check in toggle');
     setCheckedIn(!checkedIn);
   };
 

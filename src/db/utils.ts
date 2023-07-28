@@ -1,3 +1,4 @@
+import {formatDateObj} from '../utils/date';
 import db, {ServerTable, EventTable, RegFormTable, ParticipantTable} from './db';
 
 /**
@@ -215,5 +216,48 @@ export const changeRegFormParticipant = async (
     }
   } catch (err) {
     console.log(`Error changing participant check-in status: ${err}`);
+  }
+};
+
+export interface fullParticipantDetails {
+  participant: ParticipantTable;
+  regForm: RegFormTable;
+  event: EventTable;
+}
+
+/**
+ * Get the necessary Event Details to travel to the ParticipantPage from the respective IDs
+ * @param eventId
+ * @param regFormId
+ * @param participantId
+ */
+export const getEventDetailsFromIds = async (
+  eventId: number,
+  regFormId: number,
+  participantId: number
+): Promise<fullParticipantDetails | null> => {
+  try {
+    console.log('eventId: ', eventId, 'regFormId: ', regFormId, 'participantId: ', participantId);
+    // Get the Event
+    const event = await db.events.get({id: Number(eventId)});
+    if (!event) {
+      return null;
+    }
+    // Format the date
+    event.date = formatDateObj(new Date(event.date));
+    // Get the Registration Form
+    const regForm = await db.regForms.get({id: Number(regFormId)});
+    if (!regForm) {
+      return null;
+    }
+    // Get the Participant
+    const participant = await db.participants.get({id: Number(participantId)});
+    if (!participant) {
+      return null;
+    }
+
+    return {event, regForm, participant};
+  } catch (err) {
+    return null;
   }
 };

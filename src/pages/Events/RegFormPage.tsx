@@ -6,7 +6,7 @@ import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
 import {ParticipantTable} from '../../db/db';
 import {changeRegFormParticipant, getRegFormParticipants} from '../../db/utils';
-import {RegFormData} from '../../Models/EventData';
+import {ParticipantPageData, RegFormData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
 const RegistrationFormPage = () => {
@@ -55,14 +55,16 @@ const RegistrationFormPage = () => {
       columns: [attendee.name],
       useRightIcon: attendee.checked_in,
       onClick: () => {
+        const navigationData: ParticipantPageData = {
+          eventTitle: eventData.event?.title,
+          regFormLabel: eventData.label,
+          eventDate: eventData.event?.date,
+          attendee: attendee,
+          serverBaseUrl: eventData.event?.serverBaseUrl,
+        };
         // Navigate to the Participant Details Page
         navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
-          state: {
-            eventTitle: eventData.event?.title,
-            regFormLabel: eventData.label,
-            eventDate: eventData.event?.date,
-            attendee: attendee,
-          },
+          state: navigationData,
         });
       },
     }));

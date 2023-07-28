@@ -19,6 +19,8 @@ export interface ParticipantPageData {
   regFormLabel: string;
   eventDate: string | null;
   attendee: ParticipantTable;
+  serverBaseUrl: string;
+  performCheckIn?: boolean;
 }
 
 export default class EventData {
