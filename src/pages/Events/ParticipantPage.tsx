@@ -68,8 +68,36 @@ const ParticipantPage = () => {
     navigate(-1);
   };
 
-  const onCheckInToggle = () => {
-    setCheckedIn(!checkedIn);
+  const onCheckInToggle = async () => {
+    // Send the check in request to the backend
+    setIsLoading(true);
+    try {
+      const newCheckIn = !checkedIn;
+      const body = JSON.stringify({checked_in: newCheckIn});
+      const response = await authFetch(
+        eventData?.event?.serverBaseUrl,
+        `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
+        {
+          method: 'PATCH',
+          body: body,
+        }
+      );
+      if (!response) {
+        console.log('Error toggling check-in status');
+        setIsLoading(false);
+        return;
+      }
+
+      // Update the checked_in status in the database and the UI
+      await changeRegFormParticipant(eventData?.attendee, newCheckIn);
+      setCheckedIn(newCheckIn);
+
+      setIsLoading(false);
+    } catch (err) {
+      console.log('Error checking in the user: ', err);
+      setIsLoading(false);
+      return;
+    }
   };
 
   return (
