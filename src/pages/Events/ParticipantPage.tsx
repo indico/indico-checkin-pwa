@@ -5,6 +5,7 @@ import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
+import {changeRegFormParticipant} from '../../db/utils';
 import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -41,10 +42,10 @@ const ParticipantPage = () => {
           }
 
           console.log('Successfully checked in the user');
-          // TODO: Disable loading
-
-          // TODO: Update the CheckedIn Status in the offline DB
+          // Update the checked_in status in the database and the UI
+          await changeRegFormParticipant(eventData?.attendee, true);
           setCheckedIn(true);
+
           setIsLoading(false);
         } catch (err) {
           console.log('Error checking in the user: ', err);
