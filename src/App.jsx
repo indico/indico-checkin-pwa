@@ -22,32 +22,22 @@ const App = () => {
   }, [darkMode]);
 
   return (
-    <div className="w-100 h-100">
+    <div className="w-screen min-h-screen bg-white dark:bg-gray-700">
       <BrowserRouter basename="/">
         <Background />
-
         <TopTab />
-
         <Routes>
           <Route path="/" element={<Homepage />} />
-
           <Route path="/check-in" element={<CheckInPage />} />
-
           <Route path="/event">
             <Route path="/event/:id" element={<EventPage />} />
-
             <Route path="/event/new" element={<AddEventPage />} />
-
             <Route path="/event/:id/:regFormId" element={<RegistrationFormPage />} />
-
             <Route path="/event/:id/:regFormId/:registrantId" element={<ParticipantPage />} />
           </Route>
-
           <Route path="/auth/redirect" element={<AuthRedirectPage />} />
-
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
-
         <BottomTabs />
       </BrowserRouter>
     </div>
