@@ -3,7 +3,6 @@ import {useNavigate} from 'react-router-dom';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
-import {getEventDetailsFromIds} from '../db/utils';
 import useSettings from '../hooks/useSettings';
 
 const CheckInPage = () => {
@@ -56,28 +55,10 @@ const CheckInPage = () => {
       setProcessing(false);
       return;
     }
-    // Get the necessary data to navigate towards the ParticipantPage
-    const fullData = await getEventDetailsFromIds(event_id, regform_id, registrant_id);
-    if (!fullData) {
-      console.log('Error getting full event details from ids');
-      setProcessing(false);
-      return;
-    }
 
     // Navigate to the ParticipantPage
     const navigateData = {
-      event: {
-        id: fullData.event?.id,
-        title: fullData.event?.title,
-        date: fullData.event?.date,
-        serverBaseUrl: server_url,
-      },
-      regForm: {
-        label: fullData.regForm?.label,
-        id: fullData.regForm?.id,
-      },
-      attendee: fullData.participant,
-      performCheckIn: autoCheckin,
+      autoCheckin: autoCheckin,
     };
     setProcessing(false);
     navigate(`/event/${event_id}/${regform_id}/${registrant_id}`, {

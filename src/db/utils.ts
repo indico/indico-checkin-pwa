@@ -237,7 +237,6 @@ export const getEventDetailsFromIds = async (
   participantId: number
 ): Promise<fullParticipantDetails | null> => {
   try {
-    console.log('eventId: ', eventId, 'regFormId: ', regFormId, 'participantId: ', participantId);
     // Get the Event
     const event = await db.events.get({id: Number(eventId)});
     if (!event) {

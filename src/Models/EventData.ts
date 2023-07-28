@@ -13,7 +13,7 @@ export interface RegFormData {
   participants: number[];
 }
 
-// Interface for the data sent to the Participant Details Page
+// Interface for the data retrieved from the IndexedDB for the Participant Page
 export interface ParticipantPageData {
   event: {
     id: number;
@@ -26,7 +26,6 @@ export interface ParticipantPageData {
     id: number;
   };
   attendee: ParticipantTable;
-  performCheckIn?: boolean;
 }
 
 export default class EventData {
