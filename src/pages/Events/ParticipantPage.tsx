@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {ShieldCheckIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
@@ -14,6 +14,47 @@ const ParticipantPage = () => {
   const [checkedIn, setCheckedIn] = useState<boolean>(eventData?.attendee?.checked_in);
   const [isLoading, setIsLoading] = useState(false);
 
+  /**
+   * Performs the Check In/Out action for the user
+   * @param newCheckInState
+   * @returns
+   */
+  const performCheckIn = useCallback(
+    async (newCheckInState: boolean) => {
+      // TODO: Only allow check-in if the participant's state is "complete" or "unpaid"
+
+      // Send the check in request to the backend
+      setIsLoading(true);
+      try {
+        const body = JSON.stringify({checked_in: newCheckInState});
+        const response = await authFetch(
+          eventData?.event?.serverBaseUrl,
+          `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
+          {
+            method: 'PATCH',
+            body: body,
+          }
+        );
+        if (!response) {
+          console.log('Error checking in user');
+          setIsLoading(false);
+          return;
+        }
+
+        // Update the checked_in status in the database and the UI
+        await changeRegFormParticipant(eventData?.attendee, newCheckInState);
+        setCheckedIn(newCheckInState);
+
+        setIsLoading(false);
+      } catch (err) {
+        console.log('Error checking in the user: ', err);
+        setIsLoading(false);
+        return;
+      }
+    },
+    [eventData]
+  );
+
   useEffect(() => {
     const performAutoCheckIn = async () => {
       // If performCheckIn is true, then automatically check in the user
@@ -24,39 +65,12 @@ const ParticipantPage = () => {
         }
 
         // Send the check in request to the backend
-        setIsLoading(true);
-        try {
-          const body = JSON.stringify({checked_in: true});
-          const response = await authFetch(
-            eventData?.event?.serverBaseUrl,
-            `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
-            {
-              method: 'PATCH',
-              body: body,
-            }
-          );
-          if (!response) {
-            console.log('Error checking in user');
-            setIsLoading(false);
-            return;
-          }
-
-          console.log('Successfully checked in the user');
-          // Update the checked_in status in the database and the UI
-          await changeRegFormParticipant(eventData?.attendee, true);
-          setCheckedIn(true);
-
-          setIsLoading(false);
-        } catch (err) {
-          console.log('Error checking in the user: ', err);
-          setIsLoading(false);
-          return;
-        }
+        await performCheckIn(true);
       }
     };
 
     performAutoCheckIn();
-  }, [eventData]);
+  }, [eventData, performCheckIn]);
 
   const navigate = useNavigate();
 
@@ -69,35 +83,7 @@ const ParticipantPage = () => {
   };
 
   const onCheckInToggle = async () => {
-    // Send the check in request to the backend
-    setIsLoading(true);
-    try {
-      const newCheckIn = !checkedIn;
-      const body = JSON.stringify({checked_in: newCheckIn});
-      const response = await authFetch(
-        eventData?.event?.serverBaseUrl,
-        `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
-        {
-          method: 'PATCH',
-          body: body,
-        }
-      );
-      if (!response) {
-        console.log('Error toggling check-in status');
-        setIsLoading(false);
-        return;
-      }
-
-      // Update the checked_in status in the database and the UI
-      await changeRegFormParticipant(eventData?.attendee, newCheckIn);
-      setCheckedIn(newCheckIn);
-
-      setIsLoading(false);
-    } catch (err) {
-      console.log('Error checking in the user: ', err);
-      setIsLoading(false);
-      return;
-    }
+    await performCheckIn(!checkedIn);
   };
 
   return (
