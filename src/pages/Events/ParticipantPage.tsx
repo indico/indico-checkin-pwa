@@ -3,6 +3,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import {ShieldCheckIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
+import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
 import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
@@ -10,6 +11,7 @@ import {authFetch} from '../../utils/network';
 const ParticipantPage = () => {
   const {state: eventData}: {state: ParticipantPageData} = useLocation();
   const [checkedIn, setCheckedIn] = useState<boolean>(eventData?.attendee?.checked_in);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const performAutoCheckIn = async () => {
@@ -21,7 +23,7 @@ const ParticipantPage = () => {
         }
 
         // Send the check in request to the backend
-        console.log('Performing check in...');
+        setIsLoading(true);
         try {
           const body = JSON.stringify({checked_in: true});
           const response = await authFetch(
@@ -34,17 +36,21 @@ const ParticipantPage = () => {
           );
           if (!response) {
             console.log('Error checking in user');
+            setIsLoading(false);
             return;
           }
 
           console.log('Successfully checked in the user');
           // TODO: Disable loading
+
+          // TODO: Update the CheckedIn Status in the offline DB
+          setCheckedIn(true);
+          setIsLoading(false);
         } catch (err) {
           console.log('Error checking in the user: ', err);
+          setIsLoading(false);
           return;
         }
-
-        setCheckedIn(true);
       }
     };
 
@@ -86,20 +92,26 @@ const ParticipantPage = () => {
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center">
                 <ShieldCheckIcon
-                  className={`w-6 h-6 mr-2 ${checkedIn ? 'text-green-500' : 'text-gray-400'}`}
+                  className={`w-6 h-6 mr-2 ${
+                    !isLoading && checkedIn ? 'text-green-500' : 'text-gray-400'
+                  }`}
                 />
                 <Typography variant="body2" className="font-bold">
                   Checked In
                 </Typography>
               </div>
 
-              <Toggle
-                checked={checkedIn}
-                onClick={onCheckInToggle}
-                rounded={false}
-                className="rounded-md after:rounded-md"
-                size="lg"
-              />
+              {isLoading ? (
+                <LoadingIndicator size="s" />
+              ) : (
+                <Toggle
+                  checked={checkedIn}
+                  onClick={onCheckInToggle}
+                  rounded={false}
+                  className="rounded-md after:rounded-md"
+                  size="lg"
+                />
+              )}
             </div>
             {checkedIn && (
               <div>
