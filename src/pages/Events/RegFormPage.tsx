@@ -56,11 +56,17 @@ const RegistrationFormPage = () => {
       useRightIcon: attendee.checked_in,
       onClick: () => {
         const navigationData: ParticipantPageData = {
-          eventTitle: eventData.event?.title,
-          regFormLabel: eventData.label,
-          eventDate: eventData.event?.date,
+          event: {
+            id: eventData.event?.id,
+            title: eventData.event?.title,
+            date: eventData.event?.date,
+            serverBaseUrl: eventData.event?.serverBaseUrl,
+          },
+          regForm: {
+            id: eventData.id,
+            label: eventData.label,
+          },
           attendee: attendee,
-          serverBaseUrl: eventData.event?.serverBaseUrl,
         };
         // Navigate to the Participant Details Page
         navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {

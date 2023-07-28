@@ -15,11 +15,17 @@ export interface RegFormData {
 
 // Interface for the data sent to the Participant Details Page
 export interface ParticipantPageData {
-  eventTitle: string;
-  regFormLabel: string;
-  eventDate: string | null;
+  event: {
+    id: number;
+    title: string;
+    date: string | null;
+    serverBaseUrl: string;
+  };
+  regForm: {
+    label: string;
+    id: number;
+  };
   attendee: ParticipantTable;
-  serverBaseUrl: string;
   performCheckIn?: boolean;
 }
 

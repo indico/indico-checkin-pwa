@@ -65,11 +65,17 @@ const CheckInPage = () => {
 
     // Navigate to the ParticipantPage
     const navigateData = {
-      eventTitle: fullData.event?.title,
-      regFormLabel: fullData.regForm?.label,
-      eventDate: fullData.event?.date,
+      event: {
+        id: fullData.event?.id,
+        title: fullData.event?.title,
+        date: fullData.event?.date,
+        serverBaseUrl: server_url,
+      },
+      regForm: {
+        label: fullData.regForm?.label,
+        id: fullData.regForm?.id,
+      },
       attendee: fullData.participant,
-      serverBaseUrl: server_url,
       performCheckIn: true,
     };
     setProcessing(false);

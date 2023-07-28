@@ -5,24 +5,28 @@ import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {Toggle} from '../../Components/Tailwind/Toggle';
 import {ParticipantPageData} from '../../Models/EventData';
+import {authFetch} from '../../utils/network';
 
 const ParticipantPage = () => {
   const {state: eventData}: {state: ParticipantPageData} = useLocation();
-  const [checkedIn, setCheckedIn] = useState<boolean>(eventData.attendee?.checked_in);
+  const [checkedIn, setCheckedIn] = useState<boolean>(eventData?.attendee?.checked_in);
 
   useEffect(() => {
     const performAutoCheckIn = async () => {
       // If performCheckIn is true, then automatically check in the user
       if (eventData.performCheckIn === true) {
+        if (eventData?.attendee?.checked_in) {
+          // Already checked in
+          return;
+        }
+
         // Send the check in request to the backend
         console.log('Performing check in...');
-
-        /* try {
+        try {
           const body = JSON.stringify({checked_in: true});
-          // console.log('body: ', body);
           const response = await authFetch(
-            server_url,
-            `/api/checkin/event/${event_id}/registration/${regform_id}/${registrant_id}`,
+            eventData?.event?.serverBaseUrl,
+            `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
             {
               method: 'PATCH',
               body: body,
@@ -30,22 +34,22 @@ const ParticipantPage = () => {
           );
           if (!response) {
             console.log('Error checking in user');
-
             return;
           }
 
-          // Navigate to homepage
+          console.log('Successfully checked in the user');
+          // TODO: Disable loading
         } catch (err) {
           console.log('Error checking in the user: ', err);
           return;
-        } */
+        }
 
         setCheckedIn(true);
       }
     };
 
     performAutoCheckIn();
-  }, [eventData.performCheckIn]);
+  }, [eventData]);
 
   const navigate = useNavigate();
 
@@ -65,12 +69,12 @@ const ParticipantPage = () => {
     <div className="mx-auto w-full h-full justify-center align-center mt-3">
       <div className="flex flex-row w-100 items-center justify-between ml-2">
         <Breadcrumbs
-          routeNames={[eventData.eventTitle, eventData.regFormLabel]}
+          routeNames={[eventData.event?.title, eventData.regForm?.label]}
           routeHandlers={[navigateBackTwice, navigateBack]}
         />
 
         <Typography variant="body3" className="mr-2">
-          {eventData.eventDate}
+          {eventData.event?.date}
         </Typography>
       </div>
 
