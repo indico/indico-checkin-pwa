@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {UserGroupIcon} from '@heroicons/react/20/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
@@ -7,6 +7,7 @@ import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {
   addRegFormParticipant,
+  getEventDetailsFromIds,
   getRegFormParticipants,
   getRegistrationForms,
   removeRegFormParticipant,
@@ -18,30 +19,44 @@ import {authFetch} from '../../utils/network';
 import {clickableClassname} from '../../utils/styles';
 
 const EventPage = () => {
-  const {state} = useLocation();
   const navigate = useNavigate();
-  const {title, date, server_base_url, id: eventID} = state; // Destructure the state object containing the Event object
-  const [event, setEvent] = useState(new EventData(title, date, server_base_url));
+  const {id: eventID} = useParams();
+
+  const [event, setEvent] = useState(new EventData());
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
-    // Fetch the event data from the server
+
     const fetchEventData = async () => {
-      const response = await authFetch(server_base_url, `/api/checkin/event/${eventID}`);
+      // Fetch the event data from the IndexedDB
+      const fullData = await getEventDetailsFromIds({
+        eventId: Number(eventID),
+      });
+      if (!fullData?.event) {
+        console.log("Couldn't find event in DB with ID :", eventID);
+        return;
+      }
+      const newEventData = new EventData(
+        fullData.event.title,
+        fullData.event.date,
+        fullData.event.server_base_url
+      );
+
+      // Fetch the event data from the server
+      const response = await authFetch(newEventData.serverBaseUrl, `/api/checkin/event/${eventID}`);
       // console.log('Response: ', response);
       // const mockResponse = mockEventDetailsResponse;
       if (response) {
         // Compare the data from the server with the local data
-        if (response.title !== title || response.start_dt !== date) {
+        if (response.title !== newEventData.title || response.start_dt !== newEventData.date) {
           // Update the local data
-          await updateEvent(eventID, response.title, response.start_dt);
+          await updateEvent(Number(eventID), response.title, response.start_dt);
         }
       }
 
       // Get the data of each Stored Registration Form that belongs to this event
-      const prevRegForms = await getRegistrationForms(eventID);
-      // console.log('Registration Forms:', prevRegForms);
+      const prevRegForms = await getRegistrationForms(Number(eventID));
 
       // Compare the data from the server's Registration Forms with the local data
       for (let i = 0; i < prevRegForms.length; i++) {
@@ -49,7 +64,7 @@ const EventPage = () => {
 
         // Update Reg. Form Details if they are different
         const regFormResponse = await authFetch(
-          server_base_url,
+          newEventData.serverBaseUrl,
           `/api/checkin/event/${eventID}/registration/${regForm.id}`
         );
         // console.log('regFormResponse: ', i, regFormResponse);
@@ -59,13 +74,13 @@ const EventPage = () => {
           // Compare the data from the server with the local data
           if (regFormResponse.title !== regForm.label) {
             // Update the IndexedDB data
-            await updateRegForm(eventID, regFormResponse.title);
+            await updateRegForm(Number(eventID), regFormResponse.title);
           }
         }
 
         // Update the list of participants if they are different
         const formRegistrationsResponse = await authFetch(
-          server_base_url,
+          newEventData.serverBaseUrl,
           `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
         );
         // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
@@ -108,18 +123,16 @@ const EventPage = () => {
       }
 
       // Get the updated list of Registration Forms of this event from the IndexedDB
-      const updatedRegForms = await getRegistrationForms(eventID);
-
-      // Create a new EventData object with the data from the server
-      const newEventData = new EventData(title, date, server_base_url, updatedRegForms);
+      const updatedRegForms = await getRegistrationForms(Number(eventID));
 
       if (updatedRegForms.length === 1) {
         // Navigate to the registration form page if there is only one registration form
-        navigate(`/event/${eventID}/${updatedRegForms[0].id}`, {
-          state: newEventData.getRegFormData(0),
-        });
+        navigate(`/event/${eventID}/${updatedRegForms[0].id}`);
         return;
       }
+
+      // Update the Registration Forms of the newEventData object
+      newEventData.registrationForms = updatedRegForms;
       setEvent(newEventData);
     };
 
@@ -128,7 +141,7 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [server_base_url, eventID, title, date, navigate]);
+  }, [eventID, navigate]);
 
   /**
    * Handle the click event on a registration form
@@ -172,21 +185,21 @@ const EventPage = () => {
       </div>
 
       <div className="mt-6">
-        {isLoading && <LoadingIndicator />}
-        {!isLoading && event.registrationForms.length > 0 && (
+        {isLoading ? (
+          <LoadingIndicator />
+        ) : event.registrationForms.length === 0 ? (
+          <div className="mx-auto w-full h-full justify-center align-center mt-6">
+            <Typography variant="body1" className="text-center">
+              No Registration Forms Available.
+            </Typography>
+          </div>
+        ) : (
           <>
             <Typography variant="h3" className="ml-5">
               Registration Forms
             </Typography>
             {regforms}
           </>
-        )}
-        {!isLoading && event.registrationForms.length === 0 && (
-          <div className="mx-auto w-full h-full justify-center align-center mt-6">
-            <Typography variant="body1" className="text-center">
-              No Registration Forms Available.
-            </Typography>
-          </div>
         )}
       </div>
     </div>

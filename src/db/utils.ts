@@ -226,10 +226,12 @@ export interface fullParticipantDetails {
 }
 
 /**
- * Get the necessary Event Details to travel to the ParticipantPage from the respective IDs
+ * Get the necessary Event Details derived from the IDs
+ * Returns the respective entities if the IDs are defined
  * @param eventId
  * @param regFormId
  * @param participantId
+ * @returns Object containing the event, registration form, and participant details if their IDs are defined
  */
 export const getEventDetailsFromIds = async ({
   eventId,

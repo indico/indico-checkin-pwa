@@ -65,4 +65,10 @@ export default class EventData {
       participants: currRegForm.participants,
     };
   };
+
+  /**
+   * Indicates whether the EventData object is empty (Not valid)
+   * @returns true if the EventData object is empty
+   */
+  isEmpty = (): boolean => this.title === '' || this.date === null || this.serverBaseUrl === '';
 }
