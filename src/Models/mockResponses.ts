@@ -36,16 +36,16 @@ export const mockParticipantsResponse: Array<{
 }> = [
   {
     checked_in: false,
-    checkin_secret: '4135c6a6-abac-424c-8175-8959a4608a42',
-    full_name: 'Joao Mesquita',
+    checkin_secret: '4135c6v6-gdfg-424c-8175-fdsa43',
+    full_name: 'Joao Pereira',
     registration_id: 307,
     state: 'complete',
     tags: [],
   },
   {
     checked_in: false,
-    checkin_secret: '60b68ef6-0e38-4388-8d8d-b2ed3adc73ab',
-    full_name: 'Renuka Rajput-Ghoshal',
+    checkin_secret: '60b68e76-0e38-4388-8d8d-fdsg435gf',
+    full_name: 'Donald Duck',
     registration_id: 308,
     state: 'complete',
     tags: [],

@@ -83,9 +83,10 @@ const ParticipantPage = () => {
    */
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
+      if (!eventData) return;
+
       // TODO: Only allow check-in if the participant's state is "complete" or "unpaid"
 
-      if (!eventData) return;
       // Send the check in request to the backend
       setIsLoading(true);
       try {
