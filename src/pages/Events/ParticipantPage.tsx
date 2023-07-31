@@ -10,9 +10,8 @@ import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
 const ParticipantPage = () => {
-  const {
-    state: {autoCheckin},
-  } = useLocation();
+  const {state} = useLocation();
+  const {autoCheckin} = state || {autoCheckin: false};
   const {id, regFormId, registrantId} = useParams();
 
   const [eventData, setEventData] = useState<ParticipantPageData | null>(null);

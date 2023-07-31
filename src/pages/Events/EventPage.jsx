@@ -154,9 +154,7 @@ const EventPage = () => {
       return;
     }
 
-    navigate(`/event/${eventID}/${event.registrationForms[idx].id}`, {
-      state: event.getRegFormData(idx),
-    });
+    navigate(`/event/${eventID}/${event.registrationForms[idx].id}`);
   };
 
   const regforms = event.registrationForms.map((regForm, idx) => (

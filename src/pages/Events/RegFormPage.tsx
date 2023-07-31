@@ -10,7 +10,7 @@ import {
   getEventDetailsFromIds,
   getRegFormParticipants,
 } from '../../db/utils';
-import {ParticipantPageData, RegFormData} from '../../Models/EventData';
+import {RegFormData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
 const RegistrationFormPage = () => {
@@ -97,23 +97,8 @@ const RegistrationFormPage = () => {
           columns: [attendee.name],
           useRightIcon: attendee.checked_in,
           onClick: () => {
-            const navigationData: ParticipantPageData = {
-              event: {
-                id: eventData.event?.id,
-                title: eventData.event?.title,
-                date: eventData.event?.date,
-                serverBaseUrl: eventData.event?.serverBaseUrl,
-              },
-              regForm: {
-                id: eventData.id,
-                label: eventData.label,
-              },
-              attendee: attendee,
-            };
             // Navigate to the Participant Details Page
-            navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`, {
-              state: navigationData,
-            });
+            navigate(`/event/${eventData.event?.id}/${eventData.id}/${attendee.id}`);
           },
         }))
       : [];
