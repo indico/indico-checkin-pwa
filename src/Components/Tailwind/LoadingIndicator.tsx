@@ -37,7 +37,7 @@ export const LoadingIndicator = ({
     <div role="status">
       <svg
         aria-hidden="true"
-        style={centered ? {margin: 'auto'} : undefined}
+        style={centered ? {marginLeft: 'auto', marginRight: 'auto'} : undefined}
         className={svgClassName}
         viewBox="0 0 100 101"
         fill="none"

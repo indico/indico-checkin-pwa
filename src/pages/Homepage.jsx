@@ -29,28 +29,23 @@ const Homepage = () => {
   };
 
   return (
-    <div className="w-full h-full">
-      <div className="px-6 pt-1">
-        <div className="flex flex-row justify-between items-center mb-6">
-          <Typography variant="h2">Events</Typography>
-
-          <Button onClick={onAddEvent}>Add event</Button>
-        </div>
-
-        {events?.length > 0 ? (
-          <div className="flex flex-1">
-            <div className="grid grid-cols-1 w-full" spacing={2}>
-              {events.map((item, idx) => {
-                return <EventItem key={idx} item={item} onClick={() => navigateToEvent(item)} />;
-              })}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <Typography variant="h4">No Events Found.</Typography>
-          </div>
-        )}
+    <div className="px-6 pt-1">
+      <div className="flex flex-row justify-between items-center">
+        <Typography variant="h3">Events</Typography>
+        <Button onClick={onAddEvent}>Add event</Button>
       </div>
+
+      {events?.length > 0 ? (
+        <div className="mt-6 flex flex-col gap-4">
+          {events.map((item, idx) => {
+            return <EventItem key={idx} item={item} onClick={() => navigateToEvent(item)} />;
+          })}
+        </div>
+      ) : (
+        <div>
+          <Typography variant="h4">No Events Found.</Typography>
+        </div>
+      )}
     </div>
   );
 };
