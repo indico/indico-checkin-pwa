@@ -3,6 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {ShieldCheckIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
+import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
 import {ParticipantTable, ServerParticipantTable} from '../../db/db';
 import {
@@ -18,6 +19,7 @@ const RegistrationFormPage = () => {
   const [eventData, setEventData] = useState<RegFormData | null>(null);
   const navigate = useNavigate();
   const [attendees, setAttendees] = useState<ParticipantTable[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Keep changing from using HIstory state to IndexedDB
 
@@ -57,6 +59,7 @@ const RegistrationFormPage = () => {
     const getAttendees = async () => {
       if (!eventData) return;
 
+      setIsLoading(true);
       let newAttendees = await getRegFormParticipants(eventData.participants);
       if (!newAttendees) return; // If the event is not defined, then return
 
@@ -87,7 +90,7 @@ const RegistrationFormPage = () => {
       if (newAttendees) setAttendees(newAttendees);
     };
 
-    getAttendees();
+    getAttendees().finally(() => setIsLoading(false));
   }, [eventData]);
 
   // Build the table rows array
@@ -118,19 +121,22 @@ const RegistrationFormPage = () => {
               routeNames={[eventData.event?.title, eventData.label]}
               routeHandlers={[navigateBack, null]}
             />
-
             <Typography variant="body3" className="mr-2">
               {eventData.event?.date}
             </Typography>
           </div>
-
-          <Table
-            columnLabels={['Attendees']}
-            searchColIdx={0}
-            rows={tableRows}
-            className="w-5/6 m-auto mt-6"
-            RightIcon={ShieldCheckIcon}
-          />
+          <div className="mt-6">
+            {isLoading && <LoadingIndicator className="mt-20" />}
+            {!isLoading && (
+              <Table
+                columnLabels={['Attendees']}
+                searchColIdx={0}
+                rows={tableRows}
+                className="w-5/6 m-auto mt-6"
+                RightIcon={ShieldCheckIcon}
+              />
+            )}
+          </div>
         </>
       )}
     </div>

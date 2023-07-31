@@ -1,7 +1,6 @@
-import {MouseEventHandler, useState} from 'react';
-import {TrashIcon} from '@heroicons/react/24/solid';
-import useLongPress from '../../hooks/useLongPress';
-import {CardFlip, Typography} from '../Tailwind/';
+import {CalendarIcon} from '@heroicons/react/24/solid';
+import IconFeather from '../../Components/Icons/Feather';
+import {Typography} from '../Tailwind/';
 
 interface EventItemProps {
   item: {
@@ -13,65 +12,30 @@ interface EventItemProps {
 }
 
 const EventItem = ({item, onClick}: EventItemProps) => {
-  const onLongPress = () => {
-    setIsFlipped(!isFlipped);
-  };
-
-  const {handlers} = useLongPress({
-    onLongPress: onLongPress,
-    onPress: onClick,
-  });
-
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const onTrashClick: MouseEventHandler = e => {
-    e.stopPropagation();
-    console.log('Delete event...'); // TODO: Implement delete event
-  };
-
   return (
-    <CardFlip isFlipped={isFlipped}>
-      {/* FRONT COMPONENT */}
-      <button
-        className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50 shadow-sm border-[1px] 
-        border-blue-400 shadow-slate-700 dark:border-slate-400 dark:shadow-slate-500 text-start"
-        {...handlers}
-      >
-        <div className="flex flex-row w-full items-center">
-          <Typography variant="body1">{item.title}</Typography>
-        </div>
-
-        <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
-          {item.date}
-        </Typography>
-      </button>
-
-      {/* BACK COMPONENT */}
-      <button
-        className="w-full py-6 mb-3 px-4 mx-auto bg-secondary dark:bg-slate-600 rounded-xl active:opacity-50 shadow-sm border-[1px] 
-        border-blue-400 shadow-slate-700 dark:border-slate-400 dark:shadow-slate-500 text-start relative"
-        onMouseDown={handlers.onMouseDown}
-        onMouseUp={handlers.onMouseUp}
-        onTouchStart={handlers.onTouchStart}
-        onTouchEnd={handlers.onTouchEnd}
-      >
-        <div className="flex flex-row w-full justify-between items-center h-full">
-          <div>
-            <div className="flex flex-row w-full items-center">
-              <Typography variant="body1">{item.title}</Typography>
-            </div>
-
-            <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
-              {item.date}
+    <div
+      onClick={onClick}
+      className="block p-6 bg-white border border-gray-200 rounded-lg shadow
+                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600"
+    >
+      <div className="flex flex-wrap justify-between items-center">
+        <div className="flex flex-1 items-center">
+          <CalendarIcon className="w-6 h-6 min-w-[1.5rem] mr-3 text-primary" />
+          <div className="flex flex-col">
+            <Typography variant="body1" className="dark:text-white">
+              {item.title}
             </Typography>
+            <span className="w-fit bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+              {item.date}
+            </span>
           </div>
-
-          <button className="mr-6">
-            <TrashIcon className="h-7 w-7 text-red-600 active:opacity-50" onClick={onTrashClick} />
-          </button>
         </div>
-      </button>
-    </CardFlip>
+        <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
+          <IconFeather className="w-4 h-4 mr-1" />
+          <Typography variant="body1">1</Typography>
+        </div>
+      </div>
+    </div>
   );
 };
 

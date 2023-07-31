@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {UserGroupIcon} from '@heroicons/react/20/solid';
+import {ShieldCheckIcon} from '@heroicons/react/24/solid';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
@@ -16,7 +17,6 @@ import {
 } from '../../db/utils';
 import EventData from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
-import {clickableClassname} from '../../utils/styles';
 
 const EventPage = () => {
   const navigate = useNavigate();
@@ -160,45 +160,47 @@ const EventPage = () => {
 
   const regforms = event.registrationForms.map((regForm, idx) => (
     <div
-      className={`flex justify-between mx-auto w-4/5 rounded-lg h-full mt-6 py-5 pl-4 pr-8 shadow-lg bg-gray-200 dark:bg-gray-800 ${clickableClassname}`}
       key={idx}
       onClick={() => onFormClick(idx)}
+      className="flex flex-wrap gap-2 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow
+                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600"
     >
-      <div className="flex items-center">
-        <IconFeather className="w-6 h-6 mr-3 text-primary " />
+      <div className="flex flex-1 items-center">
+        <IconFeather className="w-6 h-6 min-w-[1.5rem] mr-3 text-primary" />
         <Typography variant="body1" className="text-center dark:text-white">
           {regForm.label}
         </Typography>
       </div>
-      <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-white text-primary dark:bg-darkSecondary dark:text-secondary">
-        <UserGroupIcon className="w-4 h-4 mr-1" />
-        <Typography variant="body1">{regForm.participants.length}</Typography>
+      <div className="flex flex-wrap gap-2">
+        <div className="flex self-center items-center rounded-full overflow-hidden">
+          <div className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
+            <ShieldCheckIcon className="w-4 h-4 mr-1" />
+            {/* TODO: connect with regForm.checked_in_count */}
+            <Typography variant="body1">2</Typography>
+          </div>
+          <div className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
+            <UserGroupIcon className="w-4 h-4 mr-1" />
+            <Typography variant="body1">{regForm.participants.length}</Typography>
+          </div>
+        </div>
       </div>
     </div>
   ));
 
   return (
-    <div className="mx-auto w-full h-full justify-center align-center mt-3">
-      <div className="flex flex-row w-100">
-        <Breadcrumbs className="ml-5" routeNames={[event.title]} routeHandlers={[null]} />
+    <div className="px-6 pt-1">
+      <div className="flex justify-between">
+        <Breadcrumbs className="" routeNames={[event.title]} routeHandlers={[null]} />
       </div>
-
-      <div className="mt-6">
-        {isLoading ? (
-          <LoadingIndicator />
-        ) : event.registrationForms.length === 0 ? (
-          <div className="mx-auto w-full h-full justify-center align-center mt-6">
+      <div className="mt-6 flex flex-col gap-4">
+        {isLoading && <LoadingIndicator className="mt-20" />}
+        {!isLoading && event.registrationForms.length > 0 && <>{regforms}</>}
+        {!isLoading && event.registrationForms.length === 0 && (
+          <div>
             <Typography variant="body1" className="text-center">
               No Registration Forms Available.
             </Typography>
           </div>
-        ) : (
-          <>
-            <Typography variant="h3" className="ml-5">
-              Registration Forms
-            </Typography>
-            {regforms}
-          </>
         )}
       </div>
     </div>
