@@ -20,14 +20,8 @@ const TopTab = () => {
   };
 
   return (
-    <div
-      className="h-28 w-full"
-      style={{
-        backgroundImage: `url(${darkMode ? WaveDark : WaveLight})`,
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <div className="flex flex-row h-2/3 w-full justify-between items-center px-4">
+    <div className="h-28 w-full relative">
+      <div className="relative z-[1] flex flex-row h-2/3 w-full justify-between items-center px-4">
         <div
           className={`flex flex-row h-full items-center ${clickableClassname}`}
           onClick={onLogoClick}
@@ -40,6 +34,13 @@ const TopTab = () => {
         <Cog8ToothIcon
           className="h-7 dark:text-white active:opacity-50 hover:cursor-pointer"
           onClick={onSettingsClick}
+        />
+      </div>
+      <div className="absolute top-0 left-0 w-full h-full">
+        <img
+          src={darkMode ? WaveDark : WaveLight}
+          alt="background"
+          className="w-full h-full object-cover"
         />
       </div>
     </div>
