@@ -1,5 +1,6 @@
-import {RegFormTable} from '../db/db';
+import {ParticipantTable, RegFormTable} from '../db/db';
 
+// Interface for the data sent to the Registration Form Details Page
 export interface RegFormData {
   event: {
     id: number;
@@ -10,6 +11,21 @@ export interface RegFormData {
   id: number;
   label: string;
   participants: number[];
+}
+
+// Interface for the data retrieved from the IndexedDB for the Participant Page
+export interface ParticipantPageData {
+  event: {
+    id: number;
+    title: string;
+    date: string | null;
+    serverBaseUrl: string;
+  };
+  regForm: {
+    label: string;
+    id: number;
+  };
+  attendee: ParticipantTable;
 }
 
 export default class EventData {
@@ -49,4 +65,10 @@ export default class EventData {
       participants: currRegForm.participants,
     };
   };
+
+  /**
+   * Indicates whether the EventData object is empty (Not valid)
+   * @returns true if the EventData object is empty
+   */
+  isEmpty = (): boolean => this.title === '' || this.date === null || this.serverBaseUrl === '';
 }

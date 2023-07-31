@@ -2,6 +2,7 @@ import {ComponentProps} from 'react';
 
 interface LoadingIndicatorProps {
   size?: 'xs' | 's' | 'md' | 'lg' | 'xl';
+  centered?: boolean;
   className?: ComponentProps<'div'>['className'];
 }
 
@@ -23,7 +24,11 @@ const sizeToClass: {
   xl: 'w-32 h-32',
 };
 
-export const LoadingIndicator = ({size = 'md', className = ''}: LoadingIndicatorProps) => {
+export const LoadingIndicator = ({
+  size = 'md',
+  centered = true,
+  className = '',
+}: LoadingIndicatorProps) => {
   const sizeClass = sizeToClass[size];
   const defaultClassName = `${sizeClass} mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600`;
   const svgClassName = defaultClassName + ' ' + className;
@@ -32,6 +37,7 @@ export const LoadingIndicator = ({size = 'md', className = ''}: LoadingIndicator
     <div role="status">
       <svg
         aria-hidden="true"
+        style={centered ? {margin: 'auto'} : undefined}
         className={svgClassName}
         viewBox="0 0 100 101"
         fill="none"

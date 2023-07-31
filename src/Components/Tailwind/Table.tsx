@@ -1,12 +1,21 @@
 import {ElementType, ChangeEvent, useState, useMemo} from 'react';
 import Typography from './Typography';
 
+/**
+ * Props of a Single Row in the table
+ */
+export interface rowProps {
+  columns: string[];
+  useRightIcon?: boolean;
+  onClick?: () => void;
+}
+
 interface TableProps {
   columnLabels: string[];
-  rows: string[][];
+  searchColIdx?: number;
+  rows: rowProps[];
   className?: HTMLDivElement['className'];
   RightIcon?: ElementType;
-  useRightIcon?: boolean[];
 }
 
 const defaultParentClassName: HTMLDivElement['className'] =
@@ -17,16 +26,17 @@ const defaultParentClassName: HTMLDivElement['className'] =
  * @param param0
  * @returns
  */
-const Table = ({columnLabels, rows, className = '', RightIcon, useRightIcon = []}: TableProps) => {
+const Table = ({columnLabels, rows, className = '', RightIcon, searchColIdx = 0}: TableProps) => {
   const parentClassName = defaultParentClassName + ' ' + className;
   const [searchValue, setSearchValue] = useState('');
 
   const shownRows = useMemo(() => {
-    if (rows.length === 0) return rows;
+    if (rows.length === 0) return rows; // No rows to search
+    if (rows[0].columns.length <= searchColIdx) return rows; // No columns to search
 
     // The first column is the searchable row (TODO: Can pass the index by param to the Component)
-    return rows.filter(row => row[0].toLowerCase().includes(searchValue));
-  }, [searchValue, rows]);
+    return rows.filter(row => row.columns[searchColIdx].toLowerCase().includes(searchValue));
+  }, [searchValue, rows, searchColIdx]);
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value.toLowerCase());
@@ -68,18 +78,16 @@ const Table = ({columnLabels, rows, className = '', RightIcon, useRightIcon = []
             const lastRowClass: HTMLElement['className'] =
               idx === rows.length - 1 ? 'rounded-b-xl' : '';
 
-            let showIcon = false;
-            if (idx >= 0 && idx < useRightIcon.length) {
-              showIcon = useRightIcon[idx];
-            }
+            const showIcon = row.useRightIcon ?? false;
 
             return (
               <tr
                 key={idx}
                 className={`border-b ${alternatingClass} dark:border-gray-700 active:bg-gray-300 dark:active:bg-gray-600`}
+                onClick={row.onClick}
               >
-                {row.map((cell, cellIdx) => {
-                  const isLastCell = cellIdx === row.length - 1;
+                {row.columns.map((cell, cellIdx) => {
+                  const isLastCell = cellIdx === row.columns.length - 1;
 
                   return (
                     <td key={cellIdx} className={`py-4 pl-4 pr-6 ${lastRowClass}`}>

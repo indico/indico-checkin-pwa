@@ -21,7 +21,7 @@ const Homepage = () => {
   const navigate = useNavigate();
 
   const navigateToEvent = item => {
-    navigate(`/event/${item.id}`, {state: item});
+    navigate(`/event/${item.id}`);
   };
 
   const onAddEvent = () => {

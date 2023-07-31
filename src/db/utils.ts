@@ -1,3 +1,4 @@
+import {formatDateObj} from '../utils/date';
 import db, {ServerTable, EventTable, RegFormTable, ParticipantTable} from './db';
 
 /**
@@ -215,5 +216,66 @@ export const changeRegFormParticipant = async (
     }
   } catch (err) {
     console.log(`Error changing participant check-in status: ${err}`);
+  }
+};
+
+export interface fullParticipantDetails {
+  participant?: ParticipantTable;
+  regForm?: RegFormTable;
+  event?: EventTable;
+}
+
+/**
+ * Get the necessary Event Details derived from the IDs
+ * Returns the respective entities if the IDs are defined
+ * @param eventId
+ * @param regFormId
+ * @param participantId
+ * @returns Object containing the event, registration form, and participant details if their IDs are defined
+ */
+export const getEventDetailsFromIds = async ({
+  eventId,
+  regFormId,
+  participantId,
+}: {
+  eventId?: number | null;
+  regFormId?: number | null;
+  participantId?: number | null;
+}): Promise<fullParticipantDetails | null> => {
+  try {
+    const response: fullParticipantDetails = {};
+
+    if (eventId) {
+      // Get the Event
+      const event = await db.events.get({id: Number(eventId)});
+      if (!event) {
+        return null;
+      }
+      // Format the date
+      event.date = formatDateObj(new Date(event.date));
+      response.event = event;
+    }
+
+    if (regFormId) {
+      // Get the Registration Form
+      const regForm = await db.regForms.get({id: Number(regFormId)});
+      if (!regForm) {
+        return null;
+      }
+      response.regForm = regForm;
+    }
+
+    if (participantId) {
+      // Get the Participant
+      const participant = await db.participants.get({id: Number(participantId)});
+      if (!participant) {
+        return null;
+      }
+      response.participant = participant;
+    }
+
+    return response;
+  } catch (err) {
+    return null;
   }
 };

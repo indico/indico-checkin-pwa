@@ -3,12 +3,13 @@ import {useNavigate} from 'react-router-dom';
 import QrScannerPlugin from '../Components/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
-import {authFetch} from '../utils/network';
+import useSettings from '../hooks/useSettings';
 
 const CheckInPage = () => {
   const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
+  const {autoCheckin} = useSettings();
   const navigate = useNavigate();
 
   const onScanResult = async (decodedText, _decodedResult) => {
@@ -44,44 +45,26 @@ const CheckInPage = () => {
       return;
     }
 
-    // Check if the serverData is already in indexedDB
-    const serverExists = await db.servers.get({base_url: server_url});
-    if (!serverExists) {
-      // Cannot check in if the server is not registered
-      console.log('Server is not registered. Please try again.');
+    // Check if the User exists in indexedDB
+    // TODO: Users may register on server and not be updated on the app since we only update it when you enter the EventPage.
+    // Could implement a system to update the data from time to time
+    const userExists = await db.participants.get({id: registrant_id});
+    if (!userExists) {
+      // Cannot check in if the user is not registered
+      console.log('User is not registered. Please try again.');
       setProcessing(false);
       return;
     }
 
-    // Server is registered so we can check in the user
-    try {
-      const body = JSON.stringify({checked_in: true});
-      // console.log('body: ', body);
-      const response = await authFetch(
-        server_url,
-        `/api/checkin/event/${event_id}/registration/${regform_id}/${registrant_id}`,
-        {
-          method: 'PATCH',
-          body: body,
-        }
-      );
-      if (!response) {
-        console.log('Error checking in user');
-        setProcessing(false);
-        return;
-      }
-
-      // Navigate to homepage
-    } catch (err) {
-      console.log('Error checking in the user: ', err);
-      setProcessing(false);
-      return;
-    }
-
-    // User is checked in
-    console.log('User is checked in');
+    // Navigate to the ParticipantPage
+    const navigateData = {
+      autoCheckin: autoCheckin,
+    };
     setProcessing(false);
-    navigate('/');
+    navigate(`/event/${event_id}/${regform_id}/${registrant_id}`, {
+      state: navigateData,
+    });
+    // TODO: Make QR Code UI More responsive to what is happening
   };
 
   const onPermRefused = () => {
