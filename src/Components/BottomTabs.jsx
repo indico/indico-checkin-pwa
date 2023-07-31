@@ -1,14 +1,19 @@
+import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 
 const BottomTabs = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
   const navigation = useNavigate();
 
   const onHomeClick = () => {
+    setActiveTab(0);
     navigation('/');
   };
 
   const onQrCodeClick = () => {
+    setActiveTab(1);
     navigation('/check-in');
   };
 
@@ -20,18 +25,31 @@ const BottomTabs = () => {
           className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
           onClick={onHomeClick}
         >
-          <HomeIcon className="h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+          <HomeIcon
+            className={`h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500 
+            ${activeTab === 0 && 'text-blue-600 dark:text-blue-500'}`}
+          />
+          <span
+            className={`text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500
+            ${activeTab === 0 && 'text-blue-600 dark:text-blue-500'}`}
+          >
             All Events
           </span>
         </button>
+
         <button
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
           onClick={onQrCodeClick}
         >
-          <QrCodeIcon className="h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+          <QrCodeIcon
+            className={`h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500
+          ${activeTab === 1 && 'text-blue-600 dark:text-blue-500'}`}
+          />
+          <span
+            className={`text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500
+            ${activeTab === 1 && 'text-blue-600 dark:text-blue-500'}`}
+          >
             Check-in
           </span>
         </button>
