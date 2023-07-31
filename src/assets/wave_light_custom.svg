@@ -10,7 +10,7 @@
     <path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="
             M0,0
             h800 v100 h-800 z
-            M01,100
+            M0,100
             c0,100,800,60,800,0
             Z
         " />
