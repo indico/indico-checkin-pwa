@@ -28,7 +28,7 @@ const CheckInPage = () => {
       setProcessing(false);
       return;
     }
-    console.log('event data: ', decodedText);
+    // console.log('event data: ', decodedText);
 
     const {checkin_secret, event_id, registrant_id, server_url, regform_id} = eventData;
     // Check if these variables are null
@@ -87,20 +87,6 @@ const CheckInPage = () => {
         qrCodeSuccessCallback={onScanResult}
         onPermRefused={onPermRefused}
       />
-
-      {/* <QrReader
-                onResult={(result, error) => {
-                    if (!!result) {
-                        setData(result?.text);
-                    }
-
-                    if (!!error) {
-                        console.info(error);
-                    }
-                }}
-                sx={{ width: "100%" }}
-                constraints={{ facingMode: "environment", aspectRatio: 1 }}
-            /> */}
 
       <div className="justify-center items-center flex py-6 mx-6">
         <Typography variant="body1" className="text-center">

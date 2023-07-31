@@ -1,6 +1,6 @@
 // file = QrScannerPlugin.jsx
 import {MutableRefObject, useEffect, useRef} from 'react';
-import {Html5Qrcode, Html5QrcodeSupportedFormats} from 'html5-qrcode';
+import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {checkCameraPermissions} from '../utils/media';
 
 // Id of the HTML element used by the Html5QrcodeScanner.
@@ -58,6 +58,8 @@ const QrScannerPlugin = (props: QrProps) => {
 
   useEffect(() => {
     const showQRCode = async () => {
+      // console.log('showQRCode');
+
       const hasCamPerm: boolean = await checkCameraPermissions();
       if (!hasCamPerm) {
         // Notify that the permission is refused
@@ -67,7 +69,9 @@ const QrScannerPlugin = (props: QrProps) => {
         return;
       }
 
-      if (!html5CustomScanner.current?.getState()) {
+      const currCamState = html5CustomScanner.current?.getState() || 0;
+      // console.log('currCamState: ', currCamState);
+      if (currCamState <= Html5QrcodeScannerState.UNKNOWN) {
         // when component mounts
         const config = createConfig(props);
         const verbose = props.verbose === true;
@@ -80,6 +84,7 @@ const QrScannerPlugin = (props: QrProps) => {
           ...config,
           verbose,
         });
+        // console.log('Starting QR Scanner');
         html5CustomScanner.current.start(
           {facingMode: 'environment'},
           config,
@@ -94,10 +99,13 @@ const QrScannerPlugin = (props: QrProps) => {
     // cleanup function when component will unmount
     return () => {
       const stopQrScanner = async () => {
+        // console.log('stopQrScanner');
         if (html5CustomScanner.current?.isScanning) {
           await html5CustomScanner.current.stop();
-          html5CustomScanner.current.clear();
         }
+        html5CustomScanner.current?.clear();
+        // Destroy the object
+        html5CustomScanner.current = null;
       };
 
       stopQrScanner();
