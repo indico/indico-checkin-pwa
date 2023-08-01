@@ -69,8 +69,11 @@ export const addRegFormParticipant = async (participant: ParticipantTable) => {
         await db.participants.add({
           id: participant.id,
           name: participant.name,
-          checked_in: participant.checked_in,
           regForm_id: participant.regForm_id,
+          registration_date: participant.registration_date,
+          state: participant.state,
+          checked_in: participant.checked_in,
+          checked_in_dt: participant.checked_in_dt,
         });
 
         // Add the participant to the registration form

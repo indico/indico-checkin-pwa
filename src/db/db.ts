@@ -19,11 +19,23 @@ export interface RegFormTable {
   event_id: number;
   participants: number[]; // array of user ids
 }
+
+export const participantStates = {
+  COMPLETE: 'complete',
+  PENDING: 'pending',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn',
+  UNPAID: 'unpaid',
+};
+
 export interface ParticipantTable {
   id: number;
   name: string;
-  checked_in: boolean;
   regForm_id: number;
+  state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
+  registration_date: string;
+  checked_in: boolean;
+  checked_in_dt: string;
 }
 
 export class MyDexie extends Dexie {

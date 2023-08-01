@@ -109,6 +109,7 @@ const EventPage = () => {
               name: participant.full_name,
               checked_in: participant.checked_in,
               regForm_id: regForm.id,
+              state: participant.state,
             };
             await addRegFormParticipant(participantData);
           }
