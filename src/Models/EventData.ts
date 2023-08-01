@@ -28,11 +28,14 @@ export interface ParticipantPageData {
   attendee: ParticipantTable;
 }
 
+interface RegFormsExtended extends RegFormTable {
+  num_checked_in: number;
+}
 export default class EventData {
   public title: string;
   public date: string | null;
   public serverBaseUrl: string;
-  public registrationForms: RegFormTable[];
+  public registrationForms: RegFormsExtended[];
 
   constructor(title = '', date = null, serverBaseUrl = '', registrationForms = []) {
     this.title = title;

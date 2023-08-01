@@ -134,6 +134,13 @@ const EventPage = () => {
 
       // Update the Registration Forms of the newEventData object
       newEventData.registrationForms = updatedRegForms;
+
+      // Get the number of checked-in participants for each registration form from the IndexedDB
+      for (const regForm of newEventData.registrationForms) {
+        const participants = await getRegFormParticipants(regForm.participants);
+        regForm.num_checked_in = participants.filter(p => p.checked_in === true).length;
+      }
+
       setEvent(newEventData);
     };
 
@@ -175,8 +182,7 @@ const EventPage = () => {
         <div className="flex self-center items-center rounded-full overflow-hidden">
           <div className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
             <ShieldCheckIcon className="w-4 h-4 mr-1" />
-            {/* TODO: connect with regForm.checked_in_count */}
-            <Typography variant="body1">2</Typography>
+            <Typography variant="body1">{regForm.num_checked_in}</Typography>
           </div>
           <div className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
             <UserGroupIcon className="w-4 h-4 mr-1" />

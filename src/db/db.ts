@@ -27,7 +27,6 @@ export const participantStates = {
   WITHDRAWN: 'withdrawn',
   UNPAID: 'unpaid',
 };
-
 export interface ParticipantTable {
   id: number;
   full_name: string;
