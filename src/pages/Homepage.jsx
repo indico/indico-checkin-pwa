@@ -1,11 +1,15 @@
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useLiveQuery} from 'dexie-react-hooks';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Button, Typography} from '../Components/Tailwind/index.jsx';
 import db from '../db/db';
+import {getRegistrationForms} from '../db/utils.ts';
 import {formatDateObj} from '../utils/date.ts';
 
 const Homepage = () => {
+  const [numEventRegForms, setNumEventRegForms] = useState([]);
+
   // Listen to events updates
   const events = useLiveQuery(() =>
     db.events.toArray().then(currEvents =>
@@ -16,6 +20,25 @@ const Homepage = () => {
       })
     )
   );
+
+  useEffect(() => {
+    const updateRegForms = async () => {
+      if (!events) return;
+
+      const eventNumForms = [];
+      // Get the regForms for each event
+      for (const event of events) {
+        const regForms = await getRegistrationForms(event.id);
+        if (regForms) eventNumForms.push(regForms.length);
+        else eventNumForms.push(0);
+      }
+
+      setNumEventRegForms(eventNumForms);
+    };
+
+    updateRegForms();
+  }, [events]);
+
   // console.log('events:', JSON.stringify(events));
 
   const navigate = useNavigate();
@@ -38,7 +61,14 @@ const Homepage = () => {
       {events?.length > 0 ? (
         <div className="mt-6 flex flex-col gap-4">
           {events.map((item, idx) => {
-            return <EventItem key={idx} item={item} onClick={() => navigateToEvent(item)} />;
+            return (
+              <EventItem
+                key={idx}
+                item={item}
+                onClick={() => navigateToEvent(item)}
+                quantity={numEventRegForms[idx]}
+              />
+            );
           })}
         </div>
       ) : (

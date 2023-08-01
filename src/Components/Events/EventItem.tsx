@@ -9,9 +9,10 @@ interface EventItemProps {
     date: string;
   };
   onClick: () => void;
+  quantity: number;
 }
 
-const EventItem = ({item, onClick}: EventItemProps) => {
+const EventItem = ({item, onClick, quantity}: EventItemProps) => {
   return (
     <div
       onClick={onClick}
@@ -32,7 +33,7 @@ const EventItem = ({item, onClick}: EventItemProps) => {
         </div>
         <div className="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
           <IconFeather className="w-4 h-4 mr-1" />
-          <Typography variant="body1">1</Typography>
+          <Typography variant="body1">{quantity}</Typography>
         </div>
       </div>
     </div>
