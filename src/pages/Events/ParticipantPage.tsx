@@ -5,7 +5,7 @@ import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
-import {changeRegFormParticipant, getEventDetailsFromIds} from '../../db/utils';
+import {changeParticipantCheckIn, getEventDetailsFromIds} from '../../db/utils';
 import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -106,7 +106,7 @@ const ParticipantPage = () => {
         }
 
         // Update the checked_in status in the database and the UI
-        await changeRegFormParticipant(eventData?.attendee, newCheckInState);
+        await changeParticipantCheckIn(eventData?.attendee, newCheckInState);
         updateCheckedInStatus(newCheckInState);
 
         setIsLoading(false);
@@ -168,7 +168,7 @@ const ParticipantPage = () => {
           </div>
 
           <div className="mt-6 ml-2 flex flex-col">
-            <Typography variant="h2">{eventData.attendee.name}</Typography>
+            <Typography variant="h2">{eventData.attendee.full_name}</Typography>
 
             <div className="mt-6 mr-8 relative">
               <div className="mx-auto w-full">
@@ -201,7 +201,7 @@ const ParticipantPage = () => {
                 {eventData.attendee.checked_in && (
                   <div>
                     <Typography variant="body2" className="mt-1 ml-8">
-                      {`on: ${new Date().toLocaleString()}` /* TODO: Get the date */}
+                      {`on: ${eventData.attendee.checked_in_dt}` /* TODO: Get the date */}
                     </Typography>
                   </div>
                 )}
@@ -215,7 +215,7 @@ const ParticipantPage = () => {
                   </div>
 
                   <Typography variant="body2" className="mt-1 ml-8">
-                    {new Date().toLocaleString()}
+                    {eventData.attendee.registration_date}
                   </Typography>
                 </div>
               </div>

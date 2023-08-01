@@ -30,13 +30,15 @@ export const participantStates = {
 
 export interface ParticipantTable {
   id: number;
-  name: string;
+  full_name: string;
   regForm_id: number;
-  state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
   registration_date: string;
+  state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
   checked_in: boolean;
   checked_in_dt: string;
 }
+
+export interface ServerParticipantTable extends ParticipantTable {}
 
 export class MyDexie extends Dexie {
   // Declare implicit table properties.
@@ -52,7 +54,7 @@ export class MyDexie extends Dexie {
       servers: 'id++, base_url, &indexName, client_id, scope, auth_token', // base_url is indexed
       events: 'id, title, date, server_base_url', // Primary key and indexed props
       regForms: 'id, label, event_id, participants',
-      participants: 'id++, name, checked_in, regForm_id',
+      participants: 'id++, name, regForm_id, registration_date, state, checked_in, checked_in_dt',
     });
   }
 }

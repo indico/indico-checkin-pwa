@@ -4,7 +4,7 @@ import {ShieldCheckIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
-import {ParticipantTable} from '../../db/db';
+import {ParticipantTable, ServerParticipantTable} from '../../db/db';
 import {
   changeRegFormParticipant,
   getEventDetailsFromIds,
@@ -68,13 +68,13 @@ const RegistrationFormPage = () => {
       if (response) {
         let updatedParticipant = false;
         for (const attendee of newAttendees) {
-          const serverAttendee = response.find(
+          const serverAttendee: ServerParticipantTable = response.find(
             (serverAttendee: any) => serverAttendee.registration_id === attendee.id
           );
           // Update the checked_in status
-          if (serverAttendee && serverAttendee.checked_in !== attendee.checked_in) {
-            await changeRegFormParticipant(attendee, serverAttendee.checked_in); // Update the checked_in status in the database
-            updatedParticipant = true;
+          if (serverAttendee) {
+            const hasChanges = await changeRegFormParticipant(attendee, serverAttendee);
+            if (hasChanges) updatedParticipant = true;
           }
         }
 
@@ -94,7 +94,7 @@ const RegistrationFormPage = () => {
   const tableRows: rowProps[] = useMemo(() => {
     return eventData
       ? attendees.map(attendee => ({
-          columns: [attendee.name],
+          columns: [attendee.full_name],
           useRightIcon: attendee.checked_in,
           onClick: () => {
             // Navigate to the Participant Details Page
