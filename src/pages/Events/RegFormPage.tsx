@@ -108,7 +108,11 @@ const RegistrationFormPage = () => {
   }, [attendees, eventData, navigate]);
 
   const navigateBack = () => {
-    navigate(-1);
+    if (!eventData || !eventData.event) return;
+    navigate(`/event/${eventData.event?.id}`, {
+      state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
+      replace: true,
+    });
   };
 
   return (

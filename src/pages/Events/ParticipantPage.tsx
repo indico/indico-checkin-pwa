@@ -153,11 +153,20 @@ const ParticipantPage = () => {
   const navigate = useNavigate();
 
   const navigateBackTwice = () => {
-    navigate(-2);
+    if (!eventData) return;
+
+    navigate(`/event/${eventData.event?.id}`, {
+      state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
+      replace: true,
+    });
   };
 
   const navigateBack = () => {
-    navigate(-1);
+    if (!eventData || !eventData.event) return;
+
+    navigate(`/event/${eventData.event?.id}/${eventData.regForm.id}`, {
+      replace: true,
+    });
   };
 
   const onCheckInToggle = async () => {

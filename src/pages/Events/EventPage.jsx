@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {UserGroupIcon} from '@heroicons/react/20/solid';
 import {ShieldCheckIcon} from '@heroicons/react/24/solid';
 import IconFeather from '../../Components/Icons/Feather';
@@ -21,6 +21,9 @@ import {authFetch} from '../../utils/network';
 const EventPage = () => {
   const navigate = useNavigate();
   const {id: eventID} = useParams();
+
+  const {state} = useLocation(); // Get the state passed from the previous page
+  const {autoRedirect} = state || {autoRedirect: true}; // If no state was passed, set autoRedirect to true
 
   const [event, setEvent] = useState(new EventData());
   const [isLoading, setIsLoading] = useState(false);
@@ -126,7 +129,7 @@ const EventPage = () => {
       // Get the updated list of Registration Forms of this event from the IndexedDB
       const updatedRegForms = await getRegistrationForms(Number(eventID));
 
-      if (updatedRegForms.length === 1) {
+      if (updatedRegForms.length === 1 && autoRedirect) {
         // Navigate to the registration form page if there is only one registration form
         navigate(`/event/${eventID}/${updatedRegForms[0].id}`);
         return;
@@ -149,7 +152,7 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [eventID, navigate]);
+  }, [eventID, navigate, autoRedirect]);
 
   /**
    * Handle the click event on a registration form
