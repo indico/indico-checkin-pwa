@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {ShieldCheckIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
@@ -6,6 +6,7 @@ import Badge from '../../Components/Tailwind/Badge';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
+import {participantStates} from '../../db/db';
 import {changeParticipantCheckIn, getEventDetailsFromIds} from '../../db/utils';
 import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
@@ -18,6 +19,12 @@ const ParticipantPage = () => {
   const [eventData, setEventData] = useState<ParticipantPageData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [triedCheckIn, setTriedCheckIn] = useState(false);
+
+  const disableCheckIn = useMemo(() => {
+    return ![participantStates.COMPLETE, participantStates.UNPAID].includes(
+      eventData?.attendee?.state ?? ''
+    );
+  }, [eventData?.attendee?.state]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -86,7 +93,11 @@ const ParticipantPage = () => {
     async (newCheckInState: boolean) => {
       if (!eventData) return;
 
-      // TODO: Only allow check-in if the participant's state is "complete" or "unpaid"
+      // Only allow check-in if the participant's state is "complete" or "unpaid"
+      if (disableCheckIn) {
+        console.log('Cannot check in user with state: ', eventData?.attendee?.state);
+        return;
+      }
 
       // Send the check in request to the backend
       setIsLoading(true);
@@ -117,7 +128,7 @@ const ParticipantPage = () => {
         return;
       }
     },
-    [eventData]
+    [eventData, disableCheckIn]
   );
 
   useEffect(() => {
@@ -200,6 +211,7 @@ const ParticipantPage = () => {
                       rounded={false}
                       className="rounded-md after:rounded-md"
                       size="lg"
+                      disabled={disableCheckIn}
                     />
                   )}
                 </div>
