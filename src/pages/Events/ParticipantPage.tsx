@@ -2,6 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {ShieldCheckIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
+import Badge from '../../Components/Tailwind/Badge';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
@@ -167,10 +168,14 @@ const ParticipantPage = () => {
             </Typography>
           </div>
 
-          <div className="mt-6 ml-2 flex flex-col">
-            <Typography variant="h2">{eventData.attendee.full_name}</Typography>
+          <div className="mt-6 ml-2 flex flex-col mr-4">
+            <div className="flex flex-row items-center justify-between">
+              <Typography variant="h2">{eventData.attendee.full_name}</Typography>
 
-            <div className="mt-6 mr-8 relative">
+              <Badge text={eventData.attendee.state} size="md" className="rounded-full" />
+            </div>
+
+            <div className="mt-6 relative">
               <div className="mx-auto w-full">
                 <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-row items-center">
