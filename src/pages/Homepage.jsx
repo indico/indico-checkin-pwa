@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {QrCodeIcon} from '@heroicons/react/20/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Button, Typography} from '../Components/Tailwind/index.jsx';
@@ -55,7 +56,10 @@ const Homepage = () => {
     <div className="px-6 pt-1">
       <div className="flex flex-row justify-between items-center">
         <Typography variant="h3">Events</Typography>
-        <Button onClick={onAddEvent}>Add event</Button>
+        <Button className="flex gap-2" onClick={onAddEvent}>
+          <QrCodeIcon className="min-w-[1.25rem] h-5" />
+          Add event
+        </Button>
       </div>
 
       {events?.length > 0 ? (
