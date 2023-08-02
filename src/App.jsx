@@ -3,6 +3,7 @@ import {useEffect} from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Background from './Components/Background';
 import BottomTabs from './Components/BottomTabs';
+import Modal from './Components/Tailwind/Modal/Modal';
 import TopTab from './Components/TopTab';
 import useSettings from './hooks/useSettings';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
@@ -39,6 +40,8 @@ const App = () => {
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
         <BottomTabs />
+
+        <Modal />
       </BrowserRouter>
     </div>
   );
