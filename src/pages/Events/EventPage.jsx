@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {UserGroupIcon} from '@heroicons/react/20/solid';
-import {ShieldCheckIcon} from '@heroicons/react/24/solid';
+import {ShieldCheckIcon, TrashIcon} from '@heroicons/react/24/solid';
+import DropdownSettings from '../../Components/DropdownSettings';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
@@ -198,8 +199,11 @@ const EventPage = () => {
 
   return (
     <div className="px-6 pt-1">
-      <div className="flex justify-between">
-        <Breadcrumbs className="" routeNames={[event.title]} routeHandlers={[null]} />
+      <div className="flex flex-row w-100 items-start justify-between gap-4">
+        <div className="pt-2">
+          <Breadcrumbs routeNames={[event.title]} routeHandlers={[null]} />
+        </div>
+        <DropdownSettings items={[{icon: <TrashIcon />, text: 'Delete event'}]} />
       </div>
       <div className="mt-6 flex flex-col gap-4">
         {isLoading && <LoadingIndicator className="mt-20" />}

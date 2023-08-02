@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {ShieldCheckIcon} from '@heroicons/react/20/solid';
-import {Typography} from '../../Components/Tailwind';
+import {ShieldCheckIcon, TrashIcon} from '@heroicons/react/20/solid';
+import DropdownSettings from '../../Components/DropdownSettings';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
@@ -116,18 +116,22 @@ const RegistrationFormPage = () => {
   };
 
   return (
-    <div className="mx-auto w-full h-full justify-center align-center mt-3">
+    <div className="px-6 pt-1">
       {eventData && (
         <>
-          <div className="flex flex-row w-100 items-center justify-between">
-            <Breadcrumbs
-              className="ml-2"
-              routeNames={[eventData.event?.title, eventData.label]}
-              routeHandlers={[navigateBack, null]}
+          <div className="flex flex-row w-100 items-start justify-between gap-4">
+            <div className="pt-2">
+              <Breadcrumbs
+                routeNames={[eventData.event?.title, eventData.label]}
+                routeHandlers={[navigateBack, null]}
+              />
+            </div>
+            <DropdownSettings
+              items={[
+                {icon: <TrashIcon />, text: 'Delete event'},
+                {icon: <TrashIcon />, text: 'Delete registration form'},
+              ]}
             />
-            <Typography variant="body3" className="mr-2">
-              {eventData.event?.date}
-            </Typography>
           </div>
           <div className="mt-6">
             {isLoading && <LoadingIndicator className="mt-20" />}
@@ -136,7 +140,6 @@ const RegistrationFormPage = () => {
                 columnLabels={['Attendees']}
                 searchColIdx={0}
                 rows={tableRows}
-                className="w-5/6 m-auto mt-6"
                 RightIcon={ShieldCheckIcon}
               />
             )}
