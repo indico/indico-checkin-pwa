@@ -16,6 +16,7 @@ import {
   updateEvent,
   updateRegForm,
 } from '../../db/utils';
+import useAppState from '../../hooks/useAppState';
 import EventData from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -28,6 +29,8 @@ const EventPage = () => {
 
   const [event, setEvent] = useState(new EventData());
   const [isLoading, setIsLoading] = useState(false);
+
+  const {enableModal} = useAppState();
 
   useEffect(() => {
     setIsLoading(true);
@@ -48,15 +51,23 @@ const EventPage = () => {
       );
 
       // Fetch the event data from the server
-      const response = await authFetch(newEventData.serverBaseUrl, `/api/checkin/event/${eventID}`);
-      // console.log('Response: ', response);
-      // const mockResponse = mockEventDetailsResponse;
-      if (response) {
-        // Compare the data from the server with the local data
-        if (response.title !== newEventData.title || response.start_dt !== newEventData.date) {
-          // Update the local data
-          await updateEvent(Number(eventID), response.title, response.start_dt);
+      try {
+        const response = await authFetch(
+          newEventData.serverBaseUrl,
+          `/api/checkin/event/${eventID}`
+        );
+        console.log('Get event details Response: ', response);
+        // const mockResponse = mockEventDetailsResponse;
+        if (response) {
+          // Compare the data from the server with the local data
+          if (response.title !== newEventData.title || response.start_dt !== newEventData.date) {
+            // Update the local data
+            await updateEvent(Number(eventID), response.title, response.start_dt);
+          }
         }
+      } catch (err) {
+        enableModal("Error fetching the event's details", err.message);
+        return;
       }
 
       // Get the data of each Stored Registration Form that belongs to this event

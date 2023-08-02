@@ -19,7 +19,7 @@ const emptyModalData = {
 const AppStateContext = createContext({
   showModal: false,
   modalData: emptyModalData,
-  enableModal: (_modalData: ModalProps) => {},
+  enableModal: (title: string, body?: string, btnText?: string) => {},
   disableModal: () => {},
 });
 
@@ -29,7 +29,7 @@ interface AppStateProviderProps {
 export interface AppStateReturn {
   showModal: boolean;
   modalData: ModalProps;
-  enableModal: (modalData: ModalProps) => void;
+  enableModal: (title: string, body?: string, btnText?: string) => void;
   disableModal: () => void;
 }
 
@@ -41,8 +41,13 @@ export const AppStateProvider = ({children}: AppStateProviderProps) => {
    * Sets the modal data and shows the modal
    * @param modalData - The data to be displayed in the modal
    */
-  const enableModal = (modalData: ModalProps) => {
-    setModalData(modalData);
+  const enableModal = (
+    title: string,
+    body: string = defaultBody,
+    btnText: string = defaultBtnText
+  ) => {
+    console.log('title: ', title, 'body: ', body, 'btnText: ', btnText);
+    setModalData({title, body, btnText});
     setShowModal(true);
   };
   /**

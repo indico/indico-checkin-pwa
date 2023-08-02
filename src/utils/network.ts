@@ -29,6 +29,10 @@ export const authFetch = async (
         'Content-Type': 'application/json',
       },
     });
+
+    // Throw Mock Error
+    // throw new Error('Mock Error ' + urlSuffix);
+
     // console.log('response:', response);
     const data = await response.json();
     // console.log('data:', data);
@@ -47,5 +51,6 @@ export const authFetch = async (
     return response; */
   } catch (error) {
     console.log('[authFetch] Error: ', error);
+    return Promise.reject(error);
   }
 };
