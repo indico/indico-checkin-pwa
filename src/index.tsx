@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import {AppStateProvider} from './context/AppStateProvider';
 import {SettingsProvider} from './context/SettingsProvider.jsx';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
@@ -9,9 +10,11 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <SettingsProvider>
-      <App />
-    </SettingsProvider>
+    <AppStateProvider>
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
+    </AppStateProvider>
   </React.StrictMode>
 );
 
