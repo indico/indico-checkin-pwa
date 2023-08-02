@@ -3,11 +3,15 @@ import {ComponentProps} from 'react';
 interface BadgeProps {
   text: string;
   className?: ComponentProps<'div'>['className'];
+  colorClassName?: ComponentProps<'div'>['className'];
   size?: 'sm' | 'md' | 'lg';
 }
 
 const defaultClassName: ComponentProps<'div'>['className'] =
-  'bg-gray-200 text-darkSecondary dark:bg-gray-800 dark:text-secondary font-medium rounded border border-secondary';
+  'bg-gray-200 dark:bg-gray-800 font-medium rounded border';
+
+const defaultColorClass: ComponentProps<'div'>['className'] =
+  'text-darkSecondary dark:text-secondary border-secondary';
 
 const sizeClassNames: {
   sm: ComponentProps<'div'>['className'];
@@ -19,8 +23,10 @@ const sizeClassNames: {
   lg: 'text-lg px-2.5 py-1',
 };
 
-const Badge = ({text, className, size = 'md'}: BadgeProps) => {
-  const fullClassname = `${defaultClassName} ${sizeClassNames[size]} ${className ?? ''}`;
+const Badge = ({text, className, size = 'md', colorClassName = defaultColorClass}: BadgeProps) => {
+  const fullClassname = `${defaultClassName} ${colorClassName} ${sizeClassNames[size]} ${
+    className ?? ''
+  }`;
 
   return <span className={fullClassname}>{text}</span>;
 };

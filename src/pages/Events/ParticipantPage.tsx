@@ -192,7 +192,14 @@ const ParticipantPage = () => {
             <div className="flex flex-row items-center justify-between">
               <Typography variant="h2">{eventData.attendee.full_name}</Typography>
 
-              <Badge text={eventData.attendee.state} size="md" className="rounded-full" />
+              {eventData.attendee.state !== participantStates.COMPLETE && (
+                <Badge
+                  text={eventData.attendee.state}
+                  size="md"
+                  className="rounded-full"
+                  colorClassName="text-danger dark:text-danger border-danger"
+                />
+              )}
             </div>
 
             <div className="mt-6 relative">
