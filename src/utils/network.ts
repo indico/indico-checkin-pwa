@@ -31,7 +31,9 @@ export const authFetch = async (
     });
 
     // Throw Mock Error
-    // throw new Error('Mock Error ' + urlSuffix);
+    /* if (urlSuffix.length > 30) {
+      throw new Error('Mock Error ' + urlSuffix);
+    } */
 
     // console.log('response:', response);
     const data = await response.json();

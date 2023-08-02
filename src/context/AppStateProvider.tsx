@@ -1,4 +1,4 @@
-import {createContext, useState} from 'react';
+import {createContext, useCallback, useState} from 'react';
 import PropTypes from 'prop-types';
 
 // Modal data
@@ -41,15 +41,14 @@ export const AppStateProvider = ({children}: AppStateProviderProps) => {
    * Sets the modal data and shows the modal
    * @param modalData - The data to be displayed in the modal
    */
-  const enableModal = (
-    title: string,
-    body: string = defaultBody,
-    btnText: string = defaultBtnText
-  ) => {
-    console.log('title: ', title, 'body: ', body, 'btnText: ', btnText);
-    setModalData({title, body, btnText});
-    setShowModal(true);
-  };
+  const enableModal = useCallback(
+    (title: string, body: string = defaultBody, btnText: string = defaultBtnText) => {
+      // console.log('title: ', title, 'body: ', body, 'btnText: ', btnText);
+      setModalData({title, body, btnText});
+      setShowModal(true);
+    },
+    []
+  );
   /**
    * Hides the modal and resets the modal data
    */

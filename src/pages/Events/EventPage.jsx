@@ -77,64 +77,75 @@ const EventPage = () => {
       for (let i = 0; i < prevRegForms.length; i++) {
         const regForm = prevRegForms[i];
 
-        // Update Reg. Form Details if they are different
-        const regFormResponse = await authFetch(
-          newEventData.serverBaseUrl,
-          `/api/checkin/event/${eventID}/registration/${regForm.id}`
-        );
-        // console.log('regFormResponse: ', i, regFormResponse);
+        try {
+          // Update Reg. Form Details if they are different
+          const regFormResponse = await authFetch(
+            newEventData.serverBaseUrl,
+            `/api/checkin/event/${eventID}/registration/${regForm.id}`
+          );
+          // console.log('regFormResponse: ', i, regFormResponse);
 
-        // const mockResponse = mockRegFormDetailsResponse;
-        if (regFormResponse) {
-          // Compare the data from the server with the local data
-          if (regFormResponse.title !== regForm.label) {
-            // Update the IndexedDB data
-            await updateRegForm(Number(eventID), regFormResponse.title);
+          // const mockResponse = mockRegFormDetailsResponse;
+          if (regFormResponse) {
+            // Compare the data from the server with the local data
+            if (regFormResponse.title !== regForm.label) {
+              // Update the IndexedDB data
+              await updateRegForm(Number(eventID), regFormResponse.title);
+            }
           }
+        } catch (err) {
+          enableModal('Error fetching the Form details', err.message);
+          return;
         }
 
-        // Update the list of participants if they are different
-        const formRegistrationsResponse = await authFetch(
-          newEventData.serverBaseUrl,
-          `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
-        );
-        // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
-        // const mockResponse2 = mockParticipantsResponse;
-        if (formRegistrationsResponse) {
-          // Compare the data from the server with the local data
-          const currParticipants = await getRegFormParticipants(regForm.participants);
-          // console.log('Current Participants:', currParticipants);
-
-          // Find the participants that are no longer in the server's list
-          const currParticipantIDs = currParticipants.map(p => p.id);
-          const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
-          const addedParticipants = formRegistrationsResponse.filter(
-            participant => !currParticipantIDs.includes(participant.registration_id)
+        try {
+          // Update the list of participants if they are different
+          const formRegistrationsResponse = await authFetch(
+            newEventData.serverBaseUrl,
+            `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
           );
-          const removedParticipants = currParticipants.filter(
-            participant => !serverParticipantIDs.includes(participant.id)
-          );
+          // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
+          // const mockResponse2 = mockParticipantsResponse;
 
-          // Add the new participants to the IndexedDB
-          for (const participant of addedParticipants) {
-            // console.log('Adding new participant...');
-            // Add the participant to the IndexedDB
-            const participantData = {
-              id: participant.registration_id,
-              name: participant.full_name,
-              checked_in: participant.checked_in,
-              regForm_id: regForm.id,
-              state: participant.state,
-            };
-            await addRegFormParticipant(participantData);
-          }
+          if (formRegistrationsResponse) {
+            // Compare the data from the server with the local data
+            const currParticipants = await getRegFormParticipants(regForm.participants);
+            // console.log('Current Participants:', currParticipants);
 
-          // Remove the participants that are no longer in the server's list
-          for (const participant of removedParticipants) {
-            // console.log('Removing participant...');
-            // Remove the participant from the IndexedDB
-            await removeRegFormParticipant(participant.id);
+            // Find the participants that are no longer in the server's list
+            const currParticipantIDs = currParticipants.map(p => p.id);
+            const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
+            const addedParticipants = formRegistrationsResponse.filter(
+              participant => !currParticipantIDs.includes(participant.registration_id)
+            );
+            const removedParticipants = currParticipants.filter(
+              participant => !serverParticipantIDs.includes(participant.id)
+            );
+
+            // Add the new participants to the IndexedDB
+            for (const participant of addedParticipants) {
+              // console.log('Adding new participant...');
+              // Add the participant to the IndexedDB
+              const participantData = {
+                id: participant.registration_id,
+                name: participant.full_name,
+                checked_in: participant.checked_in,
+                regForm_id: regForm.id,
+                state: participant.state,
+              };
+              await addRegFormParticipant(participantData);
+            }
+
+            // Remove the participants that are no longer in the server's list
+            for (const participant of removedParticipants) {
+              // console.log('Removing participant...');
+              // Remove the participant from the IndexedDB
+              await removeRegFormParticipant(participant.id);
+            }
           }
+        } catch (err) {
+          enableModal('Error fetching the Form participants', err.message);
+          return;
         }
       }
 
@@ -164,7 +175,7 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [eventID, navigate, autoRedirect]);
+  }, [eventID, navigate, autoRedirect, enableModal]);
 
   /**
    * Handle the click event on a registration form
