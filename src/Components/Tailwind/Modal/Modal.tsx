@@ -2,37 +2,19 @@ import useAppState from '../../../hooks/useAppState';
 import Button from '../Button';
 import Typography from '../Typography';
 
-interface ModalProps {
-  title: string;
-  body: string;
-  btnText?: string;
-}
-
-const defaultTitle = 'An error occurred';
-const defaultBody = 'Something went wrong. Please try again later.';
-const defaultBtnText = 'OK';
-
-const Modal = ({
-  title = defaultTitle,
-  body = defaultBody,
-  btnText = defaultBtnText,
-}: ModalProps) => {
-  const {showModal, setShowModal} = useAppState();
+const Modal = () => {
+  const {showModal, modalData, disableModal} = useAppState();
 
   const stopPropagation = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const hideModal = () => {
-    setShowModal(false);
-  };
-
   return (
     showModal && (
       <div
         className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none bg-black bg-opacity-40"
-        onClick={hideModal}
+        onClick={disableModal}
       >
         <div className="relative w-auto my-6 mx-5 max-w-3xl">
           {/*content*/}
@@ -43,7 +25,7 @@ const Modal = ({
             {/*header*/}
             <div className="flex items-start justify-between p-4 border-b border-solid border-slate-200 rounded-t">
               <Typography variant="h3" className="font-semibold text-black dark:text-black">
-                {title}
+                {modalData.title}
               </Typography>
             </div>
 
@@ -53,7 +35,7 @@ const Modal = ({
                 variant="body1"
                 className="my-4 text-slate-600 dark:text-slate-600 leading-normal"
               >
-                {body}
+                {modalData.body}
               </Typography>
             </div>
 
@@ -61,9 +43,9 @@ const Modal = ({
             <div className="flex items-center justify-end p-4 border-t border-solid border-slate-200 rounded-b">
               <Button
                 className="font-bold uppercase shadow-lg outline-none min-w-[5rem]"
-                onClick={hideModal}
+                onClick={disableModal}
               >
-                {btnText}
+                {modalData.btnText}
               </Button>
             </div>
           </div>
