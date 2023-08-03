@@ -42,6 +42,7 @@ const EventPage = () => {
       });
       if (!fullData?.event) {
         console.log("Couldn't find event in DB with ID :", eventID);
+        enableModal('Error fetching the event', "Couldn't find event in DB");
         return;
       }
       const newEventData = new EventData(
@@ -66,7 +67,8 @@ const EventPage = () => {
           }
         }
       } catch (err) {
-        enableModal("Error fetching the event's details", err.message);
+        if (err instanceof Error) enableModal("Error fetching the event's details", err.message);
+        else enableModal("Error fetching the event's details", 'An unknown error occurred');
         return;
       }
 
@@ -93,7 +95,8 @@ const EventPage = () => {
             }
           }
         } catch (err) {
-          enableModal('Error fetching the Form details', err.message);
+          if (err instanceof Error) enableModal('Error fetching the Form details', err.message);
+          else enableModal('Error fetching the Form details', 'An unknown error occurred');
           return;
         }
 
@@ -143,7 +146,9 @@ const EventPage = () => {
             }
           }
         } catch (err) {
-          enableModal('Error fetching the Form participants', err.message);
+          if (err instanceof Error)
+            enableModal('Error fetching the Form participants', err.message);
+          else enableModal('Error fetching the Form participants', 'An unknown error occurred');
           return;
         }
       }
