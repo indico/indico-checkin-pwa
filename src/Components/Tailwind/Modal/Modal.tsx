@@ -1,3 +1,4 @@
+import {ShieldExclamationIcon} from '@heroicons/react/24/outline';
 import useAppState from '../../../hooks/useAppState';
 import Button from '../Button';
 import Typography from '../Typography';
@@ -23,7 +24,12 @@ const Modal = () => {
             onClick={stopPropagation}
           >
             {/*header*/}
-            <div className="flex items-start justify-between p-4 border-b border-solid border-slate-200 rounded-t">
+            <div className="flex items-start justify-between px-4 pt-7 pb-5 border-b border-solid border-slate-200 rounded-t">
+              {/* Show Alert Icon */}
+              <div className="absolute -top-0 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-dangerDark rounded-full shadow">
+                <ShieldExclamationIcon className="text-white p-1 text-center" />
+              </div>
+
               <Typography variant="h3" className="font-semibold text-black dark:text-black">
                 {modalData.title}
               </Typography>

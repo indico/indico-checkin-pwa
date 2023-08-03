@@ -56,7 +56,7 @@ const EventPage = () => {
           newEventData.serverBaseUrl,
           `/api/checkin/event/${eventID}`
         );
-        console.log('Get event details Response: ', response);
+        // console.log('Get event details Response: ', response);
         // const mockResponse = mockEventDetailsResponse;
         if (response) {
           // Compare the data from the server with the local data
@@ -83,7 +83,6 @@ const EventPage = () => {
             newEventData.serverBaseUrl,
             `/api/checkin/event/${eventID}/registration/${regForm.id}`
           );
-          // console.log('regFormResponse: ', i, regFormResponse);
 
           // const mockResponse = mockRegFormDetailsResponse;
           if (regFormResponse) {

@@ -1,4 +1,5 @@
 import {ComponentProps, ReactNode} from 'react';
+import {twMerge} from 'tailwind-merge';
 
 interface variantProps {
   h1: ComponentProps<'div'>['className'];
@@ -29,7 +30,7 @@ interface TypographyProps {
 }
 
 const Typography = ({variant, children, className}: TypographyProps) => {
-  const variantClass = variants[variant] + ' ' + (className ?? '');
+  const variantClass = twMerge(variants[variant], className); // Merge the variant class with the className prop
 
   return <p className={variantClass}>{children}</p>;
 };
