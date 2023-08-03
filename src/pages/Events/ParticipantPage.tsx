@@ -8,6 +8,7 @@ import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {Toggle} from '../../Components/Tailwind/Toggle';
 import {participantStates} from '../../db/db';
 import {changeParticipantCheckIn, getEventDetailsFromIds} from '../../db/utils';
+import useAppState from '../../hooks/useAppState';
 import {ParticipantPageData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -19,6 +20,7 @@ const ParticipantPage = () => {
   const [eventData, setEventData] = useState<ParticipantPageData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [triedCheckIn, setTriedCheckIn] = useState(false);
+  const {enableModal} = useAppState();
 
   const disableCheckIn = useMemo(() => {
     return ![participantStates.COMPLETE, participantStates.UNPAID].includes(
@@ -37,14 +39,11 @@ const ParticipantPage = () => {
         participantId: Number(registrantId),
       });
 
-      if (!fullData) {
-        console.log('Error getting full event details from ids');
-        setIsLoading(false);
-        return;
-      }
-
-      if (!fullData.event || !fullData.regForm || !fullData.participant) {
-        console.log('Error getting full event details from ids');
+      if (!fullData || !fullData.event || !fullData.regForm || !fullData.participant) {
+        enableModal(
+          'Error getting the participant data',
+          "Couldn't fetch the event, form or participant data"
+        );
         setIsLoading(false);
         return;
       }
@@ -68,7 +67,7 @@ const ParticipantPage = () => {
     };
 
     getParticipantPageData();
-  }, [id, regFormId, registrantId]);
+  }, [id, regFormId, registrantId, enableModal]);
 
   const updateCheckedInStatus = (newStatus: boolean) => {
     setEventData(prevState => {
@@ -91,11 +90,17 @@ const ParticipantPage = () => {
    */
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
-      if (!eventData) return;
+      if (!eventData) {
+        enableModal('App is in an invalid state', "Couldn't find the participant data");
+        return;
+      }
 
       // Only allow check-in if the participant's state is "complete" or "unpaid"
       if (disableCheckIn) {
-        console.log('Cannot check in user with state: ', eventData?.attendee?.state);
+        enableModal(
+          'Unable to check in',
+          `Cannot check in user with state: ${eventData?.attendee?.state}`
+        );
         return;
       }
 
@@ -112,7 +117,7 @@ const ParticipantPage = () => {
           }
         );
         if (!response) {
-          console.log('Error checking in user');
+          enableModal('Error checking in user', 'No response from the server');
           setIsLoading(false);
           return;
         }
@@ -123,12 +128,16 @@ const ParticipantPage = () => {
 
         setIsLoading(false);
       } catch (err) {
-        console.log('Error checking in the user: ', err);
+        if (err instanceof Error) {
+          enableModal('Error checking in the user', err.message);
+        } else {
+          enableModal('Error checking in');
+        }
         setIsLoading(false);
         return;
       }
     },
-    [eventData, disableCheckIn]
+    [eventData, disableCheckIn, enableModal]
   );
 
   useEffect(() => {
