@@ -58,7 +58,7 @@ const QrScannerPlugin = (props: QrProps) => {
 
   useEffect(() => {
     const showQRCode = async () => {
-      // console.log('showQRCode');
+      console.log('showQRCode');
 
       const hasCamPerm: boolean = await checkCameraPermissions();
       if (!hasCamPerm) {
@@ -77,7 +77,14 @@ const QrScannerPlugin = (props: QrProps) => {
         const verbose = props.verbose === true;
         // Suceess callback is required.
         if (!props.qrCodeSuccessCallback) {
-          throw new Error('qrCodeSuccessCallback is required.'); // TODO: Check if we should throw an error
+          console.log('[Error] qrCodeSuccessCallback is required.');
+          return;
+        }
+
+        // Check if element with given id exists.
+        if (!document.getElementById(qrcodeRegionId)) {
+          console.log(`[Error] Element with id=${qrcodeRegionId} does not exists.`);
+          return;
         }
 
         html5CustomScanner.current = new Html5Qrcode(qrcodeRegionId, {
