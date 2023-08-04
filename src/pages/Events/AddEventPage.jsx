@@ -11,7 +11,6 @@ const AddEventPage = () => {
   const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-
   const navigation = useNavigate();
 
   const onScanResult = async (decodedText, _decodedResult) => {
@@ -134,8 +133,8 @@ const AddEventPage = () => {
 
   return (
     <div>
-      <div className="justify-center items-center flex py-6">
-        <Typography variant="h4" color="white">
+      <div className="justify-center items-center flex pt-3 pb-6">
+        <Typography variant="h3 " className="font-semibold dark:text-white">
           Scan the Event QR Code
         </Typography>
       </div>
@@ -143,7 +142,7 @@ const AddEventPage = () => {
       <QrScannerPlugin
         fps={15}
         qrbox={250}
-        aspectRatio={1}
+        aspectRatio={0.8}
         disableFlip={false}
         qrCodeSuccessCallback={onScanResult}
         onPermRefused={onPermRefused}

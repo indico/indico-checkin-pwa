@@ -50,6 +50,7 @@ const createConfig = (props: QrProps) => {
   if (props.formatsToSupport) {
     config.formatsToSupport = props.formatsToSupport;
   }
+
   return config;
 };
 
@@ -58,7 +59,7 @@ const QrScannerPlugin = (props: QrProps) => {
 
   useEffect(() => {
     const showQRCode = async () => {
-      console.log('showQRCode');
+      // console.log('showQRCode');
 
       const hasCamPerm: boolean = await checkCameraPermissions();
       if (!hasCamPerm) {
