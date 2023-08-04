@@ -1,11 +1,12 @@
 // file = QrScannerPlugin.jsx
-import {MutableRefObject, useEffect, useRef} from 'react';
+import {MutableRefObject, useEffect, useRef, useState} from 'react';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {checkCameraPermissions} from '../../utils/media';
 import classes from './QrScanner.module.css';
 
 // Id of the HTML element used by the Html5QrcodeScanner.
 const qrcodeRegionId = 'html5qr-code-full-region';
+export const defaultAspectRatio = 0.8;
 
 interface QrProps {
   fps?: number; // Expected frame rate of qr code scanning. example { fps: 2 } means the scanning would be done every 500 ms.
@@ -57,6 +58,7 @@ const createConfig = (props: QrProps) => {
 
 const QrScannerPlugin = (props: QrProps) => {
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
+  const [showAnimation, setShowAnimation] = useState(false);
 
   useEffect(() => {
     const showQRCode = async () => {
@@ -94,12 +96,17 @@ const QrScannerPlugin = (props: QrProps) => {
           verbose,
         });
         // console.log('Starting QR Scanner');
-        html5CustomScanner.current.start(
+        await html5CustomScanner.current.start(
           {facingMode: 'environment'},
           config,
           props.qrCodeSuccessCallback,
           props.qrCodeErrorCallback
         );
+
+        // Show the animation if the aspect ratio is the default
+        if (props.aspectRatio === defaultAspectRatio) {
+          setShowAnimation(true);
+        }
       }
     };
 
@@ -121,7 +128,7 @@ const QrScannerPlugin = (props: QrProps) => {
     };
   }, [props]);
 
-  return <div id={qrcodeRegionId} className={classes.qrRegion} />;
+  return <div id={qrcodeRegionId} className={showAnimation ? classes.qrRegion : ''} />;
 };
 
 export default QrScannerPlugin;
