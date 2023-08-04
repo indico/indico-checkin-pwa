@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import QrScannerPlugin from '../Components/QrScannerPlugin';
+import QrScannerPlugin from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
 import useSettings from '../hooks/useSettings';

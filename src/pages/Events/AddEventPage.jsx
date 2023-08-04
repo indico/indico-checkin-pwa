@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
-import QrScannerPlugin from '../../Components/QrScannerPlugin';
+import QrScannerPlugin from '../../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../../Components/Tailwind';
 import db from '../../db/db';
 import {addEvent, addRegistrationForm} from '../../db/utils';

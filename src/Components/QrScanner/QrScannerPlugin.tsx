@@ -1,7 +1,8 @@
 // file = QrScannerPlugin.jsx
 import {MutableRefObject, useEffect, useRef} from 'react';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
-import {checkCameraPermissions} from '../utils/media';
+import {checkCameraPermissions} from '../../utils/media';
+import classes from './QrScanner.module.css';
 
 // Id of the HTML element used by the Html5QrcodeScanner.
 const qrcodeRegionId = 'html5qr-code-full-region';
@@ -120,7 +121,7 @@ const QrScannerPlugin = (props: QrProps) => {
     };
   }, [props]);
 
-  return <div id={qrcodeRegionId} />;
+  return <div id={qrcodeRegionId} className={classes.qrRegion} />;
 };
 
 export default QrScannerPlugin;
