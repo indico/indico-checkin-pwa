@@ -4,9 +4,9 @@ import QrScannerPlugin, {defaultAspectRatio} from '../Components/QrScanner/QrSca
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
 import useSettings from '../hooks/useSettings';
+import classes from './Events/Events.module.css';
 
 const CheckInPage = () => {
-  const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const {autoCheckin} = useSettings();
@@ -73,9 +73,9 @@ const CheckInPage = () => {
 
   return (
     <div>
-      <div className="justify-center items-center flex py-6">
-        <Typography variant="h4" color="white">
-          Check In
+      <div className="justify-center items-center flex pt-3 pb-6">
+        <Typography variant="h3 " className="font-semibold dark:text-white">
+          Scan the Check-In QR Code
         </Typography>
       </div>
 
@@ -89,11 +89,18 @@ const CheckInPage = () => {
       />
 
       <div className="justify-center items-center flex py-6 mx-6">
-        <Typography variant="body1" className="text-center">
-          {hasPermission
-            ? message
-            : 'Please give permission to access the camera and refresh the page'}
-        </Typography>
+        {hasPermission ? (
+          <Typography
+            variant="h3"
+            className={`text-center font-bold animate-pulse duration-500 ${classes.scanningText}`}
+          >
+            QR CODE SCANNING
+          </Typography>
+        ) : (
+          <Typography variant="body1" className="text-center">
+            Please give permission to access the camera and refresh the page
+          </Typography>
+        )}
       </div>
     </div>
   );

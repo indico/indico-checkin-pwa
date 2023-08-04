@@ -6,9 +6,9 @@ import {Typography} from '../../Components/Tailwind';
 import db from '../../db/db';
 import {addEvent, addRegistrationForm} from '../../db/utils';
 import {discoveryEndpoint, redirectURI} from '../Auth/utils';
+import classes from './Events.module.css';
 
 const AddEventPage = () => {
-  const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const navigation = useNavigate();
@@ -149,11 +149,15 @@ const AddEventPage = () => {
       />
 
       <div className="justify-center items-center flex py-6 mx-6">
-        <Typography variant="body1" className="text-center">
-          {hasPermission
-            ? message
-            : 'Please give permission to access the camera and refresh the page'}
-        </Typography>
+        {hasPermission ? (
+          <Typography variant="h3" className={`text-center font-bold ${classes.scanningText}`}>
+            QR CODE SCANNING
+          </Typography>
+        ) : (
+          <Typography variant="body1" className="text-center">
+            Please give permission to access the camera and refresh the page
+          </Typography>
+        )}
       </div>
     </div>
   );
