@@ -34,14 +34,12 @@ const AddEventPage = () => {
     }
     // console.log('event data: ', decodedText);
 
-    const {
-      event_id,
-      title,
-      date,
-      regform_id,
-      regform_title,
-      server: {base_url, client_id, scope},
-    } = eventData;
+    const {event_id, title, date, regform_id, regform_title, server: serverData} = eventData;
+    const {base_url, client_id, scope} = serverData || {
+      base_url: null,
+      client_id: null,
+      scope: null,
+    };
 
     // Check if these variables are null
     if (
