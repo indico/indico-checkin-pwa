@@ -5,6 +5,7 @@ import QrScannerPlugin, {calcAspectRatio} from '../../Components/QrScanner/QrSca
 import {Typography} from '../../Components/Tailwind';
 import db from '../../db/db';
 import {addEvent, addRegistrationForm} from '../../db/utils';
+import useAppState from '../../hooks/useAppState';
 import {discoveryEndpoint, redirectURI} from '../Auth/utils';
 import classes from './Events.module.css';
 
@@ -12,6 +13,7 @@ const AddEventPage = () => {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const navigation = useNavigate();
+  const {enableModal, showModal} = useAppState();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     if (processing) {
@@ -26,11 +28,11 @@ const AddEventPage = () => {
     try {
       eventData = JSON.parse(decodedText);
     } catch (e) {
-      console.error('error parsing JSON', e);
+      enableModal('Error parsing the QRCode data', e?.message);
       setProcessing(false);
       return;
     }
-    console.log('event data: ', decodedText);
+    // console.log('event data: ', decodedText);
 
     const {
       event_id,
@@ -53,7 +55,7 @@ const AddEventPage = () => {
       regform_title == null
     ) {
       // The QRCode data is not complete, so ignore
-      console.log('QRCode Data is not valid. Please try again.');
+      enableModal('QRCode Data is not valid', 'Some fields are missing. Please try again.');
       setProcessing(false);
       return;
     }
@@ -76,6 +78,7 @@ const AddEventPage = () => {
         navigation('/');
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
+        enableModal('Error adding data to the DB', err?.message);
       }
       setProcessing(false);
       return;
@@ -112,7 +115,7 @@ const AddEventPage = () => {
       codeVerifier,
       scope: [scope],
     });
-    console.log('authRes: ', authRes);
+    // console.log('authRes: ', authRes);
 
     // Store the eventData in the browser's session storage. This is used later to verify the code challenge
     const sessionObj = structuredClone(eventData);
@@ -139,14 +142,18 @@ const AddEventPage = () => {
         </Typography>
       </div>
 
-      <QrScannerPlugin
-        fps={15}
-        qrbox={250}
-        aspectRatio={calcAspectRatio()}
-        disableFlip={false}
-        qrCodeSuccessCallback={onScanResult}
-        onPermRefused={onPermRefused}
-      />
+      {showModal ? (
+        <div className="w-full aspect-square" />
+      ) : (
+        <QrScannerPlugin
+          fps={15}
+          qrbox={250}
+          aspectRatio={calcAspectRatio()}
+          disableFlip={false}
+          qrCodeSuccessCallback={onScanResult}
+          onPermRefused={onPermRefused}
+        />
+      )}
 
       <div className="justify-center items-center flex py-6 mx-6">
         {hasPermission ? (

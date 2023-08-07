@@ -32,6 +32,7 @@ interface QrProps {
   verbose?: boolean;
   formatsToSupport?: Html5QrcodeSupportedFormats[];
   onPermRefused: () => void;
+  pause?: boolean;
 }
 
 // Creates the configuration object for Html5QrcodeScanner.
@@ -43,12 +44,14 @@ const createConfig = (props: QrProps) => {
     aspectRatio: number;
     disableFlip: boolean;
     formatsToSupport?: Html5QrcodeSupportedFormats[];
+    pause?: boolean;
   } = {
     fps: 10,
     qrbox: 250,
     aspectRatio: 1.0,
     disableFlip: false,
     formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+    pause: false,
   };
 
   if (props.fps) {
@@ -65,6 +68,9 @@ const createConfig = (props: QrProps) => {
   }
   if (props.formatsToSupport) {
     config.formatsToSupport = props.formatsToSupport;
+  }
+  if (props.pause) {
+    config.pause = props.pause;
   }
 
   return config;
@@ -87,24 +93,37 @@ const QrScannerPlugin = (props: QrProps) => {
         return;
       }
 
+      const config = createConfig(props);
+      const verbose = props.verbose === true;
+      // Suceess callback is required.
+      if (!props.qrCodeSuccessCallback) {
+        console.log('[Error] qrCodeSuccessCallback is required.');
+        return;
+      }
+
+      // Check if element with given id exists.
+      if (!document.getElementById(qrcodeRegionId)) {
+        console.log(`[Error] Element with id=${qrcodeRegionId} does not exists.`);
+        return;
+      }
+
       const currCamState = html5CustomScanner.current?.getState() || 0;
       // console.log('currCamState: ', currCamState);
+
+      // Handle the pause logic
+      if (config.pause && currCamState === Html5QrcodeScannerState.SCANNING) {
+        // Try to pause the scanner
+        await html5CustomScanner?.current?.pause(true);
+        return;
+      }
+      if (!config.pause && currCamState === Html5QrcodeScannerState.PAUSED) {
+        // Try to resume the scanner
+        await html5CustomScanner?.current?.resume();
+        return;
+      }
+
       if (currCamState <= Html5QrcodeScannerState.UNKNOWN) {
         // when component mounts
-        const config = createConfig(props);
-        const verbose = props.verbose === true;
-        // Suceess callback is required.
-        if (!props.qrCodeSuccessCallback) {
-          console.log('[Error] qrCodeSuccessCallback is required.');
-          return;
-        }
-
-        // Check if element with given id exists.
-        if (!document.getElementById(qrcodeRegionId)) {
-          console.log(`[Error] Element with id=${qrcodeRegionId} does not exists.`);
-          return;
-        }
-
         html5CustomScanner.current = new Html5Qrcode(qrcodeRegionId, {
           ...config,
           verbose,
