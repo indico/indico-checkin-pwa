@@ -1,0 +1,23 @@
+/* Video w/ Css Animation: https://www.youtube.com/watch?v=W9XEARppU8s */
+.qrRegion::after {
+  content: '';
+  width: 70%;
+  height: 2px;
+  background: #00ff00;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: animateLine 4s ease-in-out infinite;
+}
+
+@keyframes animateLine {
+  0% {
+    top: 16%;
+  }
+  50% {
+    top: calc(100% - 16%);
+  }
+  100% {
+    top: 16%;
+  }
+}

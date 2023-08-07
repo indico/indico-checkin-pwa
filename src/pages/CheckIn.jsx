@@ -1,16 +1,18 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import QrScannerPlugin from '../Components/QrScannerPlugin';
+import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
+import useAppState from '../hooks/useAppState';
 import useSettings from '../hooks/useSettings';
+import classes from './Events/Events.module.css';
 
 const CheckInPage = () => {
-  const [message, setMessage] = useState('Scanning...');
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const {autoCheckin} = useSettings();
   const navigate = useNavigate();
+  const {enableModal, showModal} = useAppState();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     if (processing) {
@@ -24,7 +26,7 @@ const CheckInPage = () => {
     try {
       eventData = JSON.parse(decodedText);
     } catch (e) {
-      console.error('error parsing JSON', e);
+      enableModal('Error parsing the QRCode data', e?.message);
       setProcessing(false);
       return;
     }
@@ -40,7 +42,7 @@ const CheckInPage = () => {
       regform_id == null
     ) {
       // The QRCode data is not complete, so ignore
-      console.log('QRCode Data is not valid. Please try again.');
+      enableModal('QRCode Data is not valid', 'Some fields are missing. Please try again.');
       setProcessing(false);
       return;
     }
@@ -51,7 +53,10 @@ const CheckInPage = () => {
     const userExists = await db.participants.get({id: registrant_id});
     if (!userExists) {
       // Cannot check in if the user is not registered
-      console.log('User is not registered. Please try again.');
+      enableModal(
+        'User does not exist in the DB',
+        'Trying to check in a user that is not registered. Please try again after updating the participants list.'
+      );
       setProcessing(false);
       return;
     }
@@ -73,27 +78,38 @@ const CheckInPage = () => {
 
   return (
     <div>
-      <div className="justify-center items-center flex py-6">
-        <Typography variant="h4" color="white">
-          Check In
+      <div className="justify-center items-center flex pt-3 pb-6">
+        <Typography variant="h3 " className="font-semibold dark:text-white">
+          Scan the Check-In QR Code
         </Typography>
       </div>
 
-      <QrScannerPlugin
-        fps={10}
-        qrbox={250}
-        aspectRatio={1}
-        disableFlip={false}
-        qrCodeSuccessCallback={onScanResult}
-        onPermRefused={onPermRefused}
-      />
+      {showModal ? (
+        <div className="w-full aspect-square" />
+      ) : (
+        <QrScannerPlugin
+          fps={10}
+          qrbox={250}
+          aspectRatio={calcAspectRatio()}
+          disableFlip={false}
+          qrCodeSuccessCallback={onScanResult}
+          onPermRefused={onPermRefused}
+        />
+      )}
 
       <div className="justify-center items-center flex py-6 mx-6">
-        <Typography variant="body1" className="text-center">
-          {hasPermission
-            ? message
-            : 'Please give permission to access the camera and refresh the page'}
-        </Typography>
+        {hasPermission ? (
+          <Typography
+            variant="h3"
+            className={`text-center font-bold animate-pulse duration-500 ${classes.scanningText}`}
+          >
+            QR CODE SCANNING
+          </Typography>
+        ) : (
+          <Typography variant="body1" className="text-center">
+            Please give permission to access the camera and refresh the page
+          </Typography>
+        )}
       </div>
     </div>
   );

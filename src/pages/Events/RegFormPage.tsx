@@ -11,6 +11,7 @@ import {
   getEventDetailsFromIds,
   getRegFormParticipants,
 } from '../../db/utils';
+import useAppState from '../../hooks/useAppState';
 import {RegFormData} from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -21,7 +22,7 @@ const RegistrationFormPage = () => {
   const [attendees, setAttendees] = useState<ParticipantTable[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // TODO: Keep changing from using HIstory state to IndexedDB
+  const {enableModal} = useAppState();
 
   useEffect(() => {
     // Fetch the RegistrationFormPage data from IndexedDB
@@ -33,7 +34,11 @@ const RegistrationFormPage = () => {
       });
 
       if (!fullData || !fullData.event || !fullData.regForm) {
-        console.log('Error getting full event details from ids');
+        // console.log('Error getting full event details from ids');
+        enableModal(
+          'Error getting the Form Details',
+          "Couldn't find the event or registration form data"
+        );
         return;
       }
 
@@ -53,7 +58,7 @@ const RegistrationFormPage = () => {
     };
 
     getRegFormPageData();
-  }, [id, regFormId]);
+  }, [id, regFormId, enableModal]);
 
   useEffect(() => {
     const getAttendees = async () => {
@@ -61,37 +66,53 @@ const RegistrationFormPage = () => {
 
       setIsLoading(true);
       let newAttendees = await getRegFormParticipants(eventData.participants);
-      if (!newAttendees) return; // If the event is not defined, then return
+      if (!newAttendees) {
+        enableModal(
+          'Error getting the attendees',
+          "Couldn't fetch the attendees that belong to this registration form."
+        );
+        setIsLoading(false);
+        return; // If the attendees couldn't be fetched, don't continue
+      }
 
-      // Update the attendees data by comparing with the server
-      const response = await authFetch(
-        eventData.event?.serverBaseUrl,
-        `/api/checkin/event/${eventData.event?.id}/registration/${eventData.id}/registrations`
-      );
-      if (response) {
-        let updatedParticipant = false;
-        for (const attendee of newAttendees) {
-          const serverAttendee: ServerParticipantTable = response.find(
-            (serverAttendee: any) => serverAttendee.registration_id === attendee.id
-          );
-          // Update the checked_in status
-          if (serverAttendee) {
-            const hasChanges = await changeRegFormParticipant(attendee, serverAttendee);
-            if (hasChanges) updatedParticipant = true;
+      try {
+        // Update the attendees data by comparing with the server
+        const response = await authFetch(
+          eventData.event?.serverBaseUrl,
+          `/api/checkin/event/${eventData.event?.id}/registration/${eventData.id}/registrations`
+        );
+        if (response) {
+          let updatedParticipant = false;
+          for (const attendee of newAttendees) {
+            const serverAttendee: ServerParticipantTable = response.find(
+              (serverAttendee: any) => serverAttendee.registration_id === attendee.id
+            );
+            // Update the checked_in status
+            if (serverAttendee) {
+              const hasChanges = await changeRegFormParticipant(attendee, serverAttendee);
+              if (hasChanges) updatedParticipant = true;
+            }
+          }
+
+          if (updatedParticipant) {
+            // Re-fetch the attendees
+            newAttendees = await getRegFormParticipants(eventData.participants);
           }
         }
-
-        if (updatedParticipant) {
-          // Re-fetch the attendees
-          newAttendees = await getRegFormParticipants(eventData.participants);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          enableModal('Error fetching the attendees', err.message);
+        } else {
+          enableModal('Error fetching the attendees', 'An unknown error occurred');
         }
+        return;
       }
 
       if (newAttendees) setAttendees(newAttendees);
     };
 
     getAttendees().finally(() => setIsLoading(false));
-  }, [eventData]);
+  }, [eventData, enableModal]);
 
   // Build the table rows array
   const tableRows: rowProps[] = useMemo(() => {

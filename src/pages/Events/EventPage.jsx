@@ -16,6 +16,7 @@ import {
   updateEvent,
   updateRegForm,
 } from '../../db/utils';
+import useAppState from '../../hooks/useAppState';
 import EventData from '../../Models/EventData';
 import {authFetch} from '../../utils/network';
 
@@ -29,6 +30,8 @@ const EventPage = () => {
   const [event, setEvent] = useState(new EventData());
   const [isLoading, setIsLoading] = useState(false);
 
+  const {enableModal} = useAppState();
+
   useEffect(() => {
     setIsLoading(true);
 
@@ -39,6 +42,7 @@ const EventPage = () => {
       });
       if (!fullData?.event) {
         console.log("Couldn't find event in DB with ID :", eventID);
+        enableModal('Error fetching the event', "Couldn't find event in DB");
         return;
       }
       const newEventData = new EventData(
@@ -48,15 +52,24 @@ const EventPage = () => {
       );
 
       // Fetch the event data from the server
-      const response = await authFetch(newEventData.serverBaseUrl, `/api/checkin/event/${eventID}`);
-      // console.log('Response: ', response);
-      // const mockResponse = mockEventDetailsResponse;
-      if (response) {
-        // Compare the data from the server with the local data
-        if (response.title !== newEventData.title || response.start_dt !== newEventData.date) {
-          // Update the local data
-          await updateEvent(Number(eventID), response.title, response.start_dt);
+      try {
+        const response = await authFetch(
+          newEventData.serverBaseUrl,
+          `/api/checkin/event/${eventID}`
+        );
+        // console.log('Get event details Response: ', response);
+        // const mockResponse = mockEventDetailsResponse;
+        if (response) {
+          // Compare the data from the server with the local data
+          if (response.title !== newEventData.title || response.start_dt !== newEventData.date) {
+            // Update the local data
+            await updateEvent(Number(eventID), response.title, response.start_dt);
+          }
         }
+      } catch (err) {
+        if (err instanceof Error) enableModal("Error fetching the event's details", err.message);
+        else enableModal("Error fetching the event's details", 'An unknown error occurred');
+        return;
       }
 
       // Get the data of each Stored Registration Form that belongs to this event
@@ -66,64 +79,77 @@ const EventPage = () => {
       for (let i = 0; i < prevRegForms.length; i++) {
         const regForm = prevRegForms[i];
 
-        // Update Reg. Form Details if they are different
-        const regFormResponse = await authFetch(
-          newEventData.serverBaseUrl,
-          `/api/checkin/event/${eventID}/registration/${regForm.id}`
-        );
-        // console.log('regFormResponse: ', i, regFormResponse);
+        try {
+          // Update Reg. Form Details if they are different
+          const regFormResponse = await authFetch(
+            newEventData.serverBaseUrl,
+            `/api/checkin/event/${eventID}/registration/${regForm.id}`
+          );
 
-        // const mockResponse = mockRegFormDetailsResponse;
-        if (regFormResponse) {
-          // Compare the data from the server with the local data
-          if (regFormResponse.title !== regForm.label) {
-            // Update the IndexedDB data
-            await updateRegForm(Number(eventID), regFormResponse.title);
+          // const mockResponse = mockRegFormDetailsResponse;
+          if (regFormResponse) {
+            // Compare the data from the server with the local data
+            if (regFormResponse.title !== regForm.label) {
+              // Update the IndexedDB data
+              await updateRegForm(Number(eventID), regFormResponse.title);
+            }
           }
+        } catch (err) {
+          if (err instanceof Error) enableModal('Error fetching the Form details', err.message);
+          else enableModal('Error fetching the Form details', 'An unknown error occurred');
+          return;
         }
 
-        // Update the list of participants if they are different
-        const formRegistrationsResponse = await authFetch(
-          newEventData.serverBaseUrl,
-          `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
-        );
-        // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
-        // const mockResponse2 = mockParticipantsResponse;
-        if (formRegistrationsResponse) {
-          // Compare the data from the server with the local data
-          const currParticipants = await getRegFormParticipants(regForm.participants);
-          // console.log('Current Participants:', currParticipants);
-
-          // Find the participants that are no longer in the server's list
-          const currParticipantIDs = currParticipants.map(p => p.id);
-          const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
-          const addedParticipants = formRegistrationsResponse.filter(
-            participant => !currParticipantIDs.includes(participant.registration_id)
+        try {
+          // Update the list of participants if they are different
+          const formRegistrationsResponse = await authFetch(
+            newEventData.serverBaseUrl,
+            `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
           );
-          const removedParticipants = currParticipants.filter(
-            participant => !serverParticipantIDs.includes(participant.id)
-          );
+          // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
+          // const mockResponse2 = mockParticipantsResponse;
 
-          // Add the new participants to the IndexedDB
-          for (const participant of addedParticipants) {
-            // console.log('Adding new participant...');
-            // Add the participant to the IndexedDB
-            const participantData = {
-              id: participant.registration_id,
-              name: participant.full_name,
-              checked_in: participant.checked_in,
-              regForm_id: regForm.id,
-              state: participant.state,
-            };
-            await addRegFormParticipant(participantData);
-          }
+          if (formRegistrationsResponse) {
+            // Compare the data from the server with the local data
+            const currParticipants = await getRegFormParticipants(regForm.participants);
+            // console.log('Current Participants:', currParticipants);
 
-          // Remove the participants that are no longer in the server's list
-          for (const participant of removedParticipants) {
-            // console.log('Removing participant...');
-            // Remove the participant from the IndexedDB
-            await removeRegFormParticipant(participant.id);
+            // Find the participants that are no longer in the server's list
+            const currParticipantIDs = currParticipants.map(p => p.id);
+            const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
+            const addedParticipants = formRegistrationsResponse.filter(
+              participant => !currParticipantIDs.includes(participant.registration_id)
+            );
+            const removedParticipants = currParticipants.filter(
+              participant => !serverParticipantIDs.includes(participant.id)
+            );
+
+            // Add the new participants to the IndexedDB
+            for (const participant of addedParticipants) {
+              // console.log('Adding new participant...');
+              // Add the participant to the IndexedDB
+              const participantData = {
+                id: participant.registration_id,
+                name: participant.full_name,
+                checked_in: participant.checked_in,
+                regForm_id: regForm.id,
+                state: participant.state,
+              };
+              await addRegFormParticipant(participantData);
+            }
+
+            // Remove the participants that are no longer in the server's list
+            for (const participant of removedParticipants) {
+              // console.log('Removing participant...');
+              // Remove the participant from the IndexedDB
+              await removeRegFormParticipant(participant.id);
+            }
           }
+        } catch (err) {
+          if (err instanceof Error)
+            enableModal('Error fetching the Form participants', err.message);
+          else enableModal('Error fetching the Form participants', 'An unknown error occurred');
+          return;
         }
       }
 
@@ -153,7 +179,7 @@ const EventPage = () => {
     /* return () => {
       // TODO: Abort the fetch request
     }; */
-  }, [eventID, navigate, autoRedirect]);
+  }, [eventID, navigate, autoRedirect, enableModal]);
 
   /**
    * Handle the click event on a registration form
