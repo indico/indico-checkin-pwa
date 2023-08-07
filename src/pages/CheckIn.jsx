@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import QrScannerPlugin, {defaultAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
+import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import db from '../db/db';
 import useSettings from '../hooks/useSettings';
@@ -82,7 +82,7 @@ const CheckInPage = () => {
       <QrScannerPlugin
         fps={10}
         qrbox={250}
-        aspectRatio={defaultAspectRatio}
+        aspectRatio={calcAspectRatio()}
         disableFlip={false}
         qrCodeSuccessCallback={onScanResult}
         onPermRefused={onPermRefused}

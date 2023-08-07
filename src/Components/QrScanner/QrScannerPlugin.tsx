@@ -6,7 +6,21 @@ import classes from './QrScanner.module.css';
 
 // Id of the HTML element used by the Html5QrcodeScanner.
 const qrcodeRegionId = 'html5qr-code-full-region';
-export const defaultAspectRatio = 0.8;
+export const defaultAspectRatio = {
+  desktop: 0.8, // Since the camera orientation is landscape, the aspect ratio is 0.8
+  mobile: 1.1, // Since the camera orientation is portrait, the aspect ratio is 1.1
+};
+
+/**
+ * @returns the aspect ratio of the video feed based on the window size
+ */
+export const calcAspectRatio = () => {
+  // TODO: This is not the ideal way to define the aspect ratio. Could find a way to detect the camera orientation
+  if (window.innerWidth < window.innerHeight) {
+    return defaultAspectRatio.mobile;
+  }
+  return defaultAspectRatio.desktop;
+};
 
 interface QrProps {
   fps?: number; // Expected frame rate of qr code scanning. example { fps: 2 } means the scanning would be done every 500 ms.
@@ -104,7 +118,10 @@ const QrScannerPlugin = (props: QrProps) => {
         );
 
         // Show the animation if the aspect ratio is the default
-        if (props.aspectRatio === defaultAspectRatio) {
+        if (
+          props.aspectRatio === defaultAspectRatio.desktop ||
+          props.aspectRatio === defaultAspectRatio.mobile
+        ) {
           setShowAnimation(true);
         }
       }

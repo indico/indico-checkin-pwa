@@ -12,12 +12,12 @@
 
 @keyframes animateLine {
   0% {
-    top: 20%;
+    top: 16%;
   }
   50% {
-    top: calc(100% - 20%);
+    top: calc(100% - 16%);
   }
   100% {
-    top: 20%;
+    top: 16%;
   }
 }

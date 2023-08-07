@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
-import QrScannerPlugin, {defaultAspectRatio} from '../../Components/QrScanner/QrScannerPlugin';
+import QrScannerPlugin, {calcAspectRatio} from '../../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../../Components/Tailwind';
 import db from '../../db/db';
 import {addEvent, addRegistrationForm} from '../../db/utils';
@@ -142,7 +142,7 @@ const AddEventPage = () => {
       <QrScannerPlugin
         fps={15}
         qrbox={250}
-        aspectRatio={defaultAspectRatio}
+        aspectRatio={calcAspectRatio()}
         disableFlip={false}
         qrCodeSuccessCallback={onScanResult}
         onPermRefused={onPermRefused}
