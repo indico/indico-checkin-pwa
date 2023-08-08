@@ -82,6 +82,7 @@ const AddEventPage = () => {
       return;
     }
 
+    console.log("Server doesn't exist in IndexedDB. Proceeding to authentication...");
     // Perform OAuth2 Authorization Code Flow
     const client = new OAuth2Client({
       server: base_url,
@@ -89,10 +90,10 @@ const AddEventPage = () => {
       discoveryEndpoint: discoveryEndpoint,
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
-      // TODO: Remove these hard-coded values after CORS issues are solved
+      // These endpoints can be manually specified if the server doesn't support discovery
       // The tokenEndpoint and authorizationEndpoint are optional and will be inferred from the server's discovery document if not provided
-      authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
-      tokenEndpoint: 'https://sg1.cern.ch/oauth/token',
+      /* authorizationEndpoint: 'https://sg1.cern.ch/oauth/authorize',
+      tokenEndpoint: 'https://sg1.cern.ch/oauth/token', */
     });
 
     /**
