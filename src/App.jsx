@@ -23,7 +23,7 @@ const App = () => {
   }, [darkMode]);
 
   return (
-    <div className="w-screen min-h-screen bg-white dark:bg-gray-700">
+    <div className="w-screen min-h-screen bg-white dark:bg-gray-900">
       <BrowserRouter basename="/">
         <Background />
         <TopTab />
