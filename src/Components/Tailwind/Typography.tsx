@@ -14,13 +14,13 @@ interface variantProps {
  * Map of variants to tailwind classes
  */
 const variants: variantProps = {
-  h1: 'text-5xl text-black dark:text-white',
-  h2: 'text-3xl text-black dark:text-white',
-  h3: 'text-xl text-black dark:text-white',
-  h4: 'text-lg text-black dark:text-white',
-  body1: 'text-base text-black dark:text-white',
-  body2: 'text-sm text-black dark:text-white',
-  body3: 'text-xs text-black dark:text-white',
+  h1: 'text-5xl text-black dark:text-gray-300',
+  h2: 'text-3xl text-black dark:text-gray-300',
+  h3: 'text-xl text-black dark:text-gray-300',
+  h4: 'text-lg text-black dark:text-gray-300',
+  body1: 'text-base text-black dark:text-gray-300',
+  body2: 'text-sm text-black dark:text-gray-300',
+  body3: 'text-xs text-black dark:text-gray-300',
 };
 
 interface TypographyProps {

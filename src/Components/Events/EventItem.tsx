@@ -16,8 +16,8 @@ const EventItem = ({item, onClick, quantity}: EventItemProps) => {
   return (
     <div
       onClick={onClick}
-      className="block p-6 bg-white border border-gray-200 rounded-lg shadow
-                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600"
+      className="block p-6 bg-white border border-gray-200 rounded-lg shadow cursor-pointer
+                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
       <div className="flex flex-wrap justify-between items-center">
         <div className="flex flex-1 items-center">
