@@ -17,7 +17,7 @@ const sizeToClass: {
   lg: ComponentProps<'div'>['className'];
   xl: ComponentProps<'div'>['className'];
 } = {
-  xs: 'w-4 h-4',
+  xs: 'w-6 h-6',
   s: 'w-8 h-8',
   md: 'w-16 h-16',
   lg: 'w-24 h-24',
@@ -30,7 +30,7 @@ export const LoadingIndicator = ({
   className = '',
 }: LoadingIndicatorProps) => {
   const sizeClass = sizeToClass[size];
-  const defaultClassName = `${sizeClass} mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600`;
+  const defaultClassName = `${sizeClass} text-gray-200 animate-spin dark:text-gray-200 fill-blue-600`;
   const svgClassName = defaultClassName + ' ' + className;
 
   return (
