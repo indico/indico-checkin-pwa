@@ -1,154 +1,23 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {
   ShieldCheckIcon,
   CalendarDaysIcon,
   ChevronLeftIcon,
   ChevronDownIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/20/solid';
 import {Typography} from '../../Components/Tailwind';
-import Badge from '../../Components/Tailwind/Badge';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
-import {Toggle} from '../../Components/Tailwind/Toggle';
-import {participantStates} from '../../db/db';
 import {changeParticipantCheckIn, getEventDetailsFromIds} from '../../db/utils';
 import useAppState from '../../hooks/useAppState';
 import {ParticipantPageData} from '../../Models/EventData';
+import {formatDateObj} from '../../utils/date';
 import {authFetch} from '../../utils/network';
 
-const exampleSection = {
-  description: '',
-  fields: [
-    {
-      data: 'Tomas',
-      defaultValue: '',
-      description: '',
-      id: 880,
-      inputType: 'text',
-      title: 'First Name',
-    },
-    {
-      data: 'Roun',
-      defaultValue: '',
-      description: '',
-      id: 881,
-      inputType: 'text',
-      title: 'Last Name',
-    },
-    {
-      data: 'tomas.roun@cern.ch',
-      defaultValue: '',
-      description: '',
-      id: 882,
-      inputType: 'email',
-      title: 'Email Address',
-    },
-    {
-      data: 'CERN',
-      defaultValue: '',
-      description: '',
-      id: 883,
-      inputType: 'text',
-      title: 'Affiliation',
-    },
-    {
-      choices: [
-        {
-          _modified: true,
-          caption: 'Advanced Python',
-          extraSlotsPay: false,
-          id: 'a0a2fa62-9259-4b0b-97bc-070c4ef2db97',
-          isEnabled: true,
-          maxExtraSlots: 2,
-          placesLimit: 0,
-          price: 0,
-        },
-        {
-          caption: 'B',
-          extraSlotsPay: false,
-          id: '6d1f0af3-6f23-46d0-b652-3b72fac3ad3e',
-          isEnabled: true,
-          maxExtraSlots: 2,
-          placesLimit: 0,
-          price: 0,
-        },
-      ],
-      data: {'a0a2fa62-9259-4b0b-97bc-070c4ef2db97': 3},
-      defaultValue: {},
-      description: '',
-      id: 1065,
-      inputType: 'single_choice',
-      title: 'test extra',
-    },
-    {
-      data: 7,
-      defaultValue: null,
-      description: 'fdgfdgdfggd',
-      id: 1067,
-      inputType: 'number',
-      price: 0,
-      title: 'fgdgfd',
-    },
-    {
-      choices: [
-        {
-          caption: 'No accommodation',
-          id: '471ba223-e149-44a7-a076-4e1356dc0f79',
-          isEnabled: true,
-          isNoAccommodation: true,
-          placesLimit: 0,
-          price: 0,
-        },
-        {
-          caption: 'a',
-          id: 'abe74faf-5bc4-41c4-98bc-c02477f61795',
-          isEnabled: true,
-          isNoAccommodation: false,
-          placesLimit: 0,
-          price: 24.0,
-        },
-        {
-          caption: 'b',
-          id: 'bcc754d3-f45d-43f6-95d8-f0f0380628b3',
-          isEnabled: true,
-          isNoAccommodation: false,
-          placesLimit: 4,
-          price: 0,
-        },
-      ],
-      data: {
-        arrivalDate: '2022-12-20',
-        choice: 'bcc754d3-f45d-43f6-95d8-f0f0380628b3',
-        departureDate: '2022-12-24',
-        isNoAccommodation: false,
-      },
-      defaultValue: {
-        arrivalDate: null,
-        choice: '471ba223-e149-44a7-a076-4e1356dc0f79',
-        departureDate: null,
-        isNoAccommodation: true,
-      },
-      description: '',
-      id: 1068,
-      inputType: 'accommodation',
-      title: 'acc',
-    },
-    {
-      data: true,
-      defaultValue: false,
-      description: 'r354fdgf',
-      id: 1069,
-      inputType: 'checkbox',
-      price: 0,
-      title: 'cc',
-    },
-  ],
-  id: 879,
-  title: 'Personal Data',
-};
-
 const ParticipantPage = () => {
+  const navigate = useNavigate();
   const {state} = useLocation();
   const {autoCheckin} = state || {autoCheckin: false};
   const {id, regFormId, registrantId} = useParams();
@@ -157,12 +26,6 @@ const ParticipantPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [triedCheckIn, setTriedCheckIn] = useState(false);
   const {enableModal} = useAppState();
-
-  const disableCheckIn = useMemo(() => {
-    return ![participantStates.COMPLETE, participantStates.UNPAID].includes(
-      eventData?.attendee?.state ?? ''
-    );
-  }, [eventData?.attendee?.state]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -219,37 +82,22 @@ const ParticipantPage = () => {
     });
   };
 
-  /**
-   * Performs the Check In/Out action for the user
-   * @param newCheckInState
-   * @returns
-   */
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
-      if (!eventData) {
-        enableModal('App is in an invalid state', "Couldn't find the participant data");
-        return;
-      }
-
-      // Only allow check-in if the participant's state is "complete" or "unpaid"
-      if (disableCheckIn) {
-        enableModal(
-          'Unable to check in',
-          `Cannot check in user with state: ${eventData?.attendee?.state}`
-        );
-        return;
-      }
-
       // Send the check in request to the backend
+      if (!eventData) {
+        return;
+      }
+
       setIsLoading(true);
       try {
         const body = JSON.stringify({checked_in: newCheckInState});
         const response = await authFetch(
-          eventData?.event?.serverBaseUrl,
-          `/api/checkin/event/${eventData?.event?.id}/registration/${eventData?.regForm?.id}/${eventData?.attendee?.id}`,
+          eventData.event.serverBaseUrl,
+          `/api/checkin/event/${eventData.event.id}/registration/${eventData.regForm.id}/${eventData.attendee.id}`,
           {
             method: 'PATCH',
-            body: body,
+            body,
           }
         );
         if (!response) {
@@ -259,7 +107,7 @@ const ParticipantPage = () => {
         }
 
         // Update the checked_in status in the database and the UI
-        await changeParticipantCheckIn(eventData?.attendee, newCheckInState);
+        await changeParticipantCheckIn(eventData.attendee, newCheckInState);
         updateCheckedInStatus(newCheckInState);
 
         setIsLoading(false);
@@ -273,21 +121,17 @@ const ParticipantPage = () => {
         return;
       }
     },
-    [eventData, disableCheckIn, enableModal]
+    [eventData, enableModal]
   );
 
   useEffect(() => {
     const performAutoCheckIn = async () => {
-      // If performCheckIn is true, then automatically check in the user
-      if (!triedCheckIn && autoCheckin === true) {
-        if (!eventData) return;
+      // If autoCheckin is true, then automatically check in the user
+      if (eventData && !triedCheckIn && autoCheckin) {
         setTriedCheckIn(true);
-        if (eventData?.attendee?.checked_in) {
-          // Already checked in
+        if (eventData.attendee.checked_in) {
           return;
         }
-
-        // Send the check in request to the backend
         await performCheckIn(true);
       }
     };
@@ -295,21 +139,23 @@ const ParticipantPage = () => {
     performAutoCheckIn();
   }, [eventData, performCheckIn, autoCheckin, triedCheckIn]);
 
-  const navigate = useNavigate();
+  const goToEvent = () => {
+    if (!eventData) {
+      return;
+    }
 
-  const navigateBackTwice = () => {
-    if (!eventData) return;
-
-    navigate(`/event/${eventData.event?.id}`, {
+    navigate(`/event/${eventData.event.id}`, {
       state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
       replace: true,
     });
   };
 
-  const navigateBack = () => {
-    if (!eventData || !eventData.event) return;
+  const goToRegForm = () => {
+    if (!eventData) {
+      return;
+    }
 
-    navigate(`/event/${eventData.event?.id}/${eventData.regForm.id}`, {
+    navigate(`/event/${eventData.event.id}/${eventData.regForm.id}`, {
       replace: true,
     });
   };
@@ -319,116 +165,77 @@ const ParticipantPage = () => {
   };
 
   return (
-    <div className="mx-auto w-full h-full justify-center align-center mt-3">
-      {eventData && (
-        <>
-          <div className="flex flex-row w-100 items-center justify-between ml-2">
-            <Breadcrumbs
-              routeNames={[eventData.event?.title, eventData.regForm?.label]}
-              routeHandlers={[navigateBackTwice, navigateBack]}
-            />
-
-            <Typography variant="body3" className="mr-2">
-              {eventData.event?.date}
-            </Typography>
-          </div>
-
-          <div className="mt-6 ml-2 flex flex-col mr-4">
-            <div className="flex flex-row items-center justify-between">
-              <Typography variant="h2">{eventData.attendee.full_name}</Typography>
-
-              {eventData.attendee.state !== participantStates.COMPLETE && (
-                <Badge
-                  text={eventData.attendee.state}
-                  size="md"
-                  className="rounded-full"
-                  colorClassName="text-danger dark:text-danger border-danger"
-                />
-              )}
+    <>
+      <div className="px-4 pt-1">
+        {eventData && (
+          <>
+            <div className="flex items-center justify-between">
+              <Breadcrumbs
+                routeNames={[eventData.event?.title, eventData.regForm?.label]}
+                routeHandlers={[goToEvent, goToRegForm]}
+              />
             </div>
-
-            <div className="mt-6 relative">
-              <div className="mx-auto w-full">
-                <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center">
-                    <ShieldCheckIcon
-                      className={`w-6 h-6 mr-2 ${
-                        !isLoading && eventData.attendee.checked_in
-                          ? 'text-green-500'
-                          : 'text-gray-400'
-                      }`}
-                    />
-                    <Typography variant="body2" className="font-bold">
-                      Checked In
-                    </Typography>
+            <div className="mt-6 flex flex-col gap-4">
+              <Typography variant="h2" className="text-center">
+                {eventData.attendee.full_name}
+              </Typography>
+              <div className="mt-4 mb-4 flex items-center justify-center gap-4">
+                <CheckInButton
+                  isLoading={isLoading}
+                  onCheckInToggle={onCheckInToggle}
+                  eventData={eventData}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <InformationCircleIcon className="w-6 h-6 text-primary dark:text-secondary" />
+                    <Typography variant="body2">Registration Status</Typography>
                   </div>
-
-                  {isLoading ? (
-                    <LoadingIndicator size="s" />
-                  ) : (
-                    <Toggle
-                      checked={eventData.attendee.checked_in}
-                      onClick={onCheckInToggle}
-                      rounded={false}
-                      className="rounded-md after:rounded-md"
-                      size="lg"
-                      disabled={disableCheckIn}
-                    />
-                  )}
+                  <Typography variant="body2" className="font-bold capitalize">
+                    {eventData.attendee.state}
+                  </Typography>
                 </div>
-                {eventData.attendee.checked_in && (
-                  <div>
-                    <Typography variant="body2" className="mt-1 ml-8">
-                      {`on: ${eventData.attendee.checked_in_dt}` /* TODO: Get the date */}
-                    </Typography>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-secondary" />
+                    <Typography variant="body2">Registration Date</Typography>
                   </div>
-                )}
-
-                <div className="flex flex-row items-center justify-between mt-6">
-                  <div className="flex flex-row items-center">
-                    <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-secondary mr-2" />
-                    <Typography variant="body2" className="font-bold">
-                      Registration Date
-                    </Typography>
-                  </div>
-
-                  <Typography variant="body2" className="mt-1 ml-8">
+                  <Typography variant="body2" className="font-bold">
                     {eventData.attendee.registration_date}
                   </Typography>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="mt-6 mb-20">
-            {/* some weird TS error.. */}
-            <RegistrationSection section={exampleSection} />
-          </div>
-        </>
+          </>
+        )}
+      </div>
+      {eventData && (
+        <div className="flex flex-col mt-6">
+          {eventData.attendee.registration_data.map((section, i: number) => {
+            return (
+              <RegistrationSection
+                key={section.id}
+                section={section as Section}
+                isLast={i === eventData.attendee.registration_data.length - 1}
+              />
+            );
+          })}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
 export default ParticipantPage;
 
-type InputType =
-  | 'text'
-  | 'textarea'
-  | 'email'
-  | 'phone'
-  | 'number'
-  | 'bool'
-  | 'checkbox'
-  | 'date'
-  | 'country'
-  | 'file'
-  | 'single_choice'
-  | 'multi_choice'
-  | 'accommodation'
-  | 'accompanying_persons';
-
 interface Choice {
   id: string; // uuid
+  caption: string;
+}
+
+interface CountryChoice {
+  countryKey: string; // uuid
   caption: string;
 }
 
@@ -436,11 +243,19 @@ interface Field {
   id: number;
   title: string;
   description: string;
-  inputType: InputType;
+  inputType: string;
   data: any;
   defaultValue: any;
   price?: number;
-  choices?: Choice[]; // only for single/multi choice & accommodation
+  filename?: string;
+}
+
+interface ChoiceField extends Field {
+  choices: Choice[];
+}
+
+interface CountryChoiceField extends Field {
+  choices: CountryChoice[];
 }
 
 interface Section {
@@ -450,27 +265,30 @@ interface Section {
   fields: Field[];
 }
 
-function RegistrationSection({section}: {section: Section}) {
+function RegistrationSection({section, isLast}: {section: Section; isLast: boolean}) {
   const {title, fields} = section;
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div>
-      <h2 onClick={() => setIsOpen(o => !o)}>
+      <div>
         <button
           type="button"
-          className="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500
-                     border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200
-                     dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-          aria-expanded={isOpen}
+          disabled={fields.length === 0}
+          className={`flex items-center justify-between w-full p-5 font-medium text-left border
+                      border-gray-200 dark:border-gray-700 hover:bg-blue-100 dark:hover:bg-gray-800
+                      border-l-0 border-r-0 ${!isLast ? 'border-b-0' : ''}`}
+          onClick={() => setIsOpen(o => !o)}
         >
-          <span>{title}</span>
-          {isOpen && <ChevronDownIcon className="w-6 h-6" />}
-          {!isOpen && <ChevronLeftIcon className="w-6 h-6" />}
+          <Typography variant="h4" className="flex justify-between w-full">
+            {title}
+            {isOpen && <ChevronDownIcon className="w-6 h-6" />}
+            {!isOpen && <ChevronLeftIcon className="w-6 h-6" />}
+          </Typography>
         </button>
-      </h2>
+      </div>
       <div className={isOpen ? '' : 'hidden'}>
-        <div className="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex flex-col gap-2 px-5 py-2">
           {fields.map(field => (
             <RegistrationField key={field.id} field={field} />
           ))}
@@ -486,36 +304,93 @@ function RegistrationField({field}: {field: Field}) {
     case 'number':
     case 'email':
     case 'phone':
+    case 'bool':
       return <TextField {...field} />;
+    case 'textarea':
+      return <TextAreaField {...field} />;
+    case 'date':
+      return <DateField {...field} />;
     case 'checkbox':
       return <CheckboxField {...field} />;
+    case 'file':
+      return <FileField {...field} />;
+    case 'country':
+      return <CountryField {...(field as CountryChoiceField)} />;
     case 'single_choice':
-      return <SingleChoiceField {...field} />;
+      return <SingleChoiceField {...(field as ChoiceField)} />;
+    case 'multi_choice':
+      return <MultiChoiceField {...(field as ChoiceField)} />;
+    case 'accommodation':
+      return <AccommodationField {...(field as ChoiceField)} />;
     default:
       console.log('unhandled field', field);
       return null;
   }
 }
 
-function TextField({title, data}: Field) {
+function FieldHeader({title, description}: {title: string; description: string}) {
+  return (
+    <>
+      <Typography variant="body2" className="font-bold">
+        {title}
+      </Typography>
+      {description && (
+        <Typography variant="body2" className="italic mb-1">
+          {description}
+        </Typography>
+      )}
+    </>
+  );
+}
+
+function TextField({title, description, data}: Field) {
   return (
     <div>
-      <Typography variant="h4">{title}</Typography>
+      <FieldHeader title={title} description={description} />
       <Typography variant="body1">{data}</Typography>
     </div>
   );
 }
 
-function CheckboxField({title, data}: Field) {
+function TextAreaField({title, description, data}: Field) {
   return (
     <div>
-      <Typography variant="h4">{title}</Typography>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1" className="whitespace-pre-line">
+        {data}
+      </Typography>
+    </div>
+  );
+}
+
+function DateField({title, description, data}: Field) {
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">{formatDateObj(new Date(data))}</Typography>
+    </div>
+  );
+}
+
+function CheckboxField({title, description, data}: Field) {
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
       <Typography variant="body1">{data ? 'yes' : 'no'}</Typography>
     </div>
   );
 }
 
-function SingleChoiceField({title, choices, data}: Field) {
+function FileField({title, description, filename}: Field) {
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">{filename}</Typography>
+    </div>
+  );
+}
+
+function SingleChoiceField({title, description, choices, data}: ChoiceField) {
   // data: {[uuid]: [number_of_choices]}
   const selected = Object.keys(data)[0];
 
@@ -523,21 +398,138 @@ function SingleChoiceField({title, choices, data}: Field) {
   if (selected === undefined) {
     return (
       <div>
-        <Typography variant="h4">{title}</Typography>
+        <FieldHeader title={title} description={description} />
       </div>
     );
   }
 
   const amount = data[selected];
   // find the caption of the selected choice
-  const caption = choices.find(choice => choice.id === selected).caption;
+  const caption = choices.find(choice => choice.id === selected)?.caption;
 
   return (
     <div>
-      <Typography variant="h4">{title}</Typography>
+      <FieldHeader title={title} description={description} />
       <Typography variant="body1">
         {caption}: {amount}
       </Typography>
     </div>
+  );
+}
+
+function CountryField({title, description, choices, data}: CountryChoiceField) {
+  // nothing selected
+  if (!data) {
+    return (
+      <div>
+        <FieldHeader title={title} description={description} />
+      </div>
+    );
+  }
+
+  const country = choices.find(choice => choice.countryKey === data)?.caption;
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">{country}</Typography>
+    </div>
+  );
+}
+
+function MultiChoiceField({title, description, choices, data}: ChoiceField) {
+  // data: {[uuid]: [number_of_choices]}
+  const selected = Object.entries(data).map(([id, amount]) => ({
+    id,
+    caption: choices.find(choice => choice.id === id)?.caption,
+    amount,
+  }));
+
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">
+        <ul>
+          {selected.map(({id, caption, amount}) => (
+            <li key={id}>
+              <>
+                {caption}: {amount}
+              </>
+            </li>
+          ))}
+        </ul>
+      </Typography>
+    </div>
+  );
+}
+
+function AccommodationField({title, description, choices, data}: ChoiceField) {
+  // nothing selected
+  if (data.isNoAccommodation || !data.choice) {
+    return (
+      <div>
+        <FieldHeader title={title} description={description} />
+        <Typography variant="body1">No accommodation</Typography>
+      </div>
+    );
+  }
+
+  // find the caption of the selected choice
+  const choice = choices.find(choice => choice.id === data.choice);
+  const {caption} = choice;
+  const {arrivalDate, departureDate} = data;
+
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">
+        <ul>
+          <li>Arrival: {formatDateObj(new Date(arrivalDate))}</li>
+          <li>Departure: {formatDateObj(new Date(departureDate))}</li>
+          <li>Accommodation: {caption}</li>
+        </ul>
+      </Typography>
+    </div>
+  );
+}
+
+interface CheckInButtonProps {
+  isLoading: boolean;
+  onCheckInToggle: Function;
+  eventData: ParticipantPageData;
+}
+
+function CheckInButton({isLoading, onCheckInToggle, eventData}: CheckInButtonProps) {
+  const checkedIn = eventData.attendee.checked_in;
+  const size = checkedIn ? 'px-4 py-2' : 'px-7 py-3.5';
+  const color = checkedIn
+    ? 'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700'
+    : 'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700';
+
+  return (
+    <>
+      {checkedIn && (
+        <div className="flex items-center text-white  gap-2">
+          <ShieldCheckIcon className="w-8 h-8 text-green-500" />
+          <Typography variant="body1">Checked in</Typography>
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={onCheckInToggle}
+        className={`relative text-base text-white focus:outline-none
+                    font-medium rounded-full text-center ${size} ${color}`}
+      >
+        {isLoading && (
+          <LoadingIndicator
+            size={checkedIn ? 'xs' : 's'}
+            className="absolute m-auto left-0 right-0 top-0 bottom-0"
+          />
+        )}
+        <span className={isLoading ? 'invisible' : ''}>
+          {!checkedIn && 'Check in'}
+          {checkedIn && 'Undo'}
+        </span>
+      </button>
+    </>
   );
 }

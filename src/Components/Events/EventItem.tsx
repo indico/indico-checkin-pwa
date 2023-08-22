@@ -1,5 +1,6 @@
 import {CalendarIcon} from '@heroicons/react/24/solid';
 import IconFeather from '../../Components/Icons/Feather';
+import {formatDatetime} from '../../utils/date';
 import {Typography} from '../Tailwind/';
 
 interface EventItemProps {
@@ -27,7 +28,7 @@ const EventItem = ({item, onClick, quantity}: EventItemProps) => {
               {item.title}
             </Typography>
             <span className="w-fit bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
-              {item.date}
+              {formatDatetime(item.date)}
             </span>
           </div>
         </div>
