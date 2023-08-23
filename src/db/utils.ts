@@ -46,78 +46,34 @@ export const addEvent = async ({id, title, date, server_base_url}: EventTable) =
  */
 export const addRegistrationForm = async ({
   id,
-  label,
-  event_id,
-  participants = [],
+  eventId,
+  title,
+  registrationCount = 0,
+  checkedInCount = 0,
 }: RegFormTable) => {
-  const regFormExists = await db.regForms.get({id: id});
-  if (!regFormExists) {
-    await db.regForms.add({
-      id: id,
-      label: label,
-      event_id: event_id,
-      participants: participants,
-    });
-  }
+  return db.regForms.put({
+    id,
+    eventId,
+    title,
+    registrationCount,
+    checkedInCount,
+  });
 };
 
 /**
  * Adds a participant to a registration form if it doesn't already exist
  * @param participant
  */
-export const addRegFormParticipant = async (participant: ParticipantTable) => {
-  try {
-    // Check if the Reg. Form exists
-    const regFormExists = await db.regForms.get({id: participant.regForm_id});
-    if (regFormExists) {
-      const participantExists = await db.participants.get({id: participant.id});
-      if (!participantExists || participantExists.regForm_id !== participant.regForm_id) {
-        await db.participants.add({
-          id: participant.id,
-          full_name: participant.full_name,
-          regForm_id: participant.regForm_id,
-          registration_date: participant.registration_date,
-          state: participant.state,
-          checked_in: participant.checked_in,
-          checked_in_dt: participant.checked_in_dt,
-        });
-
-        // Add the participant to the registration form
-        await db.regForms.update(participant.regForm_id, {
-          participants: [...regFormExists.participants, participant.id],
-        });
-      }
-    }
-  } catch (err) {
-    console.log(`Error adding participant to registration form: ${err}`);
-  }
+export const addParticipant = async (participant: ParticipantTable) => {
+  return await db.participants.add(participant);
 };
 
 /**
  * Adds a participant to a registration form if it doesn't already exist
- * @param participantID
+ * @param id
  */
-export const removeRegFormParticipant = async (participantID: number) => {
-  try {
-    // Check if the participant exists
-    const participantExists = await db.participants.get({id: participantID});
-    if (participantExists) {
-      // Get the registration form
-      const regFormExists = await db.regForms.get({id: participantExists.regForm_id});
-
-      if (regFormExists) {
-        // Remove the participant from the registration form
-        await db.regForms.update(participantExists.regForm_id, {
-          participants: regFormExists.participants.filter(id => id !== participantID),
-        });
-      }
-
-      // Remove the participant from the IndexedDB
-      await db.participants.delete(participantID);
-    }
-  } catch (err) {
-    console.log(`Error adding participant to registration form: ${err}`);
-  }
+export const deleteParticipant = async (id: number) => {
+  return db.participants.delete(id);
 };
 
 /**
@@ -126,8 +82,7 @@ export const removeRegFormParticipant = async (participantID: number) => {
  * @returns {RegFormTable[]}
  */
 export const getRegistrationForms = async (eventId: string) => {
-  const regForms = await db.regForms.where({event_id: eventId}).toArray();
-  return regForms;
+  return db.regForms.where({eventId}).toArray();
 };
 
 /**
@@ -163,29 +118,12 @@ export const updateEvent = async (eventId: number, newTitle?: string, newDate?: 
 
 /**
  * Updates the label of a registration form if defined
- * @param regFormId
- * @param newLabel
+ * @param id
+ * @param data
  * @returns
  */
-export const updateRegForm = async (regFormId: number, newLabel?: string) => {
-  try {
-    const regForm = await db.regForms.get({id: regFormId});
-    if (regForm) {
-      const updateObj: {label?: string} = {};
-      if (regForm.label !== newLabel) {
-        updateObj['label'] = newLabel;
-      }
-
-      if (Object.keys(updateObj).length === 0) {
-        // Nothing to update
-        return;
-      }
-
-      await db.regForms.update(regFormId, updateObj);
-    }
-  } catch (err) {
-    console.log(`Error updating registration form: ${err}`);
-  }
+export const updateRegForm = async (id: number, data: object) => {
+  return db.regForms.update(id, data);
 };
 
 /**
@@ -193,20 +131,8 @@ export const updateRegForm = async (regFormId: number, newLabel?: string) => {
  * @param regFormUserIds
  * @returns
  */
-export const getRegFormParticipants = async (regFormUserIds: number[]) => {
-  try {
-    const participants: ParticipantTable[] = [];
-    for (const userId of regFormUserIds) {
-      const participant = await db.participants.get({id: userId});
-      if (participant) {
-        participants.push(participant);
-      }
-    }
-
-    return participants;
-  } catch (err) {
-    console.log(`Error getting participants for registration form: ${err}`);
-  }
+export const getParticipants = async regFormId => {
+  return db.participants.where({regForm_id: regFormId}).sortBy('id');
 };
 
 /**
@@ -250,6 +176,7 @@ export const changeRegFormParticipant = async (
       if (participant.registration_date !== newParticipant.registration_date) {
         changesObj.registration_date = newParticipant.registration_date;
       }
+      changesObj.registration_data = newParticipant.registration_data;
       if (participant.state !== newParticipant.state) {
         changesObj.state = newParticipant.state;
       }

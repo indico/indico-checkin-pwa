@@ -9,8 +9,9 @@ export interface RegFormData {
     serverBaseUrl: string;
   };
   id: number;
-  label: string;
-  participants: number[];
+  title: string;
+  checkedInCount: number;
+  registrationCount: number;
 }
 
 // Interface for the data retrieved from the IndexedDB for the Participant Page
@@ -28,14 +29,11 @@ export interface ParticipantPageData {
   attendee: ParticipantTable;
 }
 
-interface RegFormsExtended extends RegFormTable {
-  num_checked_in: number;
-}
 export default class EventData {
   public title: string;
   public date: string | null;
   public serverBaseUrl: string;
-  public registrationForms: RegFormsExtended[];
+  public registrationForms: RegFormTable[];
 
   constructor(title = '', date = null, serverBaseUrl = '', registrationForms = []) {
     this.title = title;
@@ -60,12 +58,13 @@ export default class EventData {
       event: {
         title: this.title,
         date: this.date,
-        id: currRegForm.event_id,
+        id: currRegForm.eventId,
         serverBaseUrl: this.serverBaseUrl,
       },
       id: currRegForm.id,
-      label: currRegForm.label,
-      participants: currRegForm.participants,
+      title: currRegForm.title,
+      checkedInCount: currRegForm.checkedInCount,
+      registrationCount: currRegForm.registrationCount,
     };
   };
 

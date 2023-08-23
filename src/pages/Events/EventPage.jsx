@@ -8,16 +8,14 @@ import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {
-  addRegFormParticipant,
   getEventDetailsFromIds,
-  getRegFormParticipants,
   getRegistrationForms,
-  removeRegFormParticipant,
   updateEvent,
   updateRegForm,
 } from '../../db/utils';
 import useAppState from '../../hooks/useAppState';
 import EventData from '../../Models/EventData';
+import {camelizeKeys} from '../../utils/case';
 import {authFetch} from '../../utils/network';
 
 const EventPage = () => {
@@ -88,67 +86,11 @@ const EventPage = () => {
 
           // const mockResponse = mockRegFormDetailsResponse;
           if (regFormResponse) {
-            // Compare the data from the server with the local data
-            if (regFormResponse.title !== regForm.label) {
-              // Update the IndexedDB data
-              await updateRegForm(Number(eventID), regFormResponse.title);
-            }
+            await updateRegForm(Number(regForm.id), camelizeKeys(regFormResponse));
           }
         } catch (err) {
           if (err instanceof Error) enableModal('Error fetching the Form details', err.message);
           else enableModal('Error fetching the Form details', 'An unknown error occurred');
-          return;
-        }
-
-        try {
-          // Update the list of participants if they are different
-          const formRegistrationsResponse = await authFetch(
-            newEventData.serverBaseUrl,
-            `/api/checkin/event/${eventID}/registration/${regForm.id}/registrations`
-          );
-          // console.log('formRegistrationsResponse: ', formRegistrationsResponse);
-          // const mockResponse2 = mockParticipantsResponse;
-
-          if (formRegistrationsResponse) {
-            // Compare the data from the server with the local data
-            const currParticipants = await getRegFormParticipants(regForm.participants);
-            // console.log('Current Participants:', currParticipants);
-
-            // Find the participants that are no longer in the server's list
-            const currParticipantIDs = currParticipants.map(p => p.id);
-            const serverParticipantIDs = formRegistrationsResponse.map(p => p.registration_id);
-            const addedParticipants = formRegistrationsResponse.filter(
-              participant => !currParticipantIDs.includes(participant.registration_id)
-            );
-            const removedParticipants = currParticipants.filter(
-              participant => !serverParticipantIDs.includes(participant.id)
-            );
-
-            // Add the new participants to the IndexedDB
-            for (const participant of addedParticipants) {
-              // console.log('Adding new participant...');
-              // Add the participant to the IndexedDB
-              const participantData = {
-                id: participant.registration_id,
-                name: participant.full_name,
-                checked_in: participant.checked_in,
-                regForm_id: regForm.id,
-                state: participant.state,
-              };
-              await addRegFormParticipant(participantData);
-            }
-
-            // Remove the participants that are no longer in the server's list
-            for (const participant of removedParticipants) {
-              // console.log('Removing participant...');
-              // Remove the participant from the IndexedDB
-              await removeRegFormParticipant(participant.id);
-            }
-          }
-        } catch (err) {
-          if (err instanceof Error)
-            enableModal('Error fetching the Form participants', err.message);
-          else enableModal('Error fetching the Form participants', 'An unknown error occurred');
           return;
         }
       }
@@ -164,13 +106,6 @@ const EventPage = () => {
 
       // Update the Registration Forms of the newEventData object
       newEventData.registrationForms = updatedRegForms;
-
-      // Get the number of checked-in participants for each registration form from the IndexedDB
-      for (const regForm of newEventData.registrationForms) {
-        const participants = await getRegFormParticipants(regForm.participants);
-        regForm.num_checked_in = participants.filter(p => p.checked_in === true).length;
-      }
-
       setEvent(newEventData);
     };
 
@@ -205,18 +140,18 @@ const EventPage = () => {
       <div className="flex flex-1 items-center">
         <IconFeather className="w-6 h-6 min-w-[1.5rem] mr-3 text-primary" />
         <Typography variant="body1" className="text-center dark:text-white">
-          {regForm.label}
+          {regForm.title}
         </Typography>
       </div>
       <div className="flex flex-wrap gap-2">
         <div className="flex self-center items-center rounded-full overflow-hidden">
           <div className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
             <ShieldCheckIcon className="w-4 h-4 mr-1" />
-            <Typography variant="body1">{regForm.num_checked_in}</Typography>
+            <Typography variant="body1">{regForm.checkedInCount}</Typography>
           </div>
           <div className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100 text-primary dark:bg-darkSecondary dark:text-secondary">
             <UserGroupIcon className="w-4 h-4 mr-1" />
-            <Typography variant="body1">{regForm.participants.length}</Typography>
+            <Typography variant="body1">{regForm.registrationCount}</Typography>
           </div>
         </div>
       </div>

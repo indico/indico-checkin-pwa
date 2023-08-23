@@ -67,9 +67,8 @@ const AddEventPage = () => {
 
         addRegistrationForm({
           id: regform_id,
-          label: regform_title,
-          event_id: event_id,
-          participants: [],
+          eventId: event_id,
+          title: regform_title,
         });
 
         // Navigate to homepage

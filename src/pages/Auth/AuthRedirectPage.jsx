@@ -86,14 +86,12 @@ const AuthRedirectPage = () => {
       // Store the data in IndexedDB
       try {
         addServer({base_url, client_id, scope, auth_token: oauth2Token.accessToken});
-
         addEvent({id: event_id, title, date, server_base_url: base_url});
 
         addRegistrationForm({
           id: regform_id,
-          label: regform_title,
-          event_id: event_id,
-          participants: [],
+          eventId: event_id,
+          title: regform_title,
         });
 
         navigation('/');
