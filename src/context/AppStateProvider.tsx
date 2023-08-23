@@ -9,7 +9,7 @@ interface ModalProps {
 }
 const defaultTitle = 'An error occurred';
 const defaultBody = 'Something went wrong. Please try again later.';
-const defaultBtnText = 'OK';
+const defaultBtnText = 'Close';
 const emptyModalData = {
   title: defaultTitle,
   body: defaultBody,
