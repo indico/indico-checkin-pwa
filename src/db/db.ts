@@ -1,7 +1,7 @@
 import Dexie, {Table} from 'dexie';
 
 export interface ServerTable {
-  id?: number;
+  id: number;
   base_url: string;
   client_id: string;
   scope: string;
@@ -15,9 +15,10 @@ export interface EventTable {
 }
 export interface RegFormTable {
   id: number;
-  label: string;
-  event_id: number;
-  participants: number[]; // array of user ids
+  eventId: number;
+  title: string;
+  registrationCount: number;
+  checkedInCount: number;
 }
 
 export const participantStates = {
@@ -29,12 +30,13 @@ export const participantStates = {
 };
 export interface ParticipantTable {
   id: number;
-  full_name: string;
-  regForm_id: number;
-  registration_date: string;
+  fullName: string;
+  regformId: number;
+  registrationDate: string;
+  registrationData: object[];
   state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
-  checked_in: boolean;
-  checked_in_dt: string;
+  checkedIn: boolean;
+  checkedInDt: string;
 }
 
 export interface ServerParticipantTable extends ParticipantTable {}
@@ -49,11 +51,11 @@ export class MyDexie extends Dexie {
 
   constructor() {
     super('myDatabase');
-    this.version(1).stores({
-      servers: 'id++, base_url, &indexName, client_id, scope, auth_token', // base_url is indexed
-      events: 'id, title, date, server_base_url', // Primary key and indexed props
-      regForms: 'id, label, event_id, participants',
-      participants: 'id++, name, regForm_id, registration_date, state, checked_in, checked_in_dt',
+    this.version(2).stores({
+      servers: 'id++, base_url, client_id',
+      events: 'id, title, date, server_base_url',
+      regForms: 'id, title, eventId',
+      participants: 'id, name, regForm_id, state, checked_in',
     });
   }
 }
