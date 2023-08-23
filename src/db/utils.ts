@@ -1,11 +1,4 @@
-import {formatDateObj} from '../utils/date';
-import db, {
-  ServerTable,
-  EventTable,
-  RegFormTable,
-  ParticipantTable,
-  ServerParticipantTable,
-} from './db';
+import db, {ServerTable, EventTable, RegFormTable, ParticipantTable} from './db';
 
 /**
  * Add a server to the IndexedDB if it doesn't already exist
@@ -156,52 +149,11 @@ export const changeParticipantCheckIn = async (
 
 /**
  * Updates a Participant if there are changes
- * @param participant
- * @param newCheckedIn
- * @returns true if the participant was updated, false otherwise
+ * @param id
+ * @param data
  */
-export const changeRegFormParticipant = async (
-  participant: ParticipantTable,
-  newParticipant: ServerParticipantTable
-) => {
-  try {
-    const participantExists = await db.participants.get({id: participant.id});
-    if (participantExists) {
-      // Check changes
-      const changesObj: {[key: string]: any} = {};
-
-      if (participant.full_name !== newParticipant.full_name) {
-        changesObj.full_name = newParticipant.full_name;
-      }
-      if (participant.registration_date !== newParticipant.registration_date) {
-        changesObj.registration_date = newParticipant.registration_date;
-      }
-      changesObj.registration_data = newParticipant.registration_data;
-      if (participant.state !== newParticipant.state) {
-        changesObj.state = newParticipant.state;
-      }
-      if (participant.checked_in !== newParticipant.checked_in) {
-        changesObj.checked_in = newParticipant.checked_in;
-      }
-      if (participant.checked_in_dt !== newParticipant.checked_in_dt) {
-        changesObj.checked_in_dt = newParticipant.checked_in_dt;
-      }
-
-      if (Object.keys(changesObj).length === 0) {
-        // Nothing to update
-        return false;
-      }
-
-      // Update the participant
-      await db.participants.update(participant.id, changesObj);
-      return true;
-    }
-
-    return false;
-  } catch (err) {
-    console.log(`Error changing participant check-in status: ${err}`);
-    return false;
-  }
+export const updateParticipant = async (id: number, data: object) => {
+  return db.participants.update(id, data);
 };
 
 export interface fullParticipantDetails {
@@ -237,7 +189,6 @@ export const getEventDetailsFromIds = async ({
         return null;
       }
       // Format the date
-      event.date = formatDateObj(new Date(event.date));
       response.event = event;
     }
 
@@ -257,8 +208,6 @@ export const getEventDetailsFromIds = async ({
         return null;
       }
       // Format the dates
-      participant.registration_date = formatDateObj(new Date(participant.registration_date));
-      participant.checked_in_dt = formatDateObj(new Date(participant.checked_in_dt));
       response.participant = participant;
     }
 
