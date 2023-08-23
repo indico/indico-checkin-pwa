@@ -1,13 +1,23 @@
 /**
- * Formats a date object to a string in format DD:MM:YYYY hh:mm
- * @param date
- * @returns String in format DD:MM:YYYY hh:mm
+ * Formats a date
+ * @param dt
  */
-export const formatDateObj = (date: Date) => {
-  return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, '0')}-${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date
-    .getMinutes()
-    .toString()
-    .padStart(2, '0')}`;
+export const formatDate = (dt: string | Date) => {
+  if (dt instanceof Date) {
+    return dt.toLocaleDateString();
+  } else {
+    return new Date(dt).toLocaleDateString();
+  }
+};
+
+/**
+ * Formats a datetime
+ * @param dt
+ */
+export const formatDatetime = (dt: string | Date) => {
+  if (dt instanceof Date) {
+    return dt.toLocaleString();
+  } else {
+    return new Date(dt).toLocaleString();
+  }
 };

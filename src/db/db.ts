@@ -21,17 +21,11 @@ export interface RegFormTable {
   checkedInCount: number;
 }
 
-export const participantStates = {
-  COMPLETE: 'complete',
-  PENDING: 'pending',
-  REJECTED: 'rejected',
-  WITHDRAWN: 'withdrawn',
-  UNPAID: 'unpaid',
-};
 export interface ParticipantTable {
   id: number;
   fullName: string;
   regformId: number;
+  eventId: number;
   registrationDate: string;
   registrationData: object[];
   state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
@@ -55,7 +49,7 @@ export class MyDexie extends Dexie {
       servers: 'id++, base_url, client_id',
       events: 'id, title, date, server_base_url',
       regForms: 'id, title, eventId',
-      participants: 'id, name, regForm_id, state, checked_in',
+      participants: 'id, name, regformId, eventId, state, checkedIn',
     });
   }
 }

@@ -10,10 +10,10 @@ import {
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
-import {changeParticipantCheckIn, getEventDetailsFromIds} from '../../db/utils';
+import {getEventDetailsFromIds, updateParticipant, updateRegForm} from '../../db/utils';
 import useAppState from '../../hooks/useAppState';
 import {ParticipantPageData} from '../../Models/EventData';
-import {formatDateObj} from '../../utils/date';
+import {formatDate, formatDatetime} from '../../utils/date';
 import {authFetch} from '../../utils/network';
 
 const ParticipantPage = () => {
@@ -56,8 +56,9 @@ const ParticipantPage = () => {
           serverBaseUrl: fullData.event.server_base_url,
         },
         regForm: {
-          label: fullData.regForm.label,
           id: fullData.regForm.id,
+          title: fullData.regForm.title,
+          checkedInCount: fullData.regForm.checkedInCount,
         },
         attendee: fullData.participant,
       };
@@ -76,7 +77,7 @@ const ParticipantPage = () => {
         ...prevState,
         attendee: {
           ...prevState.attendee,
-          checked_in: newStatus,
+          checkedIn: newStatus,
         },
       };
     });
@@ -91,13 +92,12 @@ const ParticipantPage = () => {
 
       setIsLoading(true);
       try {
-        const body = JSON.stringify({checked_in: newCheckInState});
         const response = await authFetch(
           eventData.event.serverBaseUrl,
           `/api/checkin/event/${eventData.event.id}/registration/${eventData.regForm.id}/${eventData.attendee.id}`,
           {
             method: 'PATCH',
-            body,
+            body: JSON.stringify({checked_in: newCheckInState}),
           }
         );
         if (!response) {
@@ -107,7 +107,10 @@ const ParticipantPage = () => {
         }
 
         // Update the checked_in status in the database and the UI
-        await changeParticipantCheckIn(eventData.attendee, newCheckInState);
+        await updateParticipant(eventData.attendee.id, {checkedIn: newCheckInState});
+        await updateRegForm(eventData.regForm.id, {
+          checkedInCount: eventData.regForm.checkedInCount + (newCheckInState ? 1 : -1),
+        });
         updateCheckedInStatus(newCheckInState);
 
         setIsLoading(false);
@@ -129,7 +132,7 @@ const ParticipantPage = () => {
       // If autoCheckin is true, then automatically check in the user
       if (eventData && !triedCheckIn && autoCheckin) {
         setTriedCheckIn(true);
-        if (eventData.attendee.checked_in) {
+        if (eventData.attendee.checkedIn) {
           return;
         }
         await performCheckIn(true);
@@ -161,7 +164,7 @@ const ParticipantPage = () => {
   };
 
   const onCheckInToggle = async () => {
-    await performCheckIn(!eventData?.attendee?.checked_in);
+    await performCheckIn(!eventData?.attendee?.checkedIn);
   };
 
   return (
@@ -171,13 +174,13 @@ const ParticipantPage = () => {
           <>
             <div className="flex items-center justify-between">
               <Breadcrumbs
-                routeNames={[eventData.event?.title, eventData.regForm?.label]}
+                routeNames={[eventData.event?.title, eventData.regForm?.title]}
                 routeHandlers={[goToEvent, goToRegForm]}
               />
             </div>
-            <div className="mt-6 flex flex-col gap-4">
+            <div className="mt-8 flex flex-col gap-4">
               <Typography variant="h2" className="text-center">
-                {eventData.attendee.full_name}
+                {eventData.attendee.fullName}
               </Typography>
               <div className="mt-4 mb-4 flex items-center justify-center gap-4">
                 <CheckInButton
@@ -189,7 +192,7 @@ const ParticipantPage = () => {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <InformationCircleIcon className="w-6 h-6 text-primary dark:text-secondary" />
+                    <InformationCircleIcon className="w-6 h-6 text-primary dark:text-blue-500" />
                     <Typography variant="body2">Registration Status</Typography>
                   </div>
                   <Typography variant="body2" className="font-bold capitalize">
@@ -198,11 +201,11 @@ const ParticipantPage = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-secondary" />
+                    <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-blue-500" />
                     <Typography variant="body2">Registration Date</Typography>
                   </div>
                   <Typography variant="body2" className="font-bold">
-                    {eventData.attendee.registration_date}
+                    {formatDate(eventData.attendee.registrationDate)}
                   </Typography>
                 </div>
               </div>
@@ -212,12 +215,12 @@ const ParticipantPage = () => {
       </div>
       {eventData && (
         <div className="flex flex-col mt-6">
-          {eventData.attendee.registration_data.map((section, i: number) => {
+          {eventData.attendee.registrationData.map((section, i: number) => {
             return (
               <RegistrationSection
                 key={section.id}
                 section={section as Section}
-                isLast={i === eventData.attendee.registration_data.length - 1}
+                isLast={i === eventData.attendee.registrationData.length - 1}
               />
             );
           })}
@@ -322,6 +325,8 @@ function RegistrationField({field}: {field: Field}) {
       return <MultiChoiceField {...(field as ChoiceField)} />;
     case 'accommodation':
       return <AccommodationField {...(field as ChoiceField)} />;
+    case 'accompanying_persons':
+      return <AccompanyingPersonsField {...field} />;
     default:
       console.log('unhandled field', field);
       return null;
@@ -335,7 +340,7 @@ function FieldHeader({title, description}: {title: string; description: string})
         {title}
       </Typography>
       {description && (
-        <Typography variant="body2" className="italic mb-1">
+        <Typography variant="body2" className="text-gray-600 dark:text-gray-400 italic mb-1">
           {description}
         </Typography>
       )}
@@ -367,7 +372,7 @@ function DateField({title, description, data}: Field) {
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{formatDateObj(new Date(data))}</Typography>
+      <Typography variant="body1">{formatDatetime(data)}</Typography>
     </div>
   );
 }
@@ -448,7 +453,7 @@ function MultiChoiceField({title, description, choices, data}: ChoiceField) {
     <div>
       <FieldHeader title={title} description={description} />
       <Typography variant="body1">
-        <ul>
+        <ul className="list-inside list-disc">
           {selected.map(({id, caption, amount}) => (
             <li key={id}>
               <>
@@ -483,9 +488,26 @@ function AccommodationField({title, description, choices, data}: ChoiceField) {
       <FieldHeader title={title} description={description} />
       <Typography variant="body1">
         <ul>
-          <li>Arrival: {formatDateObj(new Date(arrivalDate))}</li>
-          <li>Departure: {formatDateObj(new Date(departureDate))}</li>
+          <li>Arrival: {formatDatetime(arrivalDate)}</li>
+          <li>Departure: {formatDatetime(departureDate)}</li>
           <li>Accommodation: {caption}</li>
+        </ul>
+      </Typography>
+    </div>
+  );
+}
+
+function AccompanyingPersonsField({title, description, data}: Field) {
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">
+        <ul className="list-inside list-disc">
+          {data.map(({id, firstName, lastName}) => (
+            <li key={id}>
+              {firstName} {lastName}
+            </li>
+          ))}
         </ul>
       </Typography>
     </div>
@@ -494,12 +516,12 @@ function AccommodationField({title, description, choices, data}: ChoiceField) {
 
 interface CheckInButtonProps {
   isLoading: boolean;
-  onCheckInToggle: Function;
+  onCheckInToggle: () => void;
   eventData: ParticipantPageData;
 }
 
 function CheckInButton({isLoading, onCheckInToggle, eventData}: CheckInButtonProps) {
-  const checkedIn = eventData.attendee.checked_in;
+  const checkedIn = eventData.attendee.checkedIn;
   const size = checkedIn ? 'px-4 py-2' : 'px-7 py-3.5';
   const color = checkedIn
     ? 'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700'

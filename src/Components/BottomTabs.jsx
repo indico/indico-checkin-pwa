@@ -22,7 +22,7 @@ const BottomTabs = () => {
         >
           <HomeIcon className="h-6 w-6 mb-0.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
           <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
-            All events
+            Home
           </span>
         </button>
         <button
