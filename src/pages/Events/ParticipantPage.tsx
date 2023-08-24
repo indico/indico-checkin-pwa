@@ -13,8 +13,9 @@ import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {getEventDetailsFromIds, updateParticipant, updateRegForm} from '../../db/utils';
 import useAppState from '../../hooks/useAppState';
 import {ParticipantPageData} from '../../Models/EventData';
-import {formatDate, formatDatetime} from '../../utils/date';
+import {formatDate} from '../../utils/date';
 import {authFetch} from '../../utils/network';
+import {Field, FieldProps} from './fields';
 
 const ParticipantPage = () => {
   const navigate = useNavigate();
@@ -215,14 +216,13 @@ const ParticipantPage = () => {
       </div>
       {eventData && (
         <div className="flex flex-col mt-6">
-          {eventData.attendee.registrationData.map((section, i: number) => {
-            return (
-              <RegistrationSection
-                key={section.id}
-                section={section as Section}
-                isLast={i === eventData.attendee.registrationData.length - 1}
-              />
-            );
+          {eventData.attendee.registrationData.map((data: object, i: number) => {
+            const section: SectionProps = {
+              ...data,
+              isLast: i === eventData.attendee.registrationData.length - 1,
+            };
+
+            return <RegistrationSection key={section.id} {...section} />;
           })}
         </div>
       )}
@@ -232,43 +232,15 @@ const ParticipantPage = () => {
 
 export default ParticipantPage;
 
-interface Choice {
-  id: string; // uuid
-  caption: string;
-}
-
-interface CountryChoice {
-  countryKey: string; // uuid
-  caption: string;
-}
-
-interface Field {
+interface SectionProps {
   id: number;
   title: string;
   description: string;
-  inputType: string;
-  data: any;
-  defaultValue: any;
-  price?: number;
-  filename?: string;
+  fields: FieldProps[];
+  isLast: boolean;
 }
 
-interface ChoiceField extends Field {
-  choices: Choice[];
-}
-
-interface CountryChoiceField extends Field {
-  choices: CountryChoice[];
-}
-
-interface Section {
-  id: number;
-  title: string;
-  description: string;
-  fields: Field[];
-}
-
-function RegistrationSection({section, isLast}: {section: Section; isLast: boolean}) {
+function RegistrationSection(section: SectionProps) {
   const {title, fields} = section;
   const [isOpen, setIsOpen] = useState(false);
 
@@ -280,7 +252,7 @@ function RegistrationSection({section, isLast}: {section: Section; isLast: boole
           disabled={fields.length === 0}
           className={`flex items-center justify-between w-full p-5 font-medium text-left border
                       border-gray-200 dark:border-gray-700 hover:bg-blue-100 dark:hover:bg-gray-800
-                      border-l-0 border-r-0 ${!isLast ? 'border-b-0' : ''}`}
+                      border-l-0 border-r-0 ${!section.isLast ? 'border-b-0' : ''}`}
           onClick={() => setIsOpen(o => !o)}
         >
           <Typography variant="h4" className="flex justify-between w-full">
@@ -293,223 +265,10 @@ function RegistrationSection({section, isLast}: {section: Section; isLast: boole
       <div className={isOpen ? '' : 'hidden'}>
         <div className="flex flex-col gap-2 px-5 py-2">
           {fields.map(field => (
-            <RegistrationField key={field.id} field={field} />
+            <Field key={field.id} {...field} />
           ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-function RegistrationField({field}: {field: Field}) {
-  switch (field.inputType) {
-    case 'text':
-    case 'number':
-    case 'email':
-    case 'phone':
-    case 'bool':
-      return <TextField {...field} />;
-    case 'textarea':
-      return <TextAreaField {...field} />;
-    case 'date':
-      return <DateField {...field} />;
-    case 'checkbox':
-      return <CheckboxField {...field} />;
-    case 'file':
-      return <FileField {...field} />;
-    case 'country':
-      return <CountryField {...(field as CountryChoiceField)} />;
-    case 'single_choice':
-      return <SingleChoiceField {...(field as ChoiceField)} />;
-    case 'multi_choice':
-      return <MultiChoiceField {...(field as ChoiceField)} />;
-    case 'accommodation':
-      return <AccommodationField {...(field as ChoiceField)} />;
-    case 'accompanying_persons':
-      return <AccompanyingPersonsField {...field} />;
-    default:
-      console.log('unhandled field', field);
-      return null;
-  }
-}
-
-function FieldHeader({title, description}: {title: string; description: string}) {
-  return (
-    <>
-      <Typography variant="body2" className="font-bold">
-        {title}
-      </Typography>
-      {description && (
-        <Typography variant="body2" className="text-gray-600 dark:text-gray-400 italic mb-1">
-          {description}
-        </Typography>
-      )}
-    </>
-  );
-}
-
-function TextField({title, description, data}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{data}</Typography>
-    </div>
-  );
-}
-
-function TextAreaField({title, description, data}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1" className="whitespace-pre-line">
-        {data}
-      </Typography>
-    </div>
-  );
-}
-
-function DateField({title, description, data}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{formatDatetime(data)}</Typography>
-    </div>
-  );
-}
-
-function CheckboxField({title, description, data}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{data ? 'yes' : 'no'}</Typography>
-    </div>
-  );
-}
-
-function FileField({title, description, filename}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{filename}</Typography>
-    </div>
-  );
-}
-
-function SingleChoiceField({title, description, choices, data}: ChoiceField) {
-  // data: {[uuid]: [number_of_choices]}
-  const selected = Object.keys(data)[0];
-
-  // nothing selected
-  if (selected === undefined) {
-    return (
-      <div>
-        <FieldHeader title={title} description={description} />
-      </div>
-    );
-  }
-
-  const amount = data[selected];
-  // find the caption of the selected choice
-  const caption = choices.find(choice => choice.id === selected)?.caption;
-
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
-        {caption}: {amount}
-      </Typography>
-    </div>
-  );
-}
-
-function CountryField({title, description, choices, data}: CountryChoiceField) {
-  // nothing selected
-  if (!data) {
-    return (
-      <div>
-        <FieldHeader title={title} description={description} />
-      </div>
-    );
-  }
-
-  const country = choices.find(choice => choice.countryKey === data)?.caption;
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{country}</Typography>
-    </div>
-  );
-}
-
-function MultiChoiceField({title, description, choices, data}: ChoiceField) {
-  // data: {[uuid]: [number_of_choices]}
-  const selected = Object.entries(data).map(([id, amount]) => ({
-    id,
-    caption: choices.find(choice => choice.id === id)?.caption,
-    amount,
-  }));
-
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
-        <ul className="list-inside list-disc">
-          {selected.map(({id, caption, amount}) => (
-            <li key={id}>
-              <>
-                {caption}: {amount}
-              </>
-            </li>
-          ))}
-        </ul>
-      </Typography>
-    </div>
-  );
-}
-
-function AccommodationField({title, description, choices, data}: ChoiceField) {
-  // nothing selected
-  if (data.isNoAccommodation || !data.choice) {
-    return (
-      <div>
-        <FieldHeader title={title} description={description} />
-        <Typography variant="body1">No accommodation</Typography>
-      </div>
-    );
-  }
-
-  // find the caption of the selected choice
-  const choice = choices.find(choice => choice.id === data.choice);
-  const {caption} = choice;
-  const {arrivalDate, departureDate} = data;
-
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
-        <ul>
-          <li>Arrival: {formatDatetime(arrivalDate)}</li>
-          <li>Departure: {formatDatetime(departureDate)}</li>
-          <li>Accommodation: {caption}</li>
-        </ul>
-      </Typography>
-    </div>
-  );
-}
-
-function AccompanyingPersonsField({title, description, data}: Field) {
-  return (
-    <div>
-      <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
-        <ul className="list-inside list-disc">
-          {data.map(({id, firstName, lastName}) => (
-            <li key={id}>
-              {firstName} {lastName}
-            </li>
-          ))}
-        </ul>
-      </Typography>
     </div>
   );
 }
