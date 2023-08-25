@@ -6,226 +6,180 @@ import {
   ChevronLeftIcon,
   ChevronDownIcon,
   InformationCircleIcon,
+  UserIcon,
 } from '@heroicons/react/20/solid';
+import {useLiveQuery} from 'dexie-react-hooks';
+import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
-import {getEventDetailsFromIds, updateParticipant, updateRegForm} from '../../db/utils';
+import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
-import {ParticipantPageData} from '../../Models/EventData';
+import {checkInParticipant, useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
-import {authFetch} from '../../utils/network';
+import {NotFound} from '../NotFound';
 import {Field, FieldProps} from './fields';
+import {handleError, refreshEvent, refreshParticipant, refreshRegform} from './refresh';
+
+const LOADING = Symbol('loading');
 
 const ParticipantPage = () => {
   const navigate = useNavigate();
   const {state} = useLocation();
-  const {autoCheckin} = state || {autoCheckin: false};
-  const {id, regFormId, registrantId} = useParams();
-
-  const [eventData, setEventData] = useState<ParticipantPageData | null>(null);
+  const autoCheckin = state?.autoCheckin ?? false;
+  const {id, regformId, participantId} = useParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [triedCheckIn, setTriedCheckIn] = useState(false);
   const {enableModal} = useAppState();
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Fetch the Participant Page data from IndexedDB
-    const getParticipantPageData = async () => {
-      // Get the full event data
-      const fullData = await getEventDetailsFromIds({
-        eventId: Number(id),
-        regFormId: Number(regFormId),
-        participantId: Number(registrantId),
-      });
+  const event = useLiveQuery(() => db.events.get(Number(id)), [], LOADING);
+  const regform = useLiveQuery(() => db.regForms.get(Number(regformId)), [], LOADING);
+  const participant = useLiveQuery(() => db.participants.get(Number(participantId)), [], LOADING);
 
-      if (!fullData || !fullData.event || !fullData.regForm || !fullData.participant) {
-        enableModal(
-          'Error getting the participant data',
-          "Couldn't fetch the event, form or participant data"
-        );
-        setIsLoading(false);
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function refresh() {
+      const event = await db.events.get(Number(id));
+      const regform = await db.regForms.get(Number(regformId));
+      const participant = await db.participants.get(Number(participantId));
+      if (!event || !regform || !participant) {
         return;
       }
 
-      // Set the eventData
-      const newEventData: ParticipantPageData = {
-        event: {
-          id: fullData.event.id,
-          title: fullData.event.title,
-          date: fullData.event.date,
-          serverBaseUrl: fullData.event.server_base_url,
-        },
-        regForm: {
-          id: fullData.regForm.id,
-          title: fullData.regForm.title,
-          checkedInCount: fullData.regForm.checkedInCount,
-        },
-        attendee: fullData.participant,
-      };
-      setEventData(newEventData);
-      setIsLoading(false);
-    };
+      await refreshEvent(event, controller.signal, enableModal);
+      await refreshRegform(event, regform, controller.signal, enableModal);
+      await refreshParticipant(event, participant, controller.signal, enableModal);
+    }
 
-    getParticipantPageData();
-  }, [id, regFormId, registrantId, enableModal]);
-
-  const updateCheckedInStatus = (newStatus: boolean) => {
-    setEventData(prevState => {
-      if (!prevState) return null;
-
-      return {
-        ...prevState,
-        attendee: {
-          ...prevState.attendee,
-          checkedIn: newStatus,
-        },
-      };
+    refresh().catch(err => {
+      enableModal('Something went wrong when fetching updates', err.message);
     });
-  };
+    return () => controller.abort();
+  }, [id, regformId, participantId, enableModal]);
 
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
-      // Send the check in request to the backend
-      if (!eventData) {
+      if (
+        !event ||
+        event === LOADING ||
+        !regform ||
+        regform === LOADING ||
+        !participant ||
+        participant === LOADING
+      ) {
         return;
       }
 
-      setIsLoading(true);
-      try {
-        const response = await authFetch(
-          eventData.event.serverBaseUrl,
-          `/api/checkin/event/${eventData.event.id}/registration/${eventData.regForm.id}/${eventData.attendee.id}`,
-          {
-            method: 'PATCH',
-            body: JSON.stringify({checked_in: newCheckInState}),
-          }
-        );
-        if (!response) {
-          enableModal('Error checking in user', 'No response from the server');
-          setIsLoading(false);
-          return;
-        }
+      const server = await db.servers.get(event.serverId);
+      const response = await checkInParticipant(server, participant, newCheckInState);
 
-        // Update the checked_in status in the database and the UI
-        await updateParticipant(eventData.attendee.id, {checkedIn: newCheckInState});
-        await updateRegForm(eventData.regForm.id, {
-          checkedInCount: eventData.regForm.checkedInCount + (newCheckInState ? 1 : -1),
+      if (response.ok) {
+        await db.transaction('readwrite', db.regForms, db.participants, async () => {
+          await db.participants.update(participant.id, {checkedIn: newCheckInState});
+          const checkedInCount = regform.checkedInCount + (newCheckInState ? 1 : -1);
+          await db.regForms.update(regform.id, {checkedInCount});
         });
-        updateCheckedInStatus(newCheckInState);
-
-        setIsLoading(false);
-      } catch (err) {
-        if (err instanceof Error) {
-          enableModal('Error checking in the user', err.message);
-        } else {
-          enableModal('Error checking in');
-        }
-        setIsLoading(false);
-        return;
+      } else {
+        handleError(response, 'Something went wrong when updating check-in status', enableModal);
       }
     },
-    [eventData, enableModal]
+    [event, regform, participant, enableModal]
   );
 
   useEffect(() => {
-    const performAutoCheckIn = async () => {
-      // If autoCheckin is true, then automatically check in the user
-      if (eventData && !triedCheckIn && autoCheckin) {
-        setTriedCheckIn(true);
-        if (eventData.attendee.checkedIn) {
-          return;
-        }
-        await performCheckIn(true);
-      }
-    };
-
-    performAutoCheckIn();
-  }, [eventData, performCheckIn, autoCheckin, triedCheckIn]);
-
-  const goToEvent = () => {
-    if (!eventData) {
+    if (!participant || participant === LOADING) {
       return;
     }
 
-    navigate(`/event/${eventData.event.id}`, {
+    if (autoCheckin && !participant.checkedIn) {
+      setIsLoading(true);
+      performCheckIn(true).finally(() => setIsLoading(false));
+    }
+  }, [participant, performCheckIn, autoCheckin]);
+
+  // Still loading
+  if (event === LOADING || regform === LOADING || participant === LOADING) {
+    return null;
+  }
+
+  if (!event) {
+    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+  } else if (!regform) {
+    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
+  } else if (!participant) {
+    return <NotFound text="Participant not found" icon={<UserIcon />} />;
+  }
+
+  const goToEvent = () => {
+    navigate(`/event/${event.id}`, {
       state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
       replace: true,
     });
   };
 
   const goToRegForm = () => {
-    if (!eventData) {
-      return;
-    }
-
-    navigate(`/event/${eventData.event.id}/${eventData.regForm.id}`, {
+    navigate(`/event/${event.id}/${regform.id}`, {
       replace: true,
     });
   };
 
-  const onCheckInToggle = async () => {
-    await performCheckIn(!eventData?.attendee?.checkedIn);
+  const onCheckInToggle = () => {
+    setIsLoading(true);
+    performCheckIn(!participant.checkedIn).finally(() => setIsLoading(false));
   };
 
   return (
     <>
       <div className="px-4 pt-1">
-        {eventData && (
-          <>
-            <div className="flex items-center justify-between">
-              <Breadcrumbs
-                routeNames={[eventData.event?.title, eventData.regForm?.title]}
-                routeHandlers={[goToEvent, goToRegForm]}
-              />
-            </div>
-            <div className="mt-8 flex flex-col gap-4">
-              <Typography variant="h2" className="text-center">
-                {eventData.attendee.fullName}
-              </Typography>
-              <div className="mt-4 mb-4 flex items-center justify-center gap-4">
-                <CheckInButton
-                  isLoading={isLoading}
-                  onCheckInToggle={onCheckInToggle}
-                  eventData={eventData}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <InformationCircleIcon className="w-6 h-6 text-primary dark:text-blue-500" />
-                    <Typography variant="body2">Registration Status</Typography>
-                  </div>
-                  <Typography variant="body2" className="font-bold capitalize">
-                    {eventData.attendee.state}
-                  </Typography>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-blue-500" />
-                    <Typography variant="body2">Registration Date</Typography>
-                  </div>
-                  <Typography variant="body2" className="font-bold">
-                    {formatDate(eventData.attendee.registrationDate)}
-                  </Typography>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-      {eventData && (
-        <div className="flex flex-col mt-6">
-          {eventData.attendee.registrationData.map((data: object, i: number) => {
-            const section: SectionProps = {
-              ...data,
-              isLast: i === eventData.attendee.registrationData.length - 1,
-            };
-
-            return <RegistrationSection key={section.id} {...section} />;
-          })}
+        <div className="flex items-center justify-between">
+          <Breadcrumbs
+            routeNames={[event.title, regform.title]}
+            routeHandlers={[goToEvent, goToRegForm]}
+          />
         </div>
-      )}
+        <div className="mt-8 flex flex-col gap-4">
+          <Typography variant="h2" className="text-center">
+            {participant.fullName}
+          </Typography>
+          <div className="mt-4 mb-4 flex items-center justify-center gap-4">
+            <CheckInButton
+              isLoading={isLoading}
+              checkedIn={participant.checkedIn}
+              onCheckInToggle={onCheckInToggle}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <InformationCircleIcon className="w-6 h-6 text-primary dark:text-blue-500" />
+                <Typography variant="body2">Registration Status</Typography>
+              </div>
+              <Typography variant="body2" className="font-bold capitalize">
+                {participant.state}
+              </Typography>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-blue-500" />
+                <Typography variant="body2">Registration Date</Typography>
+              </div>
+              <Typography variant="body2" className="font-bold">
+                {formatDate(participant.registrationDate)}
+              </Typography>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col mt-6">
+        {participant.registrationData.map((data: object, i: number) => {
+          const section: SectionProps = {
+            ...data,
+            isLast: i === participant.registrationData.length - 1,
+          };
+
+          return <RegistrationSection key={section.id} {...section} />;
+        })}
+      </div>
     </>
   );
 };
@@ -275,42 +229,49 @@ function RegistrationSection(section: SectionProps) {
 
 interface CheckInButtonProps {
   isLoading: boolean;
+  checkedIn: boolean;
   onCheckInToggle: () => void;
-  eventData: ParticipantPageData;
 }
 
-function CheckInButton({isLoading, onCheckInToggle, eventData}: CheckInButtonProps) {
-  const checkedIn = eventData.attendee.checkedIn;
+function CheckInButton({isLoading, checkedIn, onCheckInToggle}: CheckInButtonProps) {
+  const offline = useIsOffline();
   const size = checkedIn ? 'px-4 py-2' : 'px-7 py-3.5';
-  const color = checkedIn
+  const color = offline
+    ? 'bg-gray-500 dark:bg-gray-600'
+    : checkedIn
     ? 'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700'
     : 'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700';
+
+  const button = (
+    <button
+      type="button"
+      disabled={offline}
+      onClick={onCheckInToggle}
+      className={`relative text-base text-white focus:outline-none
+              font-medium rounded-full text-center ${size} ${color}`}
+    >
+      {isLoading && (
+        <LoadingIndicator
+          size={checkedIn ? 'xs' : 's'}
+          className="absolute m-auto left-0 right-0 top-0 bottom-0"
+        />
+      )}
+      <span className={isLoading ? 'invisible' : ''}>
+        {!checkedIn && 'Check in'}
+        {checkedIn && 'Undo'}
+      </span>
+    </button>
+  );
 
   return (
     <>
       {checkedIn && (
-        <div className="flex items-center text-white  gap-2">
+        <div className="flex items-center text-white gap-2">
           <ShieldCheckIcon className="w-8 h-8 text-green-500" />
           <Typography variant="body1">Checked in</Typography>
         </div>
       )}
-      <button
-        type="button"
-        onClick={onCheckInToggle}
-        className={`relative text-base text-white focus:outline-none
-                    font-medium rounded-full text-center ${size} ${color}`}
-      >
-        {isLoading && (
-          <LoadingIndicator
-            size={checkedIn ? 'xs' : 's'}
-            className="absolute m-auto left-0 right-0 top-0 bottom-0"
-          />
-        )}
-        <span className={isLoading ? 'invisible' : ''}>
-          {!checkedIn && 'Check in'}
-          {checkedIn && 'Undo'}
-        </span>
-      </button>
+      {button}
     </>
   );
 }

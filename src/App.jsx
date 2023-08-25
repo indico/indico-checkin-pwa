@@ -33,8 +33,8 @@ const App = () => {
           <Route path="/event">
             <Route path="/event/:id" element={<EventPage />} />
             <Route path="/event/new" element={<AddEventPage />} />
-            <Route path="/event/:id/:regFormId" element={<RegistrationFormPage />} />
-            <Route path="/event/:id/:regFormId/:registrantId" element={<ParticipantPage />} />
+            <Route path="/event/:id/:regformId" element={<RegistrationFormPage />} />
+            <Route path="/event/:id/:regformId/:participantId" element={<ParticipantPage />} />
           </Route>
           <Route path="/auth/redirect" element={<AuthRedirectPage />} />
           <Route path="/settings" element={<SettingsPage />} />
