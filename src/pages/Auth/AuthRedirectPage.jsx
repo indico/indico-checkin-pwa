@@ -1,60 +1,55 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client} from '@badgateway/oauth2-client';
-import {Typography} from '../../Components/Tailwind';
+import {CheckCircleIcon} from '@heroicons/react/20/solid';
+import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import {addEvent, addRegistrationForm, addServer} from '../../db/utils';
-import {discoveryEndpoint, redirectURI} from './utils';
+import {discoveryEndpoint, redirectURI, validateQRCodeData} from './utils';
+
+async function wait(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
 
 const AuthRedirectPage = () => {
-  const navigation = useNavigate();
-
+  const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const onLoad = async () => {
-      // Get the event data from the browser's session storage
-      const sessionStorageData = JSON.parse(sessionStorage.getItem('eventData'));
-      if (sessionStorageData === null) {
-        // The eventData is not in the browser's session storage, so ignore
-        setError('Event Data not found. Please try again.');
+      let eventData = sessionStorage.getItem('eventData');
+      sessionStorage.removeItem('eventData');
+
+      if (!eventData) {
+        return;
+      }
+
+      try {
+        eventData = JSON.parse(eventData);
+      } catch (err) {
+        setError({title: 'Error parsing QR code data'});
+        return;
+      }
+
+      if (!validateQRCodeData(eventData)) {
+        setError({title: 'Invalid QR Code data'});
         return;
       }
 
       const {
         codeVerifier,
-        event_id,
+        eventId,
+        regformId,
         title,
         date,
-        regform_id,
-        regform_title,
-        server: {base_url, client_id, scope},
-      } = sessionStorageData;
-      // console.log('SessionStorage data: ', sessionStorageData);
-
-      // Check if these variables are null
-      if (
-        codeVerifier == null ||
-        base_url == null ||
-        client_id == null ||
-        scope == null ||
-        event_id == null ||
-        title == null ||
-        date == null ||
-        regform_id == null ||
-        regform_title == null
-      ) {
-        // The stored data is not complete, so ignore
-        setError('Event Data not complete. Please try again.');
-        return;
-      }
-
-      // Delete the eventData from the browser's session storage
-      sessionStorage.removeItem('eventData');
+        regformTitle,
+        server: {baseUrl, clientId, scope},
+      } = eventData;
 
       const client = new OAuth2Client({
-        server: base_url,
-        clientId: client_id,
+        server: baseUrl,
+        clientId: clientId,
         discoveryEndpoint: discoveryEndpoint,
         fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
@@ -64,60 +59,86 @@ const AuthRedirectPage = () => {
       });
 
       // The user is now at the redirectUri (Back to the App), so we can now get the access token
-      const oauth2Token = await client.authorizationCode.getTokenFromCodeRedirect(
-        document.location,
-        {
+      let oauth2Token;
+      try {
+        oauth2Token = await client.authorizationCode.getTokenFromCodeRedirect(document.location, {
           /**
            * The redirect URI is not actually used for any redirects, but MUST be the
            * same as what you passed earlier to "authorizationCode"
            */
           redirectUri: redirectURI,
           codeVerifier,
-        }
-      );
-
-      // Check if there is a token
-      if (oauth2Token.accessToken === null) {
-        // The user is not authenticated, so ignore
-        setError('Authorization failed. Please try again.');
+        });
+      } catch (err) {
+        setError({title: 'OAuth authorization failed', description: err.message});
         return;
       }
 
-      // Store the data in IndexedDB
-      try {
-        addServer({base_url, client_id, scope, auth_token: oauth2Token.accessToken});
-        addEvent({id: event_id, title, date, server_base_url: base_url});
-
-        addRegistrationForm({
-          id: regform_id,
-          eventId: event_id,
-          title: regform_title,
-        });
-
-        navigation('/');
-      } catch (err) {
-        console.log('Error adding data to IndexedDB: ', err);
-        setError('Error storing the new Event. Please try again.');
+      if (!oauth2Token) {
+        setError({title: 'Failed to obtain OAuth token'});
+        return;
       }
+
+      try {
+        const serverId = await addServer({
+          baseUrl,
+          clientId,
+          scope,
+          authToken: oauth2Token.accessToken,
+        });
+        await addEvent({id: eventId, serverId, title, date});
+        await addRegistrationForm({
+          id: regformId,
+          eventId: eventId,
+          title: regformTitle,
+        });
+      } catch (err) {
+        setError({title: 'OAuth authorization failed', description: err.message});
+        return;
+      }
+
+      setSuccess(true);
+      await wait(2000).then(() => navigate(`/event/${eventId}`));
     };
 
     onLoad(); // Run on page load
-  }, [navigation]);
+  }, [navigate]);
 
-  return (
-    <div className="flex flex-1 w-full h-full min-h-[15rem] justify-center items-center">
-      {error ? (
-        <Typography variant="h3">{error}</Typography>
-      ) : (
-        <div>
-          <LoadingIndicator size="lg" />
-          <Typography variant="h3" className="mt-6">
-            Loading...
-          </Typography>
+  if (error) {
+    return (
+      <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+        <div className="flex flex-col items-center justify-center p-6 rounded-xl gap-2">
+          <Typography variant="h3">{error.title}</Typography>
+          <Typography variant="body1">{error.description}</Typography>
+          <Button className="mt-4" onClick={() => navigate('/event/new')}>
+            Try again
+          </Button>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  } else {
+    return (
+      <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+        <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-10 pb-36 rounded-xl">
+          <Typography variant="h3">Authenticating..</Typography>
+          <div className="relative">
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 transition ease-linear delay-1000 ${
+                success ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
+              <LoadingIndicator size="lg" />
+            </div>
+            <CheckCircleIcon
+              className={`absolute top-[-0.5rem] left-1/2 -translate-x-1/2 w-28 text-green-500 transition ease-linear delay-1000 ${
+                success ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default AuthRedirectPage;

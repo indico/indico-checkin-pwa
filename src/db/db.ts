@@ -2,16 +2,16 @@ import Dexie, {Table} from 'dexie';
 
 export interface ServerTable {
   id: number;
-  base_url: string;
-  client_id: string;
+  baseUrl: string;
+  clientId: string;
   scope: string;
-  auth_token: string;
+  authToken: string;
 }
 export interface EventTable {
   id: number;
+  serverId: number;
   title: string;
   date: string;
-  server_base_url: string; // Reference to parent server
 }
 export interface RegFormTable {
   id: number;
@@ -23,9 +23,9 @@ export interface RegFormTable {
 
 export interface ParticipantTable {
   id: number;
-  fullName: string;
   regformId: number;
   eventId: number;
+  fullName: string;
   registrationDate: string;
   registrationData: object[];
   state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
@@ -45,11 +45,11 @@ export class MyDexie extends Dexie {
 
   constructor() {
     super('myDatabase');
-    this.version(2).stores({
-      servers: 'id++, base_url, client_id',
-      events: 'id, title, date, server_base_url',
-      regForms: 'id, title, eventId',
-      participants: 'id, name, regformId, eventId, state, checkedIn',
+    this.version(1).stores({
+      servers: 'id++, baseUrl, clientId',
+      events: 'id, serverId, title',
+      regForms: 'id, eventId, title',
+      participants: 'id, regformId, eventId, name, state, checkedIn',
     });
   }
 }

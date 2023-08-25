@@ -1,15 +1,18 @@
 import {useNavigate} from 'react-router-dom';
+import {ExclamationCircleIcon} from '@heroicons/react/20/solid';
 import {Cog8ToothIcon} from '@heroicons/react/24/solid';
 import Logo from '../assets/logo.png';
 import WaveDark from '../assets/wave_dark_custom.svg';
 import WaveLight from '../assets/wave_light_custom.svg';
 import useSettings from '../hooks/useSettings';
+import {useIsOffline} from '../utils/client';
 import {clickableClassname} from '../utils/styles';
 import {Typography} from './Tailwind';
 
 const TopTab = () => {
   const {darkMode} = useSettings();
   const navigate = useNavigate();
+  const offline = useIsOffline();
 
   const onSettingsClick = () => {
     navigate('/settings');
@@ -30,11 +33,13 @@ const TopTab = () => {
 
           <Typography variant="h3">Indico Check-in</Typography>
         </div>
-
-        <Cog8ToothIcon
-          className="h-7 dark:text-white active:opacity-50 hover:cursor-pointer"
-          onClick={onSettingsClick}
-        />
+        <div className="flex items-center">
+          {offline && <ExclamationCircleIcon className="min-w-[2rem] text-yellow-400" />}
+          <Cog8ToothIcon
+            className="min-w-[2rem] dark:text-white active:opacity-50 hover:cursor-pointer"
+            onClick={onSettingsClick}
+          />
+        </div>
       </div>
       <div className="absolute top-0 left-0 w-full h-full">
         <img

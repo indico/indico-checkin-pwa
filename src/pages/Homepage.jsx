@@ -1,58 +1,52 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {QrCodeIcon, CalendarDaysIcon} from '@heroicons/react/20/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Button, Typography} from '../Components/Tailwind/index.jsx';
 import db from '../db/db';
-import {getRegistrationForms} from '../db/utils.ts';
-import {formatDateObj} from '../utils/date.ts';
+import useAppState from '../hooks/useAppState';
+import {refreshEvents} from './Events/refresh.js';
 
 const Homepage = () => {
-  const [numEventRegForms, setNumEventRegForms] = useState([]);
-
-  // Listen to events updates
-  const events = useLiveQuery(() =>
-    db.events.toArray().then(currEvents =>
-      // Convert the date to human-friendly format
-      currEvents.map(event => {
-        event.date = formatDateObj(new Date(event.date));
-        return event;
-      })
-    )
-  );
+  const navigate = useNavigate();
+  const {enableModal} = useAppState();
+  const events = useLiveQuery(() => db.events.toArray());
+  const regforms = useLiveQuery(() => db.regForms.toArray());
 
   useEffect(() => {
-    const updateRegForms = async () => {
-      if (!events) return;
+    const controller = new AbortController();
 
-      const eventNumForms = [];
-      // Get the regForms for each event
-      for (const event of events) {
-        const regForms = await getRegistrationForms(event.id);
-        if (regForms) eventNumForms.push(regForms.length);
-        else eventNumForms.push(0);
-      }
+    async function refresh() {
+      const events = await db.events.toArray();
+      refreshEvents(events, controller.signal, enableModal);
+    }
 
-      setNumEventRegForms(eventNumForms);
-    };
+    refresh().catch(err => enableModal('Something went wrong when updating events', err.message));
+    return () => controller.abort();
+  }, [enableModal]);
 
-    updateRegForms();
-  }, [events]);
-
-  const navigate = useNavigate();
-
-  const navigateToEvent = item => {
-    navigate(`/event/${item.id}`);
+  const navigateToEvent = event => {
+    navigate(`/event/${event.id}`, {state: {autoRedirect: true}});
   };
 
   const onAddEvent = () => {
     navigate('/event/new');
   };
 
+  // Still loading
+  if (!events || !regforms) {
+    return null;
+  }
+
+  const regformsByEvent = regforms.reduce((acc, regform) => {
+    acc[regform.eventId] = (acc[regform.eventId] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
-    <div className="px-6 pt-1">
-      {events?.length > 0 && (
+    <div className="px-4 pt-1">
+      {events.length > 0 && (
         <>
           <div className="flex flex-row justify-between items-center">
             <Typography variant="h3">Events</Typography>
@@ -62,20 +56,20 @@ const Homepage = () => {
             </Button>
           </div>
           <div className="mt-6 flex flex-col gap-4">
-            {events.map((item, idx) => {
+            {events.map(event => {
               return (
                 <EventItem
-                  key={idx}
-                  item={item}
-                  onClick={() => navigateToEvent(item)}
-                  quantity={numEventRegForms[idx]}
+                  key={event.id}
+                  item={event}
+                  onClick={() => navigateToEvent(event)}
+                  quantity={regformsByEvent[event.id]}
                 />
               );
             })}
           </div>
         </>
       )}
-      {events?.length === 0 && (
+      {events.length === 0 && (
         <div
           className="mt-0 flex items-center justify-center text-center p-6
                      aspect-square m-auto rounded-xl bg-gray-100 dark:bg-gray-800"

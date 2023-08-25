@@ -6,14 +6,15 @@ import {Typography} from '../../Components/Tailwind';
 import db from '../../db/db';
 import {addEvent, addRegistrationForm} from '../../db/utils';
 import useAppState from '../../hooks/useAppState';
-import {discoveryEndpoint, redirectURI} from '../Auth/utils';
+import {camelizeKeys} from '../../utils/case';
+import {discoveryEndpoint, redirectURI, validateQRCodeData} from '../Auth/utils';
 import classes from './Events.module.css';
 
 const AddEventPage = () => {
+  const navigate = useNavigate();
+  const {showModal, enableModal} = useAppState();
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const navigation = useNavigate();
-  const {enableModal, showModal} = useAppState();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     if (processing) {
@@ -22,8 +23,6 @@ const AddEventPage = () => {
     }
     setProcessing(true);
 
-    // handle scanned result
-    // parse json object and detect if it is a valid event
     let eventData;
     try {
       eventData = JSON.parse(decodedText);
@@ -32,47 +31,30 @@ const AddEventPage = () => {
       setProcessing(false);
       return;
     }
-    // console.log('event data: ', decodedText);
 
-    const {event_id, title, date, regform_id, regform_title, server: serverData} = eventData;
-    const {base_url, client_id, scope} = serverData || {
-      base_url: null,
-      client_id: null,
-      scope: null,
-    };
+    eventData = camelizeKeys(eventData);
 
-    // Check if these variables are null
-    if (
-      base_url == null ||
-      client_id == null ||
-      scope == null ||
-      event_id == null ||
-      title == null ||
-      date == null ||
-      regform_id == null ||
-      regform_title == null
-    ) {
-      // The QRCode data is not complete, so ignore
-      enableModal('QRCode Data is not valid', 'Some fields are missing. Please try again.');
+    if (!validateQRCodeData(eventData)) {
+      enableModal('Invalid QR Code data', 'Some data is either missing or incorrect');
       setProcessing(false);
       return;
     }
 
     // Check if the serverData is already in indexedDB
-    const serverExists = await db.servers.get({base_url: base_url});
-    if (serverExists) {
+    const server = await db.servers.get({baseUrl: eventData.server.baseUrl});
+    if (server) {
       // No need to perform authentication
+      const {eventId, regformId, title, date, regformTitle} = eventData;
       try {
-        addEvent({id: event_id, title, date, server_base_url: base_url});
-
-        addRegistrationForm({
-          id: regform_id,
-          eventId: event_id,
-          title: regform_title,
+        await addEvent({id: eventId, title, date, serverId: server.id});
+        await addRegistrationForm({
+          id: regformId,
+          eventId: eventId,
+          title: regformTitle,
         });
 
         // Navigate to homepage
-        navigation('/');
+        navigate('/');
       } catch (err) {
         console.log('Error adding data to IndexedDB: ', err);
         enableModal('Error adding data to the DB', err?.message);
@@ -83,9 +65,12 @@ const AddEventPage = () => {
 
     console.log("Server doesn't exist in IndexedDB. Proceeding to authentication...");
     // Perform OAuth2 Authorization Code Flow
+    const {
+      server: {baseUrl, clientId, scope},
+    } = eventData;
     const client = new OAuth2Client({
-      server: base_url,
-      clientId: client_id,
+      server: baseUrl,
+      clientId: clientId,
       discoveryEndpoint: discoveryEndpoint,
       fetch: window.fetch.bind(window), // Use the browser's native fetch API   TODO: Confirm this is correct
 
@@ -106,26 +91,24 @@ const AddEventPage = () => {
      */
     const codeVerifier = await generateCodeVerifier();
 
-    // In a browser this might work as follows:
-    const authRes = await client.authorizationCode.getAuthorizeUri({
-      // URL in the app that the user should get redirected to after authenticating
-      redirectUri: redirectURI, // TODO: Check this later
-      codeVerifier,
-      scope: [scope],
-    });
-    // console.log('authRes: ', authRes);
-
     // Store the eventData in the browser's session storage. This is used later to verify the code challenge
-    const sessionObj = structuredClone(eventData);
-    sessionObj.codeVerifier = codeVerifier;
-    const sessionStr = JSON.stringify(sessionObj);
-    sessionStorage.setItem('eventData', sessionStr);
+    const sessionData = {...eventData, codeVerifier};
+    sessionStorage.setItem('eventData', JSON.stringify(sessionData));
 
-    setProcessing(false);
-
-    // Redirect the user to the Authentication Server (OAuth2 Server)
-    // Which will redirect the user back to the redirectUri (Back to the App)
-    document.location = authRes;
+    try {
+      // Redirect the user to the Authentication Server (OAuth2 Server)
+      // Which will redirect the user back to the redirectUri (Back to the App)
+      document.location = await client.authorizationCode.getAuthorizeUri({
+        // URL in the app that the user should get redirected to after authenticating
+        redirectUri: redirectURI, // TODO: Check this later
+        codeVerifier,
+        scope: [scope],
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const onPermRefused = () => {
@@ -139,7 +122,6 @@ const AddEventPage = () => {
           Scan the Event QR Code
         </Typography>
       </div>
-
       {showModal ? (
         <div className="w-full aspect-square" />
       ) : (
@@ -152,7 +134,6 @@ const AddEventPage = () => {
           onPermRefused={onPermRefused}
         />
       )}
-
       <div className="justify-center items-center flex py-6 mx-6">
         {hasPermission ? (
           <Typography variant="h3" className={`text-center font-bold ${classes.scanningText}`}>
