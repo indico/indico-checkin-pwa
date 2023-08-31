@@ -14,9 +14,12 @@ export const SettingsProvider = ({children}) => {
   const [autoCheckin, setAutoCheckin] = useState(
     JSON.parse(localStorage.getItem('autoCheckin') || false)
   );
+  const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
   return (
-    <SettingsContext.Provider value={{darkMode, setDarkMode, autoCheckin, setAutoCheckin}}>
+    <SettingsContext.Provider
+      value={{darkMode, setDarkMode, autoCheckin, setAutoCheckin, soundEffect, setSoundEffect}}
+    >
       {children}
     </SettingsContext.Provider>
   );

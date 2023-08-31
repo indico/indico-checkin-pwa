@@ -6,7 +6,7 @@ export const formatDate = (dt: string | Date) => {
   if (dt instanceof Date) {
     return dt.toLocaleDateString();
   } else {
-    return new Date(dt).toLocaleDateString();
+    return new Date(dt).toLocaleDateString(undefined, {dateStyle: 'short'});
   }
 };
 
@@ -18,6 +18,6 @@ export const formatDatetime = (dt: string | Date) => {
   if (dt instanceof Date) {
     return dt.toLocaleString();
   } else {
-    return new Date(dt).toLocaleString();
+    return new Date(dt).toLocaleString(undefined, {dateStyle: 'short', timeStyle: 'short'});
   }
 };

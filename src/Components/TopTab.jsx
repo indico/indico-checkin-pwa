@@ -1,55 +1,63 @@
-import {useNavigate} from 'react-router-dom';
-import {ExclamationCircleIcon} from '@heroicons/react/20/solid';
-import {Cog8ToothIcon} from '@heroicons/react/24/solid';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {ArrowSmallLeftIcon, ExclamationCircleIcon} from '@heroicons/react/20/solid';
+import PropTypes from 'prop-types';
 import Logo from '../assets/logo.png';
-import WaveDark from '../assets/wave_dark_custom.svg';
-import WaveLight from '../assets/wave_light_custom.svg';
-import useSettings from '../hooks/useSettings';
 import {useIsOffline} from '../utils/client';
-import {clickableClassname} from '../utils/styles';
-import {Typography} from './Tailwind';
+import DropdownSettings from './DropdownSettings';
 
-const TopTab = () => {
-  const {darkMode} = useSettings();
+const TopTab = ({settingsItems}) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const {pathname} = useLocation();
+  const {backBtnText = ''} = location.state || {};
   const offline = useIsOffline();
-
-  const onSettingsClick = () => {
-    navigate('/settings');
-  };
 
   const onLogoClick = () => {
     navigate('/');
   };
 
-  return (
-    <div className="h-28 w-full relative">
-      <div className="relative z-[1] flex flex-row h-2/3 w-full justify-between items-center px-4">
-        <div
-          className={`flex flex-row h-full items-center ${clickableClassname}`}
-          onClick={onLogoClick}
-        >
-          <img src={Logo} alt="Logo" className="h-2/3 mr-6"></img>
+  const backPage = backBtnText ? -1 : '/';
+  const backText = backBtnText || 'Home';
 
-          <Typography variant="h3">Indico Check-in</Typography>
+  if (pathname === '/') {
+    return (
+      <div className="flex justify-between mb-4 p-2 bg-blue-600 dark:bg-blue-900">
+        <div className={`flex gap-4 h-12 items-center`} onClick={onLogoClick}>
+          <img src={Logo} alt="Logo" className="h-full"></img>
+          <span className="text-2xl font-semibold whitespace-nowrap text-white dark:text-gray-300">
+            Indico check-in
+          </span>
         </div>
         <div className="flex items-center">
           {offline && <ExclamationCircleIcon className="min-w-[2rem] text-yellow-400" />}
-          <Cog8ToothIcon
-            className="min-w-[2rem] dark:text-white active:opacity-50 hover:cursor-pointer"
-            onClick={onSettingsClick}
-          />
         </div>
       </div>
-      <div className="absolute top-0 left-0 w-full h-full">
-        <img
-          src={darkMode ? WaveDark : WaveLight}
-          alt="background"
-          className="w-full h-full object-cover"
-        />
+    );
+  } else {
+    return (
+      <div className="flex items-center min-h-10 justify-between mb-4 p-2 bg-blue-600 dark:bg-blue-900">
+        <div
+          className="flex items-center rounded-xl transition-all hover:bg-blue-700 dark:hover:bg-blue-800
+                     cursor-pointer"
+          onClick={() => navigate(backPage)}
+        >
+          <ArrowSmallLeftIcon className="w-9 cursor-pointer text-white" />
+          <span className="text-gray-100 pr-2 text-base font-semibold">{backText}</span>
+        </div>
+        <div>{settingsItems.length > 0 && <DropdownSettings items={settingsItems} />}</div>
       </div>
-    </div>
-  );
+    );
+  }
+};
+
+TopTab.propTypes = {
+  backBtnText: PropTypes.string,
+  settingsItems: PropTypes.array,
+};
+
+TopTab.defaultProps = {
+  backBtnText: '',
+  settingsItems: [],
 };
 
 export default TopTab;

@@ -1,38 +1,56 @@
-import {useNavigate} from 'react-router-dom';
-import {HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {Cog8ToothIcon, HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 
 const BottomTabs = () => {
-  const navigation = useNavigate();
+  const navigate = useNavigate();
+  const {pathname} = useLocation();
 
-  const onHomeClick = () => {
-    navigation('/');
-  };
-
-  const onQrCodeClick = () => {
-    navigation('/check-in');
-  };
+  if (pathname === '/scan') {
+    return null;
+  }
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600 shadow-2xl dark:shadow-gray-600">
-      <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white dark:bg-gray-700 border-t border-gray-50 dark:border-gray-800">
+      <div className="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
         <button
           type="button"
-          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
-          onClick={onHomeClick}
+          onClick={() => navigate('/', {replace: true})}
+          style={{
+            borderTopRightRadius: '10% 70%',
+            borderBottomRightRadius: '10% 70%',
+          }}
+          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-200 dark:hover:bg-gray-800 group"
         >
-          <HomeIcon className="h-6 w-6 mb-0.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
-          <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+          <HomeIcon className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
+          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
             Home
           </span>
         </button>
+        <div className="relative inline-flex flex-col items-center justify-center px-5">
+          <button
+            type="button"
+            onClick={() => navigate('/scan')}
+            className="absolute top-[-50%] text-white rounded-full p-1 bg-gray-50 dark:bg-gray-900 group"
+          >
+            <QrCodeIcon className="w-6 h-6 min-w-[3rem] min-h-[3rem] rounded-full p-2 bg-blue-600" />
+          </button>
+          <Cog8ToothIcon className="invisible w-6 h-6 mb-2" />
+          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+            Scan
+          </span>
+        </div>
         <button
           type="button"
-          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
-          onClick={onQrCodeClick}
+          onClick={() => navigate('/settings')}
+          style={{
+            borderTopLeftRadius: '10% 70%',
+            borderBottomLeftRadius: '10% 70%',
+          }}
+          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-200 dark:hover:bg-gray-800 group"
         >
-          <QrCodeIcon className="h-6 w-6 mb-0.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
-          <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
-            Check-in
+          <Cog8ToothIcon className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
+          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+            Settings
           </span>
         </button>
       </div>

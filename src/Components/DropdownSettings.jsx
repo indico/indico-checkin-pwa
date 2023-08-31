@@ -6,7 +6,6 @@ export default function DropdownSettings({items}) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // setup settings dropdown click events
     const onClick = () => {
       setIsVisible(false);
     };
@@ -26,15 +25,15 @@ export default function DropdownSettings({items}) {
           setIsVisible(v => !v);
         }}
         className="inline-flex items-center p-2 text-sm font-medium text-center
-               text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4
-               focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-800
-               dark:hover:bg-gray-600 dark:focus:ring-gray-600 border dark:border-gray-700"
+                   text-gray-100 rounded-full hover:bg-blue-700
+                   focus:outline-none transition-all
+                   dark:hover:bg-blue-800"
       >
-        <EllipsisVerticalIcon className="min-w-[1.25rem] h-5" />
+        <EllipsisVerticalIcon className="min-w-[1.5rem] min-h-[1.5rem]" />
       </button>
       <ul
-        className={`absolute z-10 right-0 top-full w-max bg-white divide-y divide-gray-100 dark:divide-gray-500 rounded-lg shadow
-                   py-2 text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-600 ${
+        className={`absolute z-10 right-0 top-full w-max bg-white divide-y divide-gray-100 dark:divide-gray-600 rounded-lg shadow
+                   py-2 text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-700 ${
                      isVisible ? '' : 'hidden'
                    }`}
       >
@@ -42,7 +41,7 @@ export default function DropdownSettings({items}) {
           <li key={i}>
             <button
               type="button"
-              className="flex w-full gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-500 dark:hover:text-white"
+              className="flex w-full gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
             >
               <span className="min-w-[1.25rem] h-5 text-red-700 dark:text-red-500">
                 {item.icon}

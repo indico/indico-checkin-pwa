@@ -1,57 +1,75 @@
-import {useCallback, useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {ChangeEvent, useCallback, useEffect, useState} from 'react';
+import {useLocation, useParams} from 'react-router-dom';
 import {
-  ShieldCheckIcon,
   CalendarDaysIcon,
   ChevronLeftIcon,
   ChevronDownIcon,
   InformationCircleIcon,
   UserIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/20/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
-import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
-import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
+import {CheckinToggle} from '../../Components/Tailwind/Toggle';
+import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
-import {checkInParticipant, useIsOffline} from '../../utils/client';
+import {checkInParticipant} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {NotFound} from '../NotFound';
 import {Field, FieldProps} from './fields';
-import {handleError, refreshEvent, refreshParticipant, refreshRegform} from './refresh';
+import {handleError, syncEvent, syncParticipant, syncRegform} from './sync';
 
+const makeDebounce = (delay: number) => {
+  let timer: number;
+  return (fn: CallableFunction) => {
+    clearTimeout(timer);
+    timer = setTimeout(fn, delay);
+  };
+};
+
+const debounce = makeDebounce(300);
 const LOADING = Symbol('loading');
 
 const ParticipantPage = () => {
-  const navigate = useNavigate();
   const {state} = useLocation();
-  const autoCheckin = state?.autoCheckin ?? false;
+  const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
   const {id, regformId, participantId} = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const {enableModal} = useAppState();
+  const [fullTitleVisible, setFullTitleVisible] = useState(false);
+  const [notes, setNotes] = useState('');
 
-  const event = useLiveQuery(() => db.events.get(Number(id)), [], LOADING);
-  const regform = useLiveQuery(() => db.regForms.get(Number(regformId)), [], LOADING);
-  const participant = useLiveQuery(() => db.participants.get(Number(participantId)), [], LOADING);
+  const event = useLiveQuery(() => db.events.get(Number(id)), [id], LOADING);
+  const regform = useLiveQuery(
+    () => db.regforms.get({id: Number(regformId), eventId: Number(id)}),
+    [id, regformId],
+    LOADING
+  );
+  const participant = useLiveQuery(
+    () => db.participants.get({id: Number(participantId), regformId: Number(regformId)}),
+    [regformId, participantId],
+    LOADING
+  );
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function refresh() {
+    async function sync() {
       const event = await db.events.get(Number(id));
-      const regform = await db.regForms.get(Number(regformId));
+      const regform = await db.regforms.get(Number(regformId));
       const participant = await db.participants.get(Number(participantId));
       if (!event || !regform || !participant) {
         return;
       }
 
-      await refreshEvent(event, controller.signal, enableModal);
-      await refreshRegform(event, regform, controller.signal, enableModal);
-      await refreshParticipant(event, participant, controller.signal, enableModal);
+      await syncEvent(event, controller.signal, enableModal);
+      await syncRegform(event, regform, controller.signal, enableModal);
+      await syncParticipant(event, regform, participant, controller.signal, enableModal);
     }
 
-    refresh().catch(err => {
+    sync().catch(err => {
       enableModal('Something went wrong when fetching updates', err.message);
     });
     return () => controller.abort();
@@ -71,13 +89,19 @@ const ParticipantPage = () => {
       }
 
       const server = await db.servers.get(event.serverId);
-      const response = await checkInParticipant(server, participant, newCheckInState);
+      const response = await checkInParticipant(
+        server,
+        event,
+        regform,
+        participant,
+        newCheckInState
+      );
 
       if (response.ok) {
-        await db.transaction('readwrite', db.regForms, db.participants, async () => {
+        await db.transaction('readwrite', db.regforms, db.participants, async () => {
           await db.participants.update(participant.id, {checkedIn: newCheckInState});
           const checkedInCount = regform.checkedInCount + (newCheckInState ? 1 : -1);
-          await db.regForms.update(regform.id, {checkedInCount});
+          await db.regforms.update(regform.id, {checkedInCount});
         });
       } else {
         handleError(response, 'Something went wrong when updating check-in status', enableModal);
@@ -92,34 +116,51 @@ const ParticipantPage = () => {
     }
 
     if (autoCheckin && !participant.checkedIn) {
+      setAutoCheckin(false);
       setIsLoading(true);
       performCheckIn(true).finally(() => setIsLoading(false));
     }
   }, [participant, performCheckIn, autoCheckin]);
 
+  useEffect(() => {
+    if (participant && participant !== LOADING) {
+      setNotes(participant.notes);
+    }
+  }, [participant]);
+
   // Still loading
   if (event === LOADING || regform === LOADING || participant === LOADING) {
-    return null;
+    return <TopTab />;
   }
 
   if (!event) {
-    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+    return (
+      <>
+        <TopTab />
+        <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
+      </>
+    );
   } else if (!regform) {
-    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
+    return (
+      <>
+        <TopTab />
+        <NotFound text="Registration form not found" icon={<IconFeather />} />
+      </>
+    );
   } else if (!participant) {
-    return <NotFound text="Participant not found" icon={<UserIcon />} />;
+    return (
+      <>
+        <TopTab />
+        <NotFound text="Participant not found" icon={<UserIcon />} />
+      </>
+    );
   }
 
-  const goToEvent = () => {
-    navigate(`/event/${event.id}`, {
-      state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
-      replace: true,
-    });
-  };
-
-  const goToRegForm = () => {
-    navigate(`/event/${event.id}/${regform.id}`, {
-      replace: true,
+  const onAddNotes = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
+    debounce(() => {
+      console.log(e.target.value);
+      db.participants.update(participant.id, {notes: e.target.value});
     });
   };
 
@@ -128,24 +169,48 @@ const ParticipantPage = () => {
     performCheckIn(!participant.checkedIn).finally(() => setIsLoading(false));
   };
 
+  const registrationData = participant.registrationData.map((data: object, i: number) => {
+    const section: SectionProps = {
+      ...data,
+      isFirst: i === 0,
+      isLast: i === participant.registrationData.length - 1,
+      isUnique: participant.registrationData.length === 1,
+    };
+
+    return <RegistrationSection key={section.id} {...section} />;
+  });
+
   return (
     <>
+      <TopTab />
       <div className="px-4 pt-1">
-        <div className="flex items-center justify-between">
-          <Breadcrumbs
-            routeNames={[event.title, regform.title]}
-            routeHandlers={[goToEvent, goToRegForm]}
-          />
-        </div>
-        <div className="mt-8 flex flex-col gap-4">
-          <Typography variant="h2" className="text-center">
-            {participant.fullName}
-          </Typography>
-          <div className="mt-4 mb-4 flex items-center justify-center gap-4">
-            <CheckInButton
+        <div className="mt-2 flex flex-col gap-4">
+          <div>
+            <Typography
+              variant="h2"
+              className={`max-w-full cursor-pointer text-center break-words text-gray-600 ${
+                !fullTitleVisible ? 'whitespace-nowrap text-ellipsis overflow-hidden' : ''
+              }`}
+            >
+              <span onClick={() => setFullTitleVisible(v => !v)}>{participant.fullName}</span>
+            </Typography>
+            <Typography variant="body2">
+              <a
+                href={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
+              >
+                Indico participant page
+                <ArrowTopRightOnSquareIcon className="w-4" />
+              </a>
+            </Typography>
+          </div>
+          <div className="flex justify-center mt-4 mb-4">
+            <CheckinToggle
+              checked={participant.checkedIn}
               isLoading={isLoading}
-              checkedIn={participant.checkedIn}
-              onCheckInToggle={onCheckInToggle}
+              onClick={onCheckInToggle}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -168,18 +233,12 @@ const ParticipantPage = () => {
               </Typography>
             </div>
           </div>
+          <div className="flex justify-center mt-1">
+            <Notes notes={notes} onChange={onAddNotes} />
+          </div>
         </div>
       </div>
-      <div className="flex flex-col mt-6">
-        {participant.registrationData.map((data: object, i: number) => {
-          const section: SectionProps = {
-            ...data,
-            isLast: i === participant.registrationData.length - 1,
-          };
-
-          return <RegistrationSection key={section.id} {...section} />;
-        })}
-      </div>
+      <div className="flex flex-col mt-5 px-4">{registrationData}</div>
     </>
   );
 };
@@ -191,12 +250,33 @@ interface SectionProps {
   title: string;
   description: string;
   fields: FieldProps[];
+  isFirst: boolean;
   isLast: boolean;
+  isUnique: boolean;
 }
 
 function RegistrationSection(section: SectionProps) {
-  const {title, fields} = section;
+  const {title, fields, isFirst, isLast, isUnique} = section;
   const [isOpen, setIsOpen] = useState(false);
+
+  let border = '';
+  if (isFirst) {
+    border += ' rounded-t-xl';
+    if (!isUnique && !isOpen) {
+      border += ' border-b-0';
+    }
+  }
+  if (isLast && !isOpen) {
+    border += ' rounded-b-xl';
+  }
+  if (isUnique && !isOpen) {
+    border += ' rounded-b-xl';
+  }
+
+  let expandedBorder = '';
+  if (isUnique || isLast) {
+    expandedBorder += ' border-b rounded-b-xl';
+  }
 
   return (
     <div>
@@ -204,9 +284,8 @@ function RegistrationSection(section: SectionProps) {
         <button
           type="button"
           disabled={fields.length === 0}
-          className={`flex items-center justify-between w-full p-5 font-medium text-left border
-                      border-gray-200 dark:border-gray-700 hover:bg-blue-100 dark:hover:bg-gray-800
-                      border-l-0 border-r-0 ${!section.isLast ? 'border-b-0' : ''}`}
+          className={`flex items-center justify-between w-full p-5 font-medium text-left dark:bg-gray-800 border
+                      border-gray-200 dark:border-gray-700 hover:bg-blue-100 dark:hover:bg-gray-700 ${border}`}
           onClick={() => setIsOpen(o => !o)}
         >
           <Typography variant="h4" className="flex justify-between w-full">
@@ -217,7 +296,9 @@ function RegistrationSection(section: SectionProps) {
         </button>
       </div>
       <div className={isOpen ? '' : 'hidden'}>
-        <div className="flex flex-col gap-2 px-5 py-2">
+        <div
+          className={`flex flex-col gap-2 px-5 py-5 dark:border-gray-700 border-r border-l ${expandedBorder}`}
+        >
           {fields.map(field => (
             <Field key={field.id} {...field} />
           ))}
@@ -227,51 +308,23 @@ function RegistrationSection(section: SectionProps) {
   );
 }
 
-interface CheckInButtonProps {
-  isLoading: boolean;
-  checkedIn: boolean;
-  onCheckInToggle: () => void;
+interface NotesProps {
+  notes: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-function CheckInButton({isLoading, checkedIn, onCheckInToggle}: CheckInButtonProps) {
-  const offline = useIsOffline();
-  const size = checkedIn ? 'px-4 py-2' : 'px-7 py-3.5';
-  const color = offline
-    ? 'bg-gray-500 dark:bg-gray-600'
-    : checkedIn
-    ? 'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700'
-    : 'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700';
-
-  const button = (
-    <button
-      type="button"
-      disabled={offline}
-      onClick={onCheckInToggle}
-      className={`relative text-base text-white focus:outline-none
-              font-medium rounded-full text-center ${size} ${color}`}
-    >
-      {isLoading && (
-        <LoadingIndicator
-          size={checkedIn ? 'xs' : 's'}
-          className="absolute m-auto left-0 right-0 top-0 bottom-0"
-        />
-      )}
-      <span className={isLoading ? 'invisible' : ''}>
-        {!checkedIn && 'Check in'}
-        {checkedIn && 'Undo'}
-      </span>
-    </button>
-  );
-
+function Notes({notes, onChange}: NotesProps) {
   return (
-    <>
-      {checkedIn && (
-        <div className="flex items-center text-white gap-2">
-          <ShieldCheckIcon className="w-8 h-8 text-green-500" />
-          <Typography variant="body1">Checked in</Typography>
-        </div>
-      )}
-      {button}
-    </>
+    <Typography variant="body1" className="w-full">
+      <textarea
+        placeholder="Add notes.."
+        rows={1}
+        value={notes}
+        onChange={onChange}
+        className={`w-full resize-none rounded-xl py-2 px-3 dark:bg-gray-800 border
+                    border-slate-200 dark:border-slate-800 hover:border-blue-300
+                    focus:ring-2 focus:ring-blue-400`}
+      ></textarea>
+    </Typography>
   );
 }

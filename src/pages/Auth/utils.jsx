@@ -1,10 +1,7 @@
-import config from '../../config';
-
-export const redirectURI = `${config.CLIENT_URL}/auth/redirect`;
-
+export const redirectUri = `${window.location.origin}/auth/redirect`;
 export const discoveryEndpoint = '.well-known/oauth-authorization-server';
 
-export function validateQRCodeData(data) {
+export function validateEventData(data) {
   const {eventId, regformId, title, regformTitle, date} = data;
   if (!Number.isInteger(eventId) || !Number.isInteger(regformId)) {
     return false;
@@ -23,6 +20,27 @@ export function validateQRCodeData(data) {
     return false;
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
+    return false;
+  }
+  return true;
+}
+
+export function validateParticipantData(data) {
+  const {checkinSecret, eventId, registrantId, serverUrl, regformId} = data;
+
+  if (
+    !Number.isInteger(eventId) ||
+    !Number.isInteger(regformId) ||
+    !Number.isInteger(registrantId)
+  ) {
+    return false;
+  }
+  if (typeof checkinSecret !== 'string') {
+    return false;
+  }
+  try {
+    new URL(serverUrl);
+  } catch (err) {
     return false;
   }
   return true;
