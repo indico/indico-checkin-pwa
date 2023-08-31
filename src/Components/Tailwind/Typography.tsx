@@ -14,13 +14,13 @@ interface variantProps {
  * Map of variants to tailwind classes
  */
 const variants: variantProps = {
-  h1: 'text-5xl text-black dark:text-gray-300',
-  h2: 'text-3xl text-black dark:text-gray-300',
-  h3: 'text-xl text-black dark:text-gray-300',
-  h4: 'text-lg text-black dark:text-gray-300',
-  body1: 'text-base text-black dark:text-gray-300',
-  body2: 'text-sm text-black dark:text-gray-300',
-  body3: 'text-xs text-black dark:text-gray-300',
+  h1: 'text-4xl text-gray-800 dark:text-gray-300',
+  h2: 'text-2xl text-gray-800 dark:text-gray-300',
+  h3: 'text-xl text-gray-800 dark:text-gray-300',
+  h4: 'text-lg text-gray-800 dark:text-gray-300',
+  body1: 'text-base text-gray-800 dark:text-gray-300',
+  body2: 'text-sm text-gray-800 dark:text-gray-300',
+  body3: 'text-xs text-gray-700 dark:text-gray-400',
 };
 
 interface TypographyProps {
@@ -31,7 +31,6 @@ interface TypographyProps {
 
 const Typography = ({variant, children, className}: TypographyProps) => {
   const variantClass = twMerge(variants[variant], className); // Merge the variant class with the className prop
-
   return <p className={variantClass}>{children}</p>;
 };
 

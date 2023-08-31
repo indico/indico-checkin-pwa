@@ -4,7 +4,7 @@ import useSwipe from '../hooks/useSwipe';
 const bottomTabs = ['/', '/check-in'];
 
 const Background = () => {
-  const navigation = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const onSwipeRight = () => {
@@ -13,7 +13,7 @@ const Background = () => {
     if (routeIdx <= 0) return; // already at the first tab
 
     const prevRoute = bottomTabs[routeIdx - 1];
-    navigation(prevRoute);
+    navigate(prevRoute);
   };
 
   const onSwipeLeft = () => {
@@ -22,7 +22,7 @@ const Background = () => {
     if (routeIdx === -1 || routeIdx >= bottomTabs.length - 1) return; // already at the last tab
 
     const nextRoute = bottomTabs[routeIdx + 1];
-    navigation(nextRoute);
+    navigate(nextRoute);
   };
 
   const swipeHandlers = useSwipe({

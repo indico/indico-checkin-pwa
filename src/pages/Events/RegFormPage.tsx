@@ -1,21 +1,21 @@
-import {useEffect, useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {
+  ArrowTopRightOnSquareIcon,
   CalendarDaysIcon,
   ShieldCheckIcon,
   TrashIcon,
   UserGroupIcon,
 } from '@heroicons/react/20/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
-import DropdownSettings from '../../Components/DropdownSettings';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
-import {Breadcrumbs} from '../../Components/Tailwind/Breadcrumbs';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
+import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
 import {NotFound} from '../NotFound';
-import {refreshEvent, refreshParticipants, refreshRegform} from './refresh';
+import {syncEvent, syncParticipants, syncRegform} from './sync';
 
 const LOADING = Symbol('loading');
 
@@ -23,30 +23,35 @@ const RegistrationFormPage = () => {
   const {id, regformId} = useParams();
   const navigate = useNavigate();
   const {enableModal} = useAppState();
+  const [fullTitleVisible, setFullTitleVisible] = useState(false);
 
-  const event = useLiveQuery(() => db.events.get({id: Number(id)}), [], LOADING);
-  const regform = useLiveQuery(() => db.regForms.get({id: Number(regformId)}), [], LOADING);
+  const event = useLiveQuery(() => db.events.get(Number(id)), [id], LOADING);
+  const regform = useLiveQuery(
+    () => db.regforms.get({id: Number(regformId), eventId: Number(id)}),
+    [id, regformId],
+    LOADING
+  );
   const participants = useLiveQuery(
-    () => db.participants.where({regformId: Number(regformId)}).sortBy('id'),
+    () => db.participants.where({regformId: Number(regformId)}).sortBy('fullName'),
     [regformId]
   );
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function refresh() {
+    async function sync() {
       const event = await db.events.get({id: Number(id)});
-      const regform = await db.regForms.get({id: Number(regformId)});
+      const regform = await db.regforms.get({id: Number(regformId)});
       if (!event || !regform) {
         return;
       }
 
-      await refreshEvent(event, controller.signal, enableModal);
-      await refreshRegform(event, regform, controller.signal, enableModal);
-      await refreshParticipants(event, regform, controller.signal, enableModal);
+      await syncEvent(event, controller.signal, enableModal);
+      await syncRegform(event, regform, controller.signal, enableModal);
+      await syncParticipants(event, regform, controller.signal, enableModal);
     }
 
-    refresh().catch(err => {
+    sync().catch(err => {
       console.error(err);
       enableModal('Something went wrong when fetching updates', err.message);
     });
@@ -59,103 +64,118 @@ const RegistrationFormPage = () => {
     }
 
     return participants.map(({id, checkedIn, fullName}) => ({
-      columns: [fullName],
+      value: fullName,
       useRightIcon: checkedIn,
       onClick: () => {
-        navigate(`/event/${event.id}/${regform.id}/${id}`);
+        navigate(`/event/${event.id}/${regform.id}/${id}`, {state: {backBtnText: regform.title}});
       },
     }));
   }, [event, regform, participants, navigate]);
 
+  const topTab = (
+    <TopTab settingsItems={[{text: 'Remove registration form', icon: <TrashIcon />}]} />
+  );
+
   if (event === LOADING || regform === LOADING || !participants) {
-    return null;
+    return topTab;
   }
 
   if (!event) {
-    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+    return (
+      <>
+        {topTab}
+        <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
+      </>
+    );
   } else if (!regform) {
-    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
+    return (
+      <>
+        {topTab}
+        <NotFound text="Registration form not found" icon={<IconFeather />} />
+      </>
+    );
   }
 
-  const navigateBack = () => {
-    navigate(`/event/${event.id}`, {
-      state: {autoRedirect: false}, // Don't auto redirect to the RegFormPage if there's only 1 form
-      replace: true,
-    });
-  };
-
   return (
-    <div className="pt-1">
-      <div className="px-4">
-        <div className="flex flex-row w-100 items-start justify-between gap-4">
-          <div className="pt-2">
-            <Breadcrumbs
-              routeNames={[event.title, regform.title]}
-              routeHandlers={[navigateBack, null]}
-            />
+    <>
+      <TopTab settingsItems={[{text: 'Remove registration form', icon: <TrashIcon />}]} />
+      <div className="pt-1">
+        <div>
+          <div className="flex flex-col items-center gap-2 px-4">
+            <Typography
+              variant="h2"
+              className={`max-w-full cursor-pointer text-center break-words text-gray-600 ${
+                !fullTitleVisible ? 'whitespace-nowrap text-ellipsis overflow-hidden' : ''
+              }`}
+            >
+              <span onClick={() => setFullTitleVisible(v => !v)}>{regform.title}</span>
+            </Typography>
+            <Typography variant="body2">
+              <a
+                href={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
+              >
+                Indico registration page
+                <ArrowTopRightOnSquareIcon className="w-4" />
+              </a>
+            </Typography>
+            <div className="flex items-center gap-2">
+              {regform.isOpen && (
+                <span
+                  className="w-fit bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5
+                             rounded-full dark:bg-green-900 dark:text-green-300"
+                >
+                  open
+                </span>
+              )}
+              {regform.isOpen === false && (
+                <span
+                  className="w-fit bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5
+                             rounded-full dark:bg-red-900 dark:text-red-300"
+                >
+                  closed
+                </span>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <div className="flex self-center items-center rounded-full overflow-hidden">
+                  <div
+                    className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100
+                               text-primary dark:bg-darkSecondary dark:text-secondary"
+                  >
+                    <ShieldCheckIcon className="w-4 h-4 mr-1" />
+                    <Typography variant="body1">{regform.checkedInCount}</Typography>
+                  </div>
+                  <div
+                    className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100
+                               text-primary dark:bg-darkSecondary dark:text-secondary"
+                  >
+                    <UserGroupIcon className="w-4 h-4 mr-1" />
+                    <Typography variant="body1">{regform.registrationCount}</Typography>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <DropdownSettings
-            items={[
-              {icon: <TrashIcon />, text: 'Delete event'},
-              {icon: <TrashIcon />, text: 'Delete registration form'},
-            ]}
-          />
+          {participants.length === 0 && (
+            <div className="mx-4 mt-6 bg-gray-100 dark:bg-gray-800 px-3 pb-2 rounded-xl">
+              <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12 rounded-xl">
+                <UserGroupIcon className="w-14 text-gray-500" />
+                <Typography variant="h3" className="text-center">
+                  There are no participants yet
+                </Typography>
+              </div>
+            </div>
+          )}
         </div>
         {participants.length > 0 && (
-          <div className="mt-6 flex flex-col gap-2">
-            <table className="border-spacing-4">
-              <tbody>
-                <tr>
-                  <td className="py-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheckIcon className="w-6 h-6 text-green-500" />
-                      <Typography variant="body2">Checked-in participants</Typography>
-                    </div>
-                  </td>
-                  <td className="text-right">
-                    <span
-                      className="bg-green-100 text-green-800 dark:text-green-200 text-base font-medium px-2.5 py-0.5
-                                   rounded-full dark:bg-green-600"
-                    >
-                      {regform.checkedInCount}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <div className="flex items-center gap-2">
-                      <UserGroupIcon className="w-6 h-6 text-primary" />
-                      <Typography variant="body2">Total participants</Typography>
-                    </div>
-                  </td>
-                  <td className="text-right">
-                    <span
-                      className="bg-blue-100 dark:bg-blue-600 text-blue-800 text-base font-medium px-2.5 py-0.5
-                                   rounded-full dark:text-blue-200"
-                    >
-                      {regform.registrationCount}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
-        {participants.length === 0 && (
-          <div className="mt-6 bg-gray-100 dark:bg-gray-800 px-3 pb-2 rounded-xl">
-            <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12 rounded-xl">
-              <UserGroupIcon className="w-14 text-gray-500" />
-              <Typography variant="h3">There are no participants yet</Typography>
-            </div>
+          <div className="mt-6">
+            <Table rows={tableRows} RightIcon={ShieldCheckIcon} />
           </div>
         )}
       </div>
-      {participants.length > 0 && (
-        <div className="mt-6">
-          <Table columnLabels={['Attendees']} rows={tableRows} RightIcon={ShieldCheckIcon} />
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
