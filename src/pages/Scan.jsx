@@ -7,6 +7,7 @@ import blip from '../assets/blip.mp3';
 import levelUp from '../assets/level-up.mp3';
 import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
+import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
 import TopTab from '../Components/TopTab';
 import db from '../db/db';
 import useAppState from '../hooks/useAppState';
@@ -68,8 +69,8 @@ async function handleEvent(data, enableModal, setProcessing, navigate) {
       }
     });
 
-    navigate(`/event/${id}`);
     setProcessing(false);
+    navigate(`/event/${id}`);
     return;
   }
 
@@ -224,14 +225,30 @@ const ScanPage = () => {
   return (
     <div>
       <TopTab />
-      <QrScannerPlugin
-        fps={10}
-        qrbox={250}
-        aspectRatio={calcAspectRatio()}
-        disableFlip={false}
-        qrCodeSuccessCallback={onScanResult}
-        onPermRefused={onPermRefused}
-      />
+      {!processing && (
+        <QrScannerPlugin
+          fps={10}
+          qrbox={250}
+          aspectRatio={calcAspectRatio()}
+          disableFlip={false}
+          qrCodeSuccessCallback={onScanResult}
+          onPermRefused={onPermRefused}
+        />
+      )}
+      {processing && (
+        <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+          <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-10 pb-36 rounded-xl">
+            <Typography variant="h3">Authenticating..</Typography>
+            <div className="relative">
+              <div
+                className={`absolute left-1/2 -translate-x-1/2 transition ease-linear delay-1000`}
+              >
+                <LoadingIndicator size="lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="justify-center items-center flex py-6 mx-6">
         {!hasPermission && (
           <Typography variant="body1" className="text-center">

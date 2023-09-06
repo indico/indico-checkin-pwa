@@ -3,15 +3,17 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {
   ArrowTopRightOnSquareIcon,
   CalendarDaysIcon,
+  CheckCircleIcon,
   UserGroupIcon,
 } from '@heroicons/react/20/solid';
-import {ShieldCheckIcon, TrashIcon} from '@heroicons/react/24/solid';
+import {TrashIcon} from '@heroicons/react/24/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {Typography} from '../../Components/Tailwind';
 import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
 import {formatDatetime} from '../../utils/date';
+import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
 import {syncEvent, syncRegforms} from './sync';
 
@@ -68,11 +70,12 @@ const EventPage = () => {
   };
 
   const regformList = regforms.map((regform, idx) => (
-    <div
+    <button
       key={idx}
-      onClick={() => navigateToRegform(idx)}
-      className="flex gap-2 justify-between p-6 bg-white rounded-xl shadow cursor-pointer
-                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      type="button"
+      onClick={() => wait(100).then(() => navigateToRegform(idx))}
+      className="flex items-center gap-2 justify-between p-6 bg-white rounded-xl shadow cursor-pointer
+                 active:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:active:bg-gray-700 transition-all"
     >
       <div className="flex flex-1 items-center">
         <div className="flex flex-col gap-1 min-w-0">
@@ -103,7 +106,7 @@ const EventPage = () => {
             className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100
                        text-primary dark:bg-darkSecondary dark:text-secondary"
           >
-            <ShieldCheckIcon className="w-4 h-4 mr-1" />
+            <CheckCircleIcon className="w-4 h-4 mr-1" />
             <Typography variant="body1">{regform.checkedInCount}</Typography>
           </div>
           <div
@@ -115,12 +118,12 @@ const EventPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   ));
 
   return (
     <>
-      <TopTab settingsItems={[{text: 'Remove event', icon: <TrashIcon />}]} />
+      {topTab}
       <div className="px-4 pt-1">
         <div className="flex flex-col items-center gap-2">
           <Typography
