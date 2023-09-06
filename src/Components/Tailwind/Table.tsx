@@ -19,7 +19,7 @@ interface TableProps {
 
 const Table = ({rows, className = '', RightIcon}: TableProps) => {
   const [searchValue, setSearchValue] = useState('');
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const shownRows = useMemo(() => {
     if (rows.length === 0) {
@@ -33,7 +33,7 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
     setSearchValue(e.target.value.toLowerCase());
   };
 
-  const onKeyUp = e => {
+  const onKeyUp = (e: any) => {
     if (e.key === 'Enter') {
       e.target.blur();
     }
@@ -81,7 +81,9 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
                   className="min-w-[1.5rem] text-gray-800 dark:text-gray-300"
                   onClick={() => {
                     setSearchValue('');
-                    inputRef.current.focus();
+                    if (inputRef.current) {
+                      inputRef.current.focus();
+                    }
                   }}
                 />
               </button>
