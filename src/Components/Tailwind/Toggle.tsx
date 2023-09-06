@@ -1,5 +1,4 @@
 import {CheckIcon} from '@heroicons/react/20/solid';
-import {useIsOffline} from '../../utils/client';
 import {LoadingIndicator} from './LoadingIndicator';
 
 interface ToggleProps {
@@ -67,10 +66,11 @@ interface CheckinToggleProps {
 }
 
 export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps) => {
-  const offline = useIsOffline();
-
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
+    <label
+      style={{WebkitTapHighlightColor: 'transparent'}}
+      className="relative inline-flex items-center cursor-pointer"
+    >
       <input
         type="checkbox"
         value=""
@@ -78,7 +78,7 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
         checked={checked}
         onClick={onClick}
         onChange={e => e.stopPropagation()}
-        disabled={isLoading || offline}
+        disabled={isLoading}
       />
       <div
         className={`relative flex items-center px-5 rounded-full after:rounded-full bg-gray-200

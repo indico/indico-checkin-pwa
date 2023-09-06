@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {
   ArrowTopRightOnSquareIcon,
   CalendarDaysIcon,
-  ShieldCheckIcon,
+  CheckCircleIcon,
   TrashIcon,
   UserGroupIcon,
 } from '@heroicons/react/20/solid';
@@ -14,6 +14,7 @@ import Table, {rowProps} from '../../Components/Tailwind/Table';
 import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
+import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
 import {syncEvent, syncParticipants, syncRegform} from './sync';
 
@@ -66,7 +67,8 @@ const RegistrationFormPage = () => {
     return participants.map(({id, checkedIn, fullName}) => ({
       value: fullName,
       useRightIcon: checkedIn,
-      onClick: () => {
+      onClick: async () => {
+        await wait(100);
         navigate(`/event/${event.id}/${regform.id}/${id}`, {state: {backBtnText: regform.title}});
       },
     }));
@@ -98,7 +100,7 @@ const RegistrationFormPage = () => {
 
   return (
     <>
-      <TopTab settingsItems={[{text: 'Remove registration form', icon: <TrashIcon />}]} />
+      {topTab}
       <div className="pt-1">
         <div>
           <div className="flex flex-col items-center gap-2 px-4">
@@ -144,7 +146,7 @@ const RegistrationFormPage = () => {
                     className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100
                                text-primary dark:bg-darkSecondary dark:text-secondary"
                   >
-                    <ShieldCheckIcon className="w-4 h-4 mr-1" />
+                    <CheckCircleIcon className="w-4 h-4 mr-1" />
                     <Typography variant="body1">{regform.checkedInCount}</Typography>
                   </div>
                   <div
@@ -171,7 +173,7 @@ const RegistrationFormPage = () => {
         </div>
         {participants.length > 0 && (
           <div className="mt-6">
-            <Table rows={tableRows} RightIcon={ShieldCheckIcon} />
+            <Table rows={tableRows} RightIcon={CheckCircleIcon} />
           </div>
         )}
       </div>

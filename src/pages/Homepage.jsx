@@ -7,6 +7,7 @@ import {Typography} from '../Components/Tailwind/index.jsx';
 import TopTab from '../Components/TopTab.jsx';
 import db from '../db/db';
 import useAppState from '../hooks/useAppState';
+import {wait} from '../utils/wait.ts';
 import {syncEvents} from './Events/sync.js';
 
 const Homepage = () => {
@@ -28,7 +29,8 @@ const Homepage = () => {
     return () => controller.abort();
   }, [enableModal]);
 
-  const navigateToEvent = event => {
+  const navigateToEvent = async event => {
+    await wait(100);
     navigate(`/event/${event.id}`);
   };
 

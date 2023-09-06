@@ -14,10 +14,11 @@ interface EventItemProps {
 
 const EventItem = ({event, onClick, quantity}: EventItemProps) => {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="block p-6 bg-white rounded-xl shadow cursor-pointer
-                 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      className="block p-6 bg-white rounded-xl shadow cursor-pointer transition-all
+                 active:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:active:bg-gray-700"
     >
       <div className="flex justify-between items-center gap-4">
         <div className="flex flex-col gap-1 min-w-0">
@@ -39,7 +40,7 @@ const EventItem = ({event, onClick, quantity}: EventItemProps) => {
           <Typography variant="body1">{quantity}</Typography>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

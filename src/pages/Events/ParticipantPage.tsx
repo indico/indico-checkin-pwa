@@ -9,13 +9,14 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/20/solid';
 import {useLiveQuery} from 'dexie-react-hooks';
+import GrowingTextarea from '../../Components/GrowingTextarea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
-import {checkInParticipant} from '../../utils/client';
+import {checkInParticipant, useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {NotFound} from '../NotFound';
 import {Field, FieldProps} from './fields';
@@ -36,6 +37,7 @@ const ParticipantPage = () => {
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
   const {id, regformId, participantId} = useParams();
+  const offline = useIsOffline();
   const [isLoading, setIsLoading] = useState(false);
   const {enableModal} = useAppState();
   const [fullTitleVisible, setFullTitleVisible] = useState(false);
@@ -88,7 +90,15 @@ const ParticipantPage = () => {
         return;
       }
 
+      if (offline) {
+        enableModal('You are offline', 'Check-in requires an internet connection');
+        return;
+      }
+
       const server = await db.servers.get(event.serverId);
+      if (!server) {
+        return;
+      }
       const response = await checkInParticipant(
         server,
         event,
@@ -107,7 +117,7 @@ const ParticipantPage = () => {
         handleError(response, 'Something went wrong when updating check-in status', enableModal);
       }
     },
-    [event, regform, participant, enableModal]
+    [event, regform, participant, enableModal, offline]
   );
 
   useEffect(() => {
@@ -234,7 +244,9 @@ const ParticipantPage = () => {
             </div>
           </div>
           <div className="flex justify-center mt-1">
-            <Notes notes={notes} onChange={onAddNotes} />
+            <Typography variant="body1" className="w-full">
+              <GrowingTextarea value={notes} onChange={onAddNotes} />
+            </Typography>
           </div>
         </div>
       </div>
@@ -273,6 +285,13 @@ function RegistrationSection(section: SectionProps) {
     border += ' rounded-b-xl';
   }
 
+  let bgColor = '';
+  if (isOpen) {
+    bgColor += ' bg-blue-100 dark:bg-gray-700';
+  } else {
+    bgColor += ' bg-gray-100 dark:bg-gray-800';
+  }
+
   let expandedBorder = '';
   if (isUnique || isLast) {
     expandedBorder += ' border-b rounded-b-xl';
@@ -284,8 +303,8 @@ function RegistrationSection(section: SectionProps) {
         <button
           type="button"
           disabled={fields.length === 0}
-          className={`flex items-center justify-between w-full p-5 font-medium text-left dark:bg-gray-800 border
-                      border-gray-200 dark:border-gray-700 hover:bg-blue-100 dark:hover:bg-gray-700 ${border}`}
+          className={`flex items-center justify-between w-full p-5 font-medium text-left border
+                      border-gray-200 dark:border-gray-700 transition-all ${bgColor} ${border}`}
           onClick={() => setIsOpen(o => !o)}
         >
           <Typography variant="h4" className="flex justify-between w-full">
@@ -305,26 +324,5 @@ function RegistrationSection(section: SectionProps) {
         </div>
       </div>
     </div>
-  );
-}
-
-interface NotesProps {
-  notes: string;
-  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
-}
-
-function Notes({notes, onChange}: NotesProps) {
-  return (
-    <Typography variant="body1" className="w-full">
-      <textarea
-        placeholder="Add notes.."
-        rows={1}
-        value={notes}
-        onChange={onChange}
-        className={`w-full resize-none rounded-xl py-2 px-3 dark:bg-gray-800 border
-                    border-slate-200 dark:border-slate-800 hover:border-blue-300
-                    focus:ring-2 focus:ring-blue-400`}
-      ></textarea>
-    </Typography>
   );
 }
