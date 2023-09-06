@@ -21,7 +21,7 @@ const App = () => {
   }, [darkMode]);
 
   return (
-    <div className="w-screen h-screen max-h-screen overflow-auto bg-gray-50 dark:bg-gray-900">
+    <div className="w-screen min-h-screen h-full overflow-auto bg-gray-50 dark:bg-gray-900 pb-24">
       <BrowserRouter basename="/">
         <Background />
         <Routes>
