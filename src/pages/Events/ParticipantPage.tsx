@@ -179,7 +179,7 @@ const ParticipantPage = () => {
     performCheckIn(!participant.checkedIn).finally(() => setIsLoading(false));
   };
 
-  const registrationData = participant.registrationData.map((data: object, i: number) => {
+  const registrationData = participant.registrationData.map((data: Section, i: number) => {
     const section: SectionProps = {
       ...data,
       isFirst: i === 0,
@@ -257,11 +257,14 @@ const ParticipantPage = () => {
 
 export default ParticipantPage;
 
-interface SectionProps {
+interface Section {
   id: number;
   title: string;
   description: string;
   fields: FieldProps[];
+}
+
+interface SectionProps extends Section {
   isFirst: boolean;
   isLast: boolean;
   isUnique: boolean;
