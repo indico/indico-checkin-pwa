@@ -13,7 +13,7 @@ import {Typography} from '../../Components/Tailwind';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
-import useAppState from '../../hooks/useAppState';
+import {useErrorModal} from '../../hooks/useModal';
 import {checkInParticipant, useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {useQuery, isLoading, hasValue} from '../../utils/db';
@@ -37,8 +37,8 @@ const ParticipantPage = () => {
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
   const {id, regformId, participantId} = useParams();
   const offline = useIsOffline();
+  const errorModal = useErrorModal();
   const [isCheckinLoading, setIsCheckinLoading] = useState(false);
-  const {enableModal} = useAppState();
   const [notes, setNotes] = useState('');
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
@@ -62,17 +62,17 @@ const ParticipantPage = () => {
         return;
       }
 
-      await syncEvent(event, controller.signal, enableModal);
-      await syncRegform(event, regform, controller.signal, enableModal);
-      await syncParticipant(event, regform, participant, controller.signal, enableModal);
+      await syncEvent(event, controller.signal, errorModal);
+      await syncRegform(event, regform, controller.signal, errorModal);
+      await syncParticipant(event, regform, participant, controller.signal, errorModal);
     }
 
     sync().catch(err => {
-      enableModal('Something went wrong when fetching updates', err.message);
+      errorModal({title: 'Something went wrong when fetching updates', content: err.message});
     });
 
     return () => controller.abort();
-  }, [id, regformId, participantId, enableModal]);
+  }, [id, regformId, participantId, errorModal]);
 
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
@@ -81,7 +81,7 @@ const ParticipantPage = () => {
       }
 
       if (offline) {
-        enableModal('You are offline', 'Check-in requires an internet connection');
+        errorModal({title: 'You are offline', content: 'Check-in requires an internet connection'});
         return;
       }
 
@@ -104,10 +104,10 @@ const ParticipantPage = () => {
           await db.regforms.update(regform.id, {checkedInCount});
         });
       } else {
-        handleError(response, 'Something went wrong when updating check-in status', enableModal);
+        handleError(response, 'Something went wrong when updating check-in status', errorModal);
       }
     },
-    [event, regform, participant, enableModal, offline]
+    [event, regform, participant, errorModal, offline]
   );
 
   useEffect(() => {
@@ -185,7 +185,7 @@ const ParticipantPage = () => {
       <TopTab />
       <div className="px-4 pt-1">
         <div className="mt-2 flex flex-col gap-4">
-          <div>
+          <div className="flex flex-col items-center">
             <Title title={participant.fullName} />
             <IndicoLink
               text="Indico participant page"

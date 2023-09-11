@@ -5,14 +5,14 @@ import EventItem from '../Components/Events/EventItem.tsx';
 import {Typography} from '../Components/Tailwind/index.jsx';
 import TopTab from '../Components/TopTab.jsx';
 import db from '../db/db';
-import useAppState from '../hooks/useAppState';
-import {useQuery, isLoading} from '../utils/db.js';
+import {useErrorModal} from '../hooks/useModal';
+import {useQuery, isLoading} from '../utils/db';
 import {wait} from '../utils/wait.ts';
 import {syncEvents} from './Events/sync.js';
 
 const Homepage = () => {
   const navigate = useNavigate();
-  const {enableModal} = useAppState();
+  const errorModal = useErrorModal();
   const servers = useQuery(() => db.servers.toArray());
   const events = useQuery(() => db.events.toArray());
   const regforms = useQuery(() => db.regforms.toArray());
@@ -22,12 +22,14 @@ const Homepage = () => {
 
     async function sync() {
       const events = await db.events.toArray();
-      syncEvents(events, controller.signal, enableModal);
+      syncEvents(events, controller.signal, errorModal);
     }
 
-    sync().catch(err => enableModal('Something went wrong when updating events', err.message));
+    sync().catch(err =>
+      errorModal({title: 'Something went wrong when updating events', content: err.message})
+    );
     return () => controller.abort();
-  }, [enableModal]);
+  }, [errorModal]);
 
   const navigateToEvent = async event => {
     await wait(100);
