@@ -42,6 +42,7 @@ export default function DropdownSettings({items}) {
             <button
               type="button"
               className="flex w-full gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+              onClick={item.onClick}
             >
               <span className="min-w-[1.25rem] h-5 text-red-700 dark:text-red-500">
                 {item.icon}
@@ -60,6 +61,7 @@ DropdownSettings.propTypes = {
     PropTypes.shape({
       icon: PropTypes.node.isRequired,
       text: PropTypes.string.isRequired,
+      onClick: PropTypes.func.isRequired,
     })
   ),
 };

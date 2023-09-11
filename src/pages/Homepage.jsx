@@ -1,21 +1,21 @@
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, ServerStackIcon} from '@heroicons/react/20/solid';
-import {useLiveQuery} from 'dexie-react-hooks';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Typography} from '../Components/Tailwind/index.jsx';
 import TopTab from '../Components/TopTab.jsx';
 import db from '../db/db';
 import useAppState from '../hooks/useAppState';
+import {useQuery, isLoading} from '../utils/db.js';
 import {wait} from '../utils/wait.ts';
 import {syncEvents} from './Events/sync.js';
 
 const Homepage = () => {
   const navigate = useNavigate();
   const {enableModal} = useAppState();
-  const servers = useLiveQuery(() => db.servers.toArray());
-  const events = useLiveQuery(() => db.events.toArray());
-  const regforms = useLiveQuery(() => db.regforms.toArray());
+  const servers = useQuery(() => db.servers.toArray());
+  const events = useQuery(() => db.events.toArray());
+  const regforms = useQuery(() => db.regforms.toArray());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -34,9 +34,8 @@ const Homepage = () => {
     navigate(`/event/${event.id}`);
   };
 
-  // Still loading
-  if (!servers || !events || !regforms) {
-    return null;
+  if (isLoading(servers) || isLoading(events) || isLoading(regforms)) {
+    return <TopTab />;
   }
 
   const serversById = servers.reduce((acc, server) => {
@@ -77,7 +76,7 @@ const Homepage = () => {
                 key={event.id}
                 event={event}
                 onClick={() => navigateToEvent(event)}
-                quantity={regformsByEvent[event.id]}
+                quantity={regformsByEvent[event.id] || 0}
               />
             );
           })}
@@ -106,7 +105,7 @@ const Homepage = () => {
                       key={event.id}
                       event={event}
                       onClick={() => navigateToEvent(event)}
-                      quantity={regformsByEvent[event.id]}
+                      quantity={regformsByEvent[event.id] || 0}
                     />
                   );
                 })}
@@ -125,7 +124,7 @@ function NoEventsBanner() {
   return (
     <div
       className="flex items-center justify-center text-center mx-4 p-6
-             aspect-square m-auto rounded-xl bg-gray-100 dark:bg-gray-800"
+                 m-auto rounded-xl bg-gray-100 dark:bg-gray-800"
     >
       <div className="flex flex-col gap-2 justify-center">
         <CalendarDaysIcon className="w-20 self-center text-gray-500 dark:text-gray-400" />

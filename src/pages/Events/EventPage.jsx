@@ -1,32 +1,25 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {
-  ArrowTopRightOnSquareIcon,
-  CalendarDaysIcon,
-  CheckCircleIcon,
-  UserGroupIcon,
-} from '@heroicons/react/20/solid';
+import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
-import {useLiveQuery} from 'dexie-react-hooks';
 import {Typography} from '../../Components/Tailwind';
 import TopTab from '../../Components/TopTab';
 import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
 import {formatDatetime} from '../../utils/date';
+import {useQuery, isLoading, hasValue} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
 import {syncEvent, syncRegforms} from './sync';
-
-const LOADING = Symbol('loading');
+import {IndicoLink, Title} from './utils';
 
 const EventPage = () => {
   const navigate = useNavigate();
   const {id: eventId} = useParams();
   const {enableModal} = useAppState();
-  const [fullTitleVisible, setFullTitleVisible] = useState(false);
 
-  const event = useLiveQuery(() => db.events.get(Number(eventId)), [eventId], LOADING);
-  const regforms = useLiveQuery(
+  const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
+  const regforms = useQuery(
     () => db.regforms.where({eventId: Number(eventId)}).toArray(),
     [eventId]
   );
@@ -45,21 +38,18 @@ const EventPage = () => {
     }
 
     sync().catch(err => {
-      console.error(err);
       enableModal('Something went wrong when fetching updates', err.message);
     });
 
     return () => controller.abort();
   }, [eventId, enableModal]);
 
-  const topTab = <TopTab settingsItems={[{text: 'Remove event', icon: <TrashIcon />}]} />;
-
-  if (event === LOADING || !regforms) {
-    return topTab;
-  } else if (!event) {
+  if (isLoading(event) || isLoading(regforms)) {
+    return <TopTab />;
+  } else if (!hasValue(event)) {
     return (
       <>
-        {topTab}
+        <TopTab />
         <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
       </>
     );
@@ -123,28 +113,14 @@ const EventPage = () => {
 
   return (
     <>
-      {topTab}
+      <TopTab settingsItems={[{text: 'Remove event', icon: <TrashIcon />, onClick: () => {}}]} />
       <div className="px-4 pt-1">
         <div className="flex flex-col items-center gap-2">
-          <Typography
-            variant="h2"
-            className={`max-w-full cursor-pointer text-center break-words text-gray-600 ${
-              !fullTitleVisible ? 'whitespace-nowrap text-ellipsis overflow-hidden' : ''
-            }`}
-          >
-            <span onClick={() => setFullTitleVisible(v => !v)}>{event.title}</span>
-          </Typography>
-          <Typography variant="body2">
-            <a
-              href={`${event.baseUrl}/event/${event.indicoId}/manage`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
-            >
-              Indico event page
-              <ArrowTopRightOnSquareIcon className="w-4" />
-            </a>
-          </Typography>
+          <Title title={event.title} />
+          <IndicoLink
+            text="Indico event page"
+            url={`${event.baseUrl}/event/${event.indicoId}/manage`}
+          />
           <span
             className="w-fit bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5
                        rounded-full dark:bg-yellow-900 dark:text-yellow-300"

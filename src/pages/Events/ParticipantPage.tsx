@@ -6,9 +6,7 @@ import {
   ChevronDownIcon,
   InformationCircleIcon,
   UserIcon,
-  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/20/solid';
-import {useLiveQuery} from 'dexie-react-hooks';
 import GrowingTextarea from '../../Components/GrowingTextarea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
@@ -18,9 +16,11 @@ import db from '../../db/db';
 import useAppState from '../../hooks/useAppState';
 import {checkInParticipant, useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
+import {useQuery, isLoading, hasValue} from '../../utils/db';
 import {NotFound} from '../NotFound';
 import {Field, FieldProps} from './fields';
 import {handleError, syncEvent, syncParticipant, syncRegform} from './sync';
+import {IndicoLink, Title} from './utils';
 
 const makeDebounce = (delay: number) => {
   let timer: number;
@@ -31,28 +31,24 @@ const makeDebounce = (delay: number) => {
 };
 
 const debounce = makeDebounce(300);
-const LOADING = Symbol('loading');
 
 const ParticipantPage = () => {
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
   const {id, regformId, participantId} = useParams();
   const offline = useIsOffline();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckinLoading, setIsCheckinLoading] = useState(false);
   const {enableModal} = useAppState();
-  const [fullTitleVisible, setFullTitleVisible] = useState(false);
   const [notes, setNotes] = useState('');
 
-  const event = useLiveQuery(() => db.events.get(Number(id)), [id], LOADING);
-  const regform = useLiveQuery(
+  const event = useQuery(() => db.events.get(Number(id)), [id]);
+  const regform = useQuery(
     () => db.regforms.get({id: Number(regformId), eventId: Number(id)}),
-    [id, regformId],
-    LOADING
+    [id, regformId]
   );
-  const participant = useLiveQuery(
+  const participant = useQuery(
     () => db.participants.get({id: Number(participantId), regformId: Number(regformId)}),
-    [regformId, participantId],
-    LOADING
+    [regformId, participantId]
   );
 
   useEffect(() => {
@@ -74,19 +70,13 @@ const ParticipantPage = () => {
     sync().catch(err => {
       enableModal('Something went wrong when fetching updates', err.message);
     });
+
     return () => controller.abort();
   }, [id, regformId, participantId, enableModal]);
 
   const performCheckIn = useCallback(
     async (newCheckInState: boolean) => {
-      if (
-        !event ||
-        event === LOADING ||
-        !regform ||
-        regform === LOADING ||
-        !participant ||
-        participant === LOADING
-      ) {
+      if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
         return;
       }
 
@@ -121,25 +111,25 @@ const ParticipantPage = () => {
   );
 
   useEffect(() => {
-    if (!participant || participant === LOADING) {
+    if (!hasValue(participant)) {
       return;
     }
 
     if (autoCheckin && !participant.checkedIn) {
       setAutoCheckin(false);
-      setIsLoading(true);
-      performCheckIn(true).finally(() => setIsLoading(false));
+      setIsCheckinLoading(true);
+      performCheckIn(true).finally(() => setIsCheckinLoading(false));
     }
   }, [participant, performCheckIn, autoCheckin]);
 
   useEffect(() => {
-    if (participant && participant !== LOADING) {
+    if (hasValue(participant)) {
       setNotes(participant.notes);
     }
   }, [participant]);
 
   // Still loading
-  if (event === LOADING || regform === LOADING || participant === LOADING) {
+  if (isLoading(event) || isLoading(regform) || isLoading(participant)) {
     return <TopTab />;
   }
 
@@ -175,8 +165,8 @@ const ParticipantPage = () => {
   };
 
   const onCheckInToggle = () => {
-    setIsLoading(true);
-    performCheckIn(!participant.checkedIn).finally(() => setIsLoading(false));
+    setIsCheckinLoading(true);
+    performCheckIn(!participant.checkedIn).finally(() => setIsCheckinLoading(false));
   };
 
   const registrationData = participant.registrationData.map((data: Section, i: number) => {
@@ -196,30 +186,16 @@ const ParticipantPage = () => {
       <div className="px-4 pt-1">
         <div className="mt-2 flex flex-col gap-4">
           <div>
-            <Typography
-              variant="h2"
-              className={`max-w-full cursor-pointer text-center break-words text-gray-600 ${
-                !fullTitleVisible ? 'whitespace-nowrap text-ellipsis overflow-hidden' : ''
-              }`}
-            >
-              <span onClick={() => setFullTitleVisible(v => !v)}>{participant.fullName}</span>
-            </Typography>
-            <Typography variant="body2">
-              <a
-                href={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
-              >
-                Indico participant page
-                <ArrowTopRightOnSquareIcon className="w-4" />
-              </a>
-            </Typography>
+            <Title title={participant.fullName} />
+            <IndicoLink
+              text="Indico participant page"
+              url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
+            />
           </div>
           <div className="flex justify-center mt-4 mb-4">
             <CheckinToggle
               checked={participant.checkedIn}
-              isLoading={isLoading}
+              isLoading={isCheckinLoading}
               onClick={onCheckInToggle}
             />
           </div>
