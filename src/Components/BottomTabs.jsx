@@ -1,13 +1,13 @@
 import {useLocation, useNavigate} from 'react-router-dom';
 import {Cog8ToothIcon, HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
-import useAppState from '../hooks/useAppState';
+import {useErrorModal} from '../hooks/useModal';
 import {useIsOffline} from '../utils/client';
 
 const BottomTabs = () => {
   const navigate = useNavigate();
   const {pathname} = useLocation();
   const offline = useIsOffline();
-  const {enableModal} = useAppState();
+  const errorModal = useErrorModal();
 
   if (pathname === '/scan' || pathname === '/auth/redirect') {
     return null;
@@ -15,7 +15,10 @@ const BottomTabs = () => {
 
   const goToScan = () => {
     if (offline) {
-      enableModal('You are offline', 'Scanning QR codes requires an internet connection');
+      errorModal({
+        title: 'You are offline',
+        content: 'Scanning QR codes requires an internet connection',
+      });
       return;
     }
     navigate('/scan');

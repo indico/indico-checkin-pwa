@@ -11,8 +11,8 @@ import {Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
 import TopTab from '../../Components/TopTab';
-import db from '../../db/db';
-import useAppState from '../../hooks/useAppState';
+import db, {deleteRegform as _deleteRegform} from '../../db/db';
+import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {isLoading, hasValue, useQuery} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
@@ -22,7 +22,8 @@ import {IndicoLink, Title} from './utils';
 const RegistrationFormPage = () => {
   const {id, regformId} = useParams();
   const navigate = useNavigate();
-  const {enableModal} = useAppState();
+  const errorModal = useErrorModal();
+  const confirmModal = useConfirmModal();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
@@ -44,9 +45,9 @@ const RegistrationFormPage = () => {
         return;
       }
 
-      await syncEvent(event, controller.signal, enableModal);
-      await syncRegform(event, regform, controller.signal, enableModal);
-      await syncParticipants(event, regform, controller.signal, enableModal);
+      await syncEvent(event, controller.signal, errorModal);
+      await syncRegform(event, regform, controller.signal, errorModal);
+      await syncParticipants(event, regform, controller.signal, errorModal);
     }
 
     async function sync() {
@@ -54,14 +55,14 @@ const RegistrationFormPage = () => {
       try {
         await _sync();
       } catch (err: any) {
-        enableModal('Something went wrong when fetching updates', err.message);
+        errorModal({title: 'Something went wrong when fetching updates', content: err.message});
       } finally {
         setIsSyncing(false);
       }
     }
 
     sync();
-  }, [id, regformId, enableModal]);
+  }, [id, regformId, errorModal]);
 
   // Build the table rows array
   const tableRows: rowProps[] = useMemo(() => {
@@ -81,9 +82,12 @@ const RegistrationFormPage = () => {
 
   const deleteRegform = async (id: number) => {
     try {
-      await db.regforms.delete(id);
+      await _deleteRegform(id);
     } catch (err: any) {
-      enableModal('Something went wrong when deleting a registration form', err.message);
+      errorModal({
+        title: 'Something went wrong when deleting a registration form',
+        content: err.message,
+      });
     }
   };
 
@@ -95,13 +99,20 @@ const RegistrationFormPage = () => {
           {
             text: 'Remove registration form',
             icon: <TrashIcon />,
-            onClick: async () => {
+            onClick: () => {
               if (!hasValue(event) || !hasValue(regform)) {
                 return;
               }
 
-              await deleteRegform(regform.id);
-              navigate(`/event/${event.id}`);
+              confirmModal({
+                title: 'Are you sure?',
+                content: 'You can always re-add the registration form by scanning its QR code',
+                confirmBtnText: 'Delete',
+                onConfirm: async () => {
+                  await deleteRegform(regform.id);
+                  navigate(`/event/${event.id}`);
+                },
+              });
             },
           },
         ]}

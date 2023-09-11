@@ -28,7 +28,7 @@ async function bulkUpdate(table, ids, data) {
   return Promise.all(ids.map((id, i) => table.update(id, data[i])));
 }
 
-export async function syncEvents(events, signal, showModal) {
+export async function syncEvents(events, signal, errorModal) {
   const serversById = (await db.servers.toArray()).reduce((acc, server) => {
     acc[server.id] = server;
     return acc;
@@ -48,16 +48,16 @@ export async function syncEvents(events, signal, showModal) {
     } else if (response.status === 404) {
       await db.events.update(events[i].id, {deleted: true});
     } else {
-      handleError(response, 'Something went wrong when updating events', showModal);
+      handleError(response, 'Something went wrong when updating events', errorModal);
     }
   }
 }
 
-export async function syncEvent(event, signal, showModal) {
-  return syncEvents([event], signal, showModal);
+export async function syncEvent(event, signal, errorModal) {
+  return syncEvents([event], signal, errorModal);
 }
 
-export async function syncRegforms(event, signal, showModal) {
+export async function syncRegforms(event, signal, errorModal) {
   const server = await db.servers.get(event.serverId);
   const response = await getRegforms(server, event, {
     signal,
@@ -65,7 +65,7 @@ export async function syncRegforms(event, signal, showModal) {
 
   if (response.ok) {
     await db.transaction('readwrite', db.regforms, async () => {
-      const existingRegforms = await db.regforms.toArray();
+      const existingRegforms = await db.regforms.where({eventId: event.id}).toArray();
       const newRegforms = response.data.map(
         ({id, title, isOpen, registrationCount, checkedInCount}) => ({
           indicoId: id,
@@ -90,11 +90,11 @@ export async function syncRegforms(event, signal, showModal) {
       });
     });
   } else {
-    handleError(response, 'Something went wrong when updating registration forms', showModal);
+    handleError(response, 'Something went wrong when updating registration forms', errorModal);
   }
 }
 
-export async function syncRegform(event, regform, signal, showModal) {
+export async function syncRegform(event, regform, signal, errorModal) {
   const server = await db.servers.get(event.serverId);
   const response = await getRegform(server, event, regform, {
     signal,
@@ -112,11 +112,11 @@ export async function syncRegform(event, regform, signal, showModal) {
   } else if (response.status === 404) {
     await db.regforms.update(regform.id, {deleted: true});
   } else {
-    handleError(response, 'Something went wrong when updating registration form', showModal);
+    handleError(response, 'Something went wrong when updating registration form', errorModal);
   }
 }
 
-export async function syncParticipants(event, regform, signal, showModal) {
+export async function syncParticipants(event, regform, signal, errorModal) {
   const server = await db.servers.get(event.serverId);
   const response = await getParticipants(server, event, regform, {
     signal,
@@ -124,7 +124,7 @@ export async function syncParticipants(event, regform, signal, showModal) {
 
   if (response.ok) {
     await db.transaction('readwrite', db.participants, async () => {
-      const existingParticipants = await db.participants.toArray();
+      const existingParticipants = await db.participants.where({regformId: regform.id}).toArray();
       const newParticipants = response.data.map(
         ({id, fullName, registrationDate, registrationData, state, checkedIn, checkedInDt}) => ({
           indicoId: id,
@@ -143,7 +143,7 @@ export async function syncParticipants(event, regform, signal, showModal) {
       const deleted = onlyExisting.map(() => ({deleted: true}));
       await bulkUpdate(db.participants, existingIds, deleted);
       // regforms that we don't have locally, add them
-      const newData = onlyNew.map(r => ({...r, deleted: false, regformId: regform.id}));
+      const newData = onlyNew.map(r => ({...r, notes: '', deleted: false, regformId: regform.id}));
       await db.participants.bulkAdd(newData);
       // regforms that we have both locally and in Indico, just update them
       const commonIds = common.map(([r]) => r.id);
@@ -151,11 +151,11 @@ export async function syncParticipants(event, regform, signal, showModal) {
       await bulkUpdate(db.participants, commonIds, commonData);
     });
   } else {
-    handleError(response, 'Something went wrong when updating participants', showModal);
+    handleError(response, 'Something went wrong when updating participants', errorModal);
   }
 }
 
-export async function syncParticipant(event, regform, participant, signal, showModal) {
+export async function syncParticipant(event, regform, participant, signal, errorModal) {
   const server = await db.servers.get(event.serverId);
   const response = await getParticipant(server, event, regform, participant, {
     signal,
@@ -176,18 +176,18 @@ export async function syncParticipant(event, regform, participant, signal, showM
   } else if (response.status === 404) {
     await db.participants.update(participant.id, {deleted: true});
   } else {
-    handleError(response, 'Something went wrong when updating participant', showModal);
+    handleError(response, 'Something went wrong when updating participant', errorModal);
   }
 }
 
-export function handleError(response, msg, showModal) {
+export function handleError(response, msg, errorModal) {
   if (response.network || response.aborted) {
     // Either a network error in which case we fallback to indexedDB,
     // or aborted because the component unmounted
     return;
   } else if (response.err) {
-    showModal(msg, response.err.message);
+    errorModal({title: msg, content: response.err.message});
   } else {
-    showModal(msg, `Response status: ${response.status}`);
+    errorModal({title: msg, content: `Response status: ${response.status}`});
   }
 }

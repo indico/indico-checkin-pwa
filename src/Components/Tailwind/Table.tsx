@@ -1,24 +1,30 @@
-import {ElementType, ChangeEvent, useState, useMemo, useRef} from 'react';
-import {MagnifyingGlassIcon, UserGroupIcon, XMarkIcon} from '@heroicons/react/20/solid';
+import {ChangeEvent, useState, useMemo, useRef} from 'react';
+import {
+  ArrowSmallLeftIcon,
+  CheckCircleIcon,
+  MagnifyingGlassIcon,
+  UserGroupIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid';
 import Typography from './Typography';
 
 /**
  * Props of a Single Row in the table
  */
 export interface rowProps {
-  value: string;
-  useRightIcon?: boolean;
+  fullName: string;
+  checkedIn: boolean;
   onClick?: () => void;
 }
 
 interface TableProps {
   rows: rowProps[];
   className?: HTMLDivElement['className'];
-  RightIcon?: ElementType;
 }
 
-const Table = ({rows, className = '', RightIcon}: TableProps) => {
+const Table = ({rows, className = ''}: TableProps) => {
   const [searchValue, setSearchValue] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const shownRows = useMemo(() => {
@@ -26,7 +32,7 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
       return rows;
     }
 
-    return rows.filter(row => row.value.toLowerCase().includes(searchValue));
+    return rows.filter(row => row.fullName.toLowerCase().includes(searchValue));
   }, [searchValue, rows]);
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,12 +45,11 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
     }
   };
 
-  const filteredRows = shownRows.map((row, idx) => {
+  const filteredRows = shownRows.map(({fullName, checkedIn, onClick}, idx) => {
     const alternatingClass: HTMLElement['className'] =
       idx % 2 === 1
         ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-600'
         : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600';
-    const showIcon = row.useRightIcon ?? false;
 
     return (
       <tr
@@ -52,12 +57,12 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
         style={{WebkitTapHighlightColor: 'transparent'}}
         className={`cursor-pointer ${alternatingClass} transition-all
                   active:bg-gray-300 dark:active:bg-gray-600`}
-        onClick={row.onClick}
+        onClick={onClick}
       >
         <td className="p-4">
           <div className="flex items-center justify-between">
-            <Typography variant="body1">{row.value}</Typography>
-            {showIcon && RightIcon && <RightIcon className="w-6 h-6 text-green-500" />}
+            <Typography variant="body1">{fullName}</Typography>
+            {checkedIn && <CheckCircleIcon className="w-6 h-6 text-green-500" />}
           </div>
         </td>
       </tr>
@@ -68,24 +73,31 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
     <div className={className}>
       <div className="px-4 py-4">
         <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
-          </div>
+          {searchFocused && (
+            <div className="absolute inset-y-0 left-0 flex items-center pl-1">
+              <button type="button" className="p-1">
+                <ArrowSmallLeftIcon className="min-w-[2rem] text-gray-800 dark:text-gray-300" />
+              </button>
+            </div>
+          )}
+          {!searchFocused && (
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+            </div>
+          )}
           {searchValue && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-1">
               <button
                 type="button"
                 className="p-2 transition-all rounded-full active:bg-gray-200 dark:active:bg-gray-500"
+                onClick={() => {
+                  setSearchValue('');
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                  }
+                }}
               >
-                <XMarkIcon
-                  className="min-w-[1.5rem] text-gray-800 dark:text-gray-300"
-                  onClick={() => {
-                    setSearchValue('');
-                    if (inputRef.current) {
-                      inputRef.current.focus();
-                    }
-                  }}
-                />
+                <XMarkIcon className="min-w-[1.5rem] text-gray-800 dark:text-gray-300" />
               </button>
             </div>
           )}
@@ -98,6 +110,8 @@ const Table = ({rows, className = '', RightIcon}: TableProps) => {
             placeholder="Search participants..."
             value={searchValue}
             onChange={onSearchChange}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             onKeyUp={onKeyUp}
           />
         </div>

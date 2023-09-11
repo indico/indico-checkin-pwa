@@ -73,3 +73,16 @@ class IndicoCheckin extends Dexie {
 const db = new IndicoCheckin();
 
 export default db;
+
+export async function deleteEvent(id: number) {
+  const regforms = await db.regforms.where({eventId: id}).toArray();
+  for (const regform of regforms) {
+    await deleteRegform(regform.id);
+  }
+  await db.events.delete(id);
+}
+
+export async function deleteRegform(id: number) {
+  await db.participants.where({regformId: id}).delete();
+  await db.regforms.delete(id);
+}

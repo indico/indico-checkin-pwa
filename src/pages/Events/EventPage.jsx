@@ -2,10 +2,11 @@ import {useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
+import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import TopTab from '../../Components/TopTab';
-import db from '../../db/db';
-import useAppState from '../../hooks/useAppState';
+import db, {deleteEvent as _deleteEvent} from '../../db/db';
+import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
 import {useQuery, isLoading, hasValue} from '../../utils/db';
 import {wait} from '../../utils/wait';
@@ -16,7 +17,8 @@ import {IndicoLink, Title} from './utils';
 const EventPage = () => {
   const navigate = useNavigate();
   const {id: eventId} = useParams();
-  const {enableModal} = useAppState();
+  const errorModal = useErrorModal();
+  const confirmModal = useConfirmModal();
 
   const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
   const regforms = useQuery(
@@ -33,16 +35,27 @@ const EventPage = () => {
         return;
       }
 
-      await syncEvent(event, controller.signal, enableModal);
-      await syncRegforms(event, controller.signal, enableModal);
+      await syncEvent(event, controller.signal, errorModal);
+      await syncRegforms(event, controller.signal, errorModal);
     }
 
     sync().catch(err => {
-      enableModal('Something went wrong when fetching updates', err.message);
+      errorModal({title: 'Something went wrong when fetching updates', content: err.message});
     });
 
     return () => controller.abort();
-  }, [eventId, enableModal]);
+  }, [eventId, errorModal]);
+
+  const deleteEvent = async id => {
+    try {
+      await _deleteEvent(id);
+    } catch (err) {
+      errorModal({
+        title: 'Something went wrong when deleting a registration form',
+        content: err.message,
+      });
+    }
+  };
 
   if (isLoading(event) || isLoading(regforms)) {
     return <TopTab />;
@@ -111,9 +124,31 @@ const EventPage = () => {
     </button>
   ));
 
+  const settingsItems = [
+    {
+      text: 'Remove event',
+      icon: <TrashIcon />,
+      onClick: () => {
+        if (!hasValue(event)) {
+          return;
+        }
+
+        confirmModal({
+          title: 'Are you sure?',
+          content: 'You can always re-add the event by scanning its QR code',
+          confirmBtnText: 'Delete',
+          onConfirm: async () => {
+            await deleteEvent(event.id);
+            navigate(`/`);
+          },
+        });
+      },
+    },
+  ];
+
   return (
     <>
-      <TopTab settingsItems={[{text: 'Remove event', icon: <TrashIcon />, onClick: () => {}}]} />
+      <TopTab settingsItems={settingsItems} />
       <div className="px-4 pt-1">
         <div className="flex flex-col items-center gap-2">
           <Title title={event.title} />
@@ -128,10 +163,24 @@ const EventPage = () => {
             {formatDatetime(event.date)}
           </span>
         </div>
-        <div className="mt-10 flex flex-col gap-4">{regformList}</div>
+        {regformList.length === 0 && <NoRegformsBanner />}
+        {regformList.length > 0 && <div className="mt-10 flex flex-col gap-4">{regformList}</div>}
       </div>
     </>
   );
 };
 
 export default EventPage;
+
+function NoRegformsBanner() {
+  return (
+    <div className="mx-4 mt-10 bg-gray-100 dark:bg-gray-800 px-3 pb-2 rounded-xl">
+      <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12 rounded-xl">
+        <IconFeather className="w-14 text-gray-500" />
+        <Typography variant="h3" className="text-center">
+          There are no registration forms
+        </Typography>
+      </div>
+    </div>
+  );
+}

@@ -10,7 +10,7 @@ import {Typography} from '../Components/Tailwind';
 import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
 import TopTab from '../Components/TopTab';
 import db from '../db/db';
-import useAppState from '../hooks/useAppState';
+import {useErrorModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
 import {camelizeKeys} from '../utils/case';
 import {getParticipant} from '../utils/client';
@@ -33,7 +33,7 @@ function playAudio(audio) {
   new Audio(audio).play();
 }
 
-async function handleEvent(data, enableModal, setProcessing, navigate) {
+async function handleEvent(data, errorModal, setProcessing, navigate) {
   // Check if the serverData is already in indexedDB
   const server = await db.servers.get({baseUrl: data.server.baseUrl});
   if (server) {
@@ -103,39 +103,39 @@ async function handleEvent(data, enableModal, setProcessing, navigate) {
       scope: [scope],
     });
   } catch (err) {
-    enableModal('OAuth authorization failed', err.message);
+    errorModal({title: 'OAuth authorization failed', content: err.message});
   } finally {
     setProcessing(false);
   }
 }
 
-async function handleParticipant(data, enableModal, setProcessing, navigate, autoCheckin, audio) {
+async function handleParticipant(data, errorModal, setProcessing, navigate, autoCheckin, audio) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
-    enableModal(
-      'The server of this participant does not exist',
-      'Scan an event QR code first and try again.'
-    );
+    errorModal({
+      title: 'The server of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
     setProcessing(false);
     return;
   }
 
   const event = await db.events.get({indicoId: data.eventId});
   if (!event) {
-    enableModal(
-      'The event of this participant does not exist',
-      'Scan an event QR code first and try again.'
-    );
+    errorModal({
+      title: 'The event of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
     setProcessing(false);
     return;
   }
 
   const regform = await db.regforms.get({indicoId: data.regformId});
   if (!regform) {
-    enableModal(
-      'The registration form of this participant does not exist',
-      'Scan an event QR code first and try again.'
-    );
+    errorModal({
+      title: 'The registration form of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
     setProcessing(false);
     return;
   }
@@ -163,6 +163,7 @@ async function handleParticipant(data, enableModal, setProcessing, navigate, aut
         state,
         checkedIn,
         checkedInDt,
+        notes: '',
       });
       setProcessing(false);
       navigate(`/event/${event.id}/${regform.id}/${participantId}`, {
@@ -180,8 +181,8 @@ const ScanPage = () => {
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const {autoCheckin} = useSettings();
   const navigate = useNavigate();
-  const {enableModal} = useAppState();
   const {soundEffect} = useSettings();
+  const errorModal = useErrorModal();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     if (processing) {
@@ -194,25 +195,28 @@ const ScanPage = () => {
     try {
       scannedData = JSON.parse(decodedText);
     } catch (e) {
-      enableModal('Error parsing the QRCode data', e?.message);
+      errorModal({title: 'Error parsing the QRCode data', content: e.message});
       setProcessing(false);
       return;
     }
 
     scannedData = camelizeKeys(scannedData);
     if (validateEventData(scannedData)) {
-      handleEvent(scannedData, enableModal, setProcessing, navigate);
+      handleEvent(scannedData, errorModal, setProcessing, navigate);
     } else if (validateParticipantData(scannedData)) {
       handleParticipant(
         scannedData,
-        enableModal,
+        errorModal,
         setProcessing,
         navigate,
         autoCheckin,
         soundEffects[soundEffect]
       );
     } else {
-      enableModal('QRCode Data is not valid', 'Some fields are missing. Please try again.');
+      errorModal({
+        title: 'QRCode Data is not valid',
+        content: 'Some fields are missing. Please try again.',
+      });
       setProcessing(false);
     }
 
