@@ -152,7 +152,7 @@ const EventPage = () => {
             {formatDatetime(event.date)}
           </span>
         </div>
-        <div className="mt-6 flex flex-col gap-4">{regformList}</div>
+        <div className="mt-10 flex flex-col gap-4">{regformList}</div>
       </div>
     </>
   );
