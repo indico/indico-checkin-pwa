@@ -17,6 +17,7 @@ async function getToken({baseUrl, clientId}, codeVerifier) {
     server: baseUrl,
     clientId: clientId,
     discoveryEndpoint: discoveryEndpoint,
+    fetch: fetch.bind(window),
     // XXX Need to manually specify, otherwise this will be 'client_secret_basic' which
     // doesn't work with Indico even though it is listed in '.well-known/oauth-authorization-server'
     authenticationMethod: 'client_secret_post',
