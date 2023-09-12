@@ -29,7 +29,7 @@ export function validateParticipantData(data) {
   const {checkinSecret, eventId, registrantId, serverUrl, regformId} = data;
 
   if (
-    !Number.isInteger(eventId) ||
+    !Number.isInteger(parseInt(eventId, 10)) ||
     !Number.isInteger(regformId) ||
     !Number.isInteger(registrantId)
   ) {
