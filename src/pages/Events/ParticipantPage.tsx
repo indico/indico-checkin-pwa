@@ -52,6 +52,11 @@ const ParticipantPage = () => {
   );
 
   useEffect(() => {
+    const {autoCheckin, ...rest} = state || {};
+    window.history.replaceState(rest, document.title);
+  }, [state]);
+
+  useEffect(() => {
     const controller = new AbortController();
 
     async function sync() {
