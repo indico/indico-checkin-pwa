@@ -115,8 +115,8 @@ const ParticipantPage = () => {
       return;
     }
 
+    setAutoCheckin(false);
     if (autoCheckin && !participant.checkedIn) {
-      setAutoCheckin(false);
       setIsCheckinLoading(true);
       performCheckIn(true).finally(() => setIsCheckinLoading(false));
     }
