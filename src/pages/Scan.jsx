@@ -204,6 +204,7 @@ const ScanPage = () => {
     if (validateEventData(scannedData)) {
       handleEvent(scannedData, errorModal, setProcessing, navigate);
     } else if (validateParticipantData(scannedData)) {
+      scannedData.eventId = parseInt(scannedData.eventId, 10);
       handleParticipant(
         scannedData,
         errorModal,
