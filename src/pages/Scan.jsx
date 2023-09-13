@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
+import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
@@ -253,13 +254,16 @@ const ScanPage = () => {
           </div>
         </div>
       )}
-      <div className="justify-center items-center flex py-6 mx-6">
-        {!hasPermission && (
-          <Typography variant="body1" className="text-center">
-            Please give permission to access the camera and refresh the page
-          </Typography>
-        )}
-      </div>
+      {!hasPermission && (
+        <div className="mx-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
+          <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12">
+            <VideoCameraSlashIcon className="w-20 text-gray-500" />
+            <Typography variant="h3" className="text-center">
+              Please give permission to access the camera and refresh the page
+            </Typography>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
