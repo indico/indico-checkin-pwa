@@ -1,28 +1,13 @@
 import {useLocation, useNavigate} from 'react-router-dom';
 import {Cog8ToothIcon, HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
-import {useErrorModal} from '../hooks/useModal';
-import {useIsOffline} from '../utils/client';
 
 const BottomTabs = () => {
   const navigate = useNavigate();
   const {pathname} = useLocation();
-  const offline = useIsOffline();
-  const errorModal = useErrorModal();
 
   if (pathname === '/scan' || pathname === '/auth/redirect') {
     return null;
   }
-
-  const goToScan = () => {
-    if (offline) {
-      errorModal({
-        title: 'You are offline',
-        content: 'Scanning QR codes requires an internet connection',
-      });
-      return;
-    }
-    navigate('/scan');
-  };
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white dark:bg-gray-700 border-t border-gray-50 dark:border-gray-800">
@@ -44,7 +29,7 @@ const BottomTabs = () => {
         <div className="relative inline-flex flex-col items-center justify-center px-5">
           <button
             type="button"
-            onClick={goToScan}
+            onClick={() => navigate('/scan')}
             className="absolute top-[-50%] text-white rounded-full p-1 bg-gray-50 dark:bg-gray-900 group"
           >
             <QrCodeIcon className="w-6 h-6 min-w-[3rem] min-h-[3rem] rounded-full p-2 bg-blue-600" />

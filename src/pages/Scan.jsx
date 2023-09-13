@@ -13,13 +13,14 @@ import db from '../db/db';
 import {useErrorModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
 import {camelizeKeys} from '../utils/case';
-import {getParticipant} from '../utils/client';
+import {getParticipant, useIsOffline} from '../utils/client';
 import {
   validateParticipantData,
   validateEventData,
   discoveryEndpoint,
   redirectUri,
 } from './Auth/utils';
+import {handleError} from './Events/sync';
 
 const soundEffects = {
   'None': null,
@@ -172,6 +173,9 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
       if (audio) {
         playAudio(audio);
       }
+    } else {
+      setProcessing(false);
+      handleError(response, 'Could not fetch participant data');
     }
   }
 }
@@ -183,6 +187,7 @@ const ScanPage = () => {
   const navigate = useNavigate();
   const {soundEffect} = useSettings();
   const errorModal = useErrorModal();
+  const offline = useIsOffline();
 
   const onScanResult = async (decodedText, _decodedResult) => {
     if (processing) {
@@ -202,6 +207,14 @@ const ScanPage = () => {
 
     scannedData = camelizeKeys(scannedData);
     if (validateEventData(scannedData)) {
+      if (offline) {
+        errorModal({
+          title: 'You are offline',
+          content: 'Internet connection is required to add a registration form',
+        });
+        setProcessing(false);
+        return;
+      }
       handleEvent(scannedData, errorModal, setProcessing, navigate);
     } else if (validateParticipantData(scannedData)) {
       scannedData.eventId = parseInt(scannedData.eventId, 10);
