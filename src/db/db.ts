@@ -65,7 +65,7 @@ class IndicoCheckin extends Dexie {
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, baseUrl, title',
       regforms: 'id++, indicoId, eventId, title',
-      participants: 'id++, indicoId, regformId, eventId, name, state, checkedIn',
+      participants: 'id++, indicoId, regformId, eventId, fullName, state, checkedIn',
     });
   }
 }
