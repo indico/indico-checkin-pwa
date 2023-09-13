@@ -26,12 +26,12 @@ export function validateEventData(data) {
 }
 
 export function validateParticipantData(data) {
-  const {checkinSecret, eventId, registrantId, serverUrl, regformId} = data;
+  const {checkinSecret, eventId, registrationId, serverUrl, regformId} = data;
 
   if (
     !Number.isInteger(parseInt(eventId, 10)) ||
     !Number.isInteger(regformId) ||
-    !Number.isInteger(registrantId)
+    !Number.isInteger(registrationId)
   ) {
     return false;
   }

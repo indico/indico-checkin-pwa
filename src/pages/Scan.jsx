@@ -141,7 +141,7 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
     return;
   }
 
-  const participant = await db.participants.get({indicoId: data.registrantId});
+  const participant = await db.participants.get({indicoId: data.registrationId});
   if (participant) {
     setProcessing(false);
     if (audio) {
@@ -151,7 +151,7 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
       state: {autoCheckin},
     });
   } else {
-    const response = await getParticipant(server, event, regform, {indicoId: data.registrantId});
+    const response = await getParticipant(server, event, regform, {indicoId: data.registrationId});
     if (response.ok) {
       const {id, fullName, registrationDate, registrationData, state, checkedIn, checkedInDt} =
         response.data;
