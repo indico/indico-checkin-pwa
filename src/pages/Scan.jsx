@@ -19,7 +19,7 @@ import {
 } from './Auth/utils';
 import {handleError} from './Events/sync';
 
-async function handleEvent(data, errorModal, setProcessing, navigate) {
+async function handleEvent(data, errorModal, navigate) {
   // Check if the serverData is already in indexedDB
   const server = await db.servers.get({baseUrl: data.server.baseUrl});
   if (server) {
@@ -55,12 +55,10 @@ async function handleEvent(data, errorModal, setProcessing, navigate) {
       }
     });
 
-    setProcessing(false);
     navigate(`/event/${id}`);
     return;
   }
 
-  console.log("Server doesn't exist in IndexedDB. Proceeding to authentication...");
   // Perform OAuth2 Authorization Code Flow
   const {
     server: {baseUrl, clientId, scope},
@@ -90,19 +88,16 @@ async function handleEvent(data, errorModal, setProcessing, navigate) {
     });
   } catch (err) {
     errorModal({title: 'OAuth authorization failed', content: err.message});
-  } finally {
-    setProcessing(false);
   }
 }
 
-async function handleParticipant(data, errorModal, setProcessing, navigate, autoCheckin, sound) {
+async function handleParticipant(data, errorModal, navigate, autoCheckin, sound) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
     errorModal({
       title: 'The server of this participant does not exist',
       content: 'Scan an event QR code first and try again.',
     });
-    setProcessing(false);
     return;
   }
 
@@ -112,7 +107,6 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
       title: 'The event of this participant does not exist',
       content: 'Scan an event QR code first and try again.',
     });
-    setProcessing(false);
     return;
   }
 
@@ -122,13 +116,11 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
       title: 'The registration form of this participant does not exist',
       content: 'Scan an event QR code first and try again.',
     });
-    setProcessing(false);
     return;
   }
 
   const participant = await db.participants.get({indicoId: data.registrationId});
   if (participant) {
-    setProcessing(false);
     if (sound) {
       playSound(sound);
     }
@@ -160,7 +152,6 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
         checkedInDt,
         notes: '',
       });
-      setProcessing(false);
       navigate(`/event/${event.id}/${regform.id}/${participantId}`, {
         state: {autoCheckin},
       });
@@ -168,7 +159,6 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
         playSound(sound);
       }
     } else {
-      setProcessing(false);
       handleError(response, 'Could not fetch participant data');
     }
   }
@@ -183,7 +173,7 @@ const ScanPage = () => {
   const errorModal = useErrorModal();
   const offline = useIsOffline();
 
-  const onScanResult = async (decodedText, _decodedResult) => {
+  async function processCode(decodedText) {
     if (processing) {
       // Prevent multiple scans at the same time
       return;
@@ -195,7 +185,6 @@ const ScanPage = () => {
       scannedData = JSON.parse(decodedText);
     } catch (e) {
       errorModal({title: 'Error parsing the QRCode data', content: e.message});
-      setProcessing(false);
       return;
     }
 
@@ -206,25 +195,25 @@ const ScanPage = () => {
           title: 'You are offline',
           content: 'Internet connection is required to add a registration form',
         });
-        setProcessing(false);
         return;
       }
-      handleEvent(scannedData, errorModal, setProcessing, navigate);
+      await handleEvent(scannedData, errorModal, navigate);
     } else if (validateParticipantData(scannedData)) {
-      scannedData.eventId = parseInt(scannedData.eventId, 10);
-      handleParticipant(
-        scannedData,
-        errorModal,
-        setProcessing,
-        navigate,
-        autoCheckin,
-        sounds[soundEffect]
-      );
+      await handleParticipant(scannedData, errorModal, navigate, autoCheckin, sounds[soundEffect]);
     } else {
       errorModal({
-        title: 'QRCode Data is not valid',
+        title: 'QRCode data is not valid',
         content: 'Some fields are missing. Please try again.',
       });
+    }
+  }
+
+  const onScanResult = async (decodedText, _decodedResult) => {
+    try {
+      await processCode(decodedText);
+    } catch (e) {
+      errorModal({title: 'Error processing QR code', content: e.message});
+    } finally {
       setProcessing(false);
     }
 
@@ -253,7 +242,7 @@ const ScanPage = () => {
       {processing && (
         <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
           <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-10 pb-36 rounded-xl">
-            <Typography variant="h3">Authenticating..</Typography>
+            <Typography variant="h3">Loading..</Typography>
             <div className="relative">
               <div
                 className={`absolute left-1/2 -translate-x-1/2 transition ease-linear delay-1000`}
