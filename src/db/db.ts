@@ -47,6 +47,7 @@ export interface Participant {
   state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
   checkedIn: boolean;
   checkedInDt: string;
+  occupiedSlots: number;
   deleted: false;
   notes: string;
 }
