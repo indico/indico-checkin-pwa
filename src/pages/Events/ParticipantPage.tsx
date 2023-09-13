@@ -12,14 +12,15 @@ import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopTab from '../../Components/TopTab';
-import db from '../../db/db';
+import db, {Event, Regform, Participant} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
-import {checkInParticipant, useIsOffline} from '../../utils/client';
+import {useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {useQuery, isLoading, hasValue} from '../../utils/db';
 import {NotFound} from '../NotFound';
+import {checkIn} from './checkin';
 import {Field, FieldProps} from './fields';
-import {handleError, syncEvent, syncParticipant, syncRegform} from './sync';
+import {syncEvent, syncParticipant, syncRegform} from './sync';
 import {IndicoLink, Title} from './utils';
 
 const makeDebounce = (delay: number) => {
@@ -52,9 +53,28 @@ const ParticipantPage = () => {
   );
 
   useEffect(() => {
-    const {autoCheckin, ...rest} = state || {};
-    window.history.replaceState(rest, document.title);
+    // reset autoCheckin from location state
+    window.history.replaceState({}, document.title);
   }, [state]);
+
+  const performCheckin = useCallback(
+    async (event: Event, regform: Regform, participant: Participant, newCheckinState: boolean) => {
+      if (offline) {
+        errorModal({title: 'You are offline', content: 'Check-in requires an internet connection'});
+        return;
+      }
+
+      setIsCheckinLoading(true);
+      try {
+        await checkIn(event, regform, participant, newCheckinState, errorModal);
+      } catch (err: any) {
+        errorModal({title: 'Could not update check-in status', content: err.message});
+      } finally {
+        setIsCheckinLoading(false);
+      }
+    },
+    [offline, errorModal]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,9 +87,14 @@ const ParticipantPage = () => {
         return;
       }
 
-      await syncEvent(event, controller.signal, errorModal);
-      await syncRegform(event, regform, controller.signal, errorModal);
-      await syncParticipant(event, regform, participant, controller.signal, errorModal);
+      setAutoCheckin(false);
+      if (autoCheckin && !participant.checkedIn) {
+        await performCheckin(event, regform, participant, true);
+      } else {
+        await syncEvent(event, controller.signal, errorModal);
+        await syncRegform(event, regform, controller.signal, errorModal);
+        await syncParticipant(event, regform, participant, controller.signal, errorModal);
+      }
     }
 
     sync().catch(err => {
@@ -77,55 +102,7 @@ const ParticipantPage = () => {
     });
 
     return () => controller.abort();
-  }, [id, regformId, participantId, errorModal]);
-
-  const performCheckIn = useCallback(
-    async (newCheckInState: boolean) => {
-      if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
-        return;
-      }
-
-      if (offline) {
-        errorModal({title: 'You are offline', content: 'Check-in requires an internet connection'});
-        return;
-      }
-
-      const server = await db.servers.get(event.serverId);
-      if (!server) {
-        return;
-      }
-      const response = await checkInParticipant(
-        server,
-        event,
-        regform,
-        participant,
-        newCheckInState
-      );
-
-      if (response.ok) {
-        await db.transaction('readwrite', db.regforms, db.participants, async () => {
-          await db.participants.update(participant.id, {checkedIn: newCheckInState});
-          const checkedInCount = regform.checkedInCount + (newCheckInState ? 1 : -1);
-          await db.regforms.update(regform.id, {checkedInCount});
-        });
-      } else {
-        handleError(response, 'Something went wrong when updating check-in status', errorModal);
-      }
-    },
-    [event, regform, participant, errorModal, offline]
-  );
-
-  useEffect(() => {
-    if (!hasValue(participant)) {
-      return;
-    }
-
-    setAutoCheckin(false);
-    if (autoCheckin && !participant.checkedIn) {
-      setIsCheckinLoading(true);
-      performCheckIn(true).finally(() => setIsCheckinLoading(false));
-    }
-  }, [participant, performCheckIn, autoCheckin]);
+  }, [id, regformId, participantId, errorModal, autoCheckin, offline, performCheckin]);
 
   useEffect(() => {
     if (hasValue(participant)) {
@@ -133,7 +110,6 @@ const ParticipantPage = () => {
     }
   }, [participant]);
 
-  // Still loading
   if (isLoading(event) || isLoading(regform) || isLoading(participant)) {
     return <TopTab />;
   }
@@ -169,9 +145,17 @@ const ParticipantPage = () => {
     });
   };
 
-  const onCheckInToggle = () => {
-    setIsCheckinLoading(true);
-    performCheckIn(!participant.checkedIn).finally(() => setIsCheckinLoading(false));
+  const onCheckInToggle = async () => {
+    if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
+      return;
+    }
+
+    if (offline) {
+      errorModal({title: 'You are offline', content: 'Check-in requires an internet connection'});
+      return;
+    }
+
+    await performCheckin(event, regform, participant, !participant.checkedIn);
   };
 
   const registrationData = participant.registrationData.map((data: Section, i: number) => {
