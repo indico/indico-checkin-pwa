@@ -232,14 +232,16 @@ const ScanPage = () => {
     <div>
       <TopTab />
       {!processing && (
-        <QrScannerPlugin
-          fps={10}
-          qrbox={250}
-          aspectRatio={calcAspectRatio()}
-          disableFlip={false}
-          qrCodeSuccessCallback={onScanResult}
-          onPermRefused={onPermRefused}
-        />
+        <div className="mt-[-1rem]">
+          <QrScannerPlugin
+            fps={10}
+            qrbox={250}
+            aspectRatio={calcAspectRatio()}
+            disableFlip={false}
+            qrCodeSuccessCallback={onScanResult}
+            onPermRefused={onPermRefused}
+          />
+        </div>
       )}
       {processing && (
         <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
