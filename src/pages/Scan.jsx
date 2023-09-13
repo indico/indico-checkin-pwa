@@ -1,10 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
-import beep1 from '../assets/beep1.mp3';
-import beep2 from '../assets/beep2.mp3';
-import blip from '../assets/blip.mp3';
-import levelUp from '../assets/level-up.mp3';
 import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
@@ -14,6 +10,7 @@ import {useErrorModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
 import {camelizeKeys} from '../utils/case';
 import {getParticipant, useIsOffline} from '../utils/client';
+import {playSound, sounds} from '../utils/sound';
 import {
   validateParticipantData,
   validateEventData,
@@ -21,18 +18,6 @@ import {
   redirectUri,
 } from './Auth/utils';
 import {handleError} from './Events/sync';
-
-const soundEffects = {
-  'None': null,
-  'Beep 1': beep1,
-  'Beep 2': beep2,
-  'Blip': blip,
-  'Level up': levelUp,
-};
-
-function playAudio(audio) {
-  new Audio(audio).play();
-}
 
 async function handleEvent(data, errorModal, setProcessing, navigate) {
   // Check if the serverData is already in indexedDB
@@ -110,7 +95,7 @@ async function handleEvent(data, errorModal, setProcessing, navigate) {
   }
 }
 
-async function handleParticipant(data, errorModal, setProcessing, navigate, autoCheckin, audio) {
+async function handleParticipant(data, errorModal, setProcessing, navigate, autoCheckin, sound) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
     errorModal({
@@ -144,8 +129,8 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
   const participant = await db.participants.get({indicoId: data.registrationId});
   if (participant) {
     setProcessing(false);
-    if (audio) {
-      playAudio(audio);
+    if (sound) {
+      playSound(sound);
     }
     navigate(`/event/${event.id}/${regform.id}/${participant.id}`, {
       state: {autoCheckin},
@@ -179,8 +164,8 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
       navigate(`/event/${event.id}/${regform.id}/${participantId}`, {
         state: {autoCheckin},
       });
-      if (audio) {
-        playAudio(audio);
+      if (sound) {
+        playSound(sound);
       }
     } else {
       setProcessing(false);
@@ -233,7 +218,7 @@ const ScanPage = () => {
         setProcessing,
         navigate,
         autoCheckin,
-        soundEffects[soundEffect]
+        sounds[soundEffect]
       );
     } else {
       errorModal({

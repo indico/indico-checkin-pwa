@@ -1,24 +1,13 @@
 import {useEffect, useState} from 'react';
 import {ChevronDownIcon, TrashIcon, WrenchScrewdriverIcon} from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
-import beep1 from '../assets/beep1.mp3';
-import beep2 from '../assets/beep2.mp3';
-import blip from '../assets/blip.mp3';
-import levelUp from '../assets/level-up.mp3';
 import {Typography} from '../Components/Tailwind';
 import {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
 import {Toggle} from '../Components/Tailwind/Toggle';
 import TopTab from '../Components/TopTab';
 import db from '../db/db';
 import useSettings from '../hooks/useSettings';
-
-const soundEffects = {
-  'None': null,
-  'Beep 1': beep1,
-  'Beep 2': beep2,
-  'Blip': blip,
-  'Level up': levelUp,
-};
+import {playSound, sounds} from '../utils/sound';
 
 const SettingsPage = () => {
   const {darkMode, setDarkMode, autoCheckin, setAutoCheckin, soundEffect, setSoundEffect} =
@@ -40,9 +29,9 @@ const SettingsPage = () => {
   const onSoundEffectChange = v => {
     localStorage.setItem('soundEffect', v);
     setSoundEffect(v);
-    const sound = soundEffects[v];
+    const sound = sounds[v];
     if (sound) {
-      new Audio(sound).play();
+      playSound(sound);
     }
   };
 
@@ -66,7 +55,7 @@ const SettingsPage = () => {
               />
               <SettingsDropdown
                 title="Sound effect"
-                values={Object.keys(soundEffects)}
+                values={Object.keys(sounds)}
                 selected={soundEffect}
                 onChange={onSoundEffectChange}
               />
