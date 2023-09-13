@@ -153,8 +153,16 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
   } else {
     const response = await getParticipant(server, event, regform, {indicoId: data.registrationId});
     if (response.ok) {
-      const {id, fullName, registrationDate, registrationData, state, checkedIn, checkedInDt} =
-        response.data;
+      const {
+        id,
+        fullName,
+        registrationDate,
+        registrationData,
+        state,
+        checkedIn,
+        checkedInDt,
+        occupiedSlots,
+      } = response.data;
       const participantId = await db.participants.add({
         indicoId: id,
         regformId: regform.id,
@@ -162,6 +170,7 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
         registrationDate,
         registrationData,
         state,
+        occupiedSlots,
         checkedIn,
         checkedInDt,
         notes: '',

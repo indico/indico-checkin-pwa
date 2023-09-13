@@ -126,12 +126,22 @@ export async function syncParticipants(event, regform, signal, errorModal) {
     await db.transaction('readwrite', db.participants, async () => {
       const existingParticipants = await db.participants.where({regformId: regform.id}).toArray();
       const newParticipants = response.data.map(
-        ({id, fullName, registrationDate, registrationData, state, checkedIn, checkedInDt}) => ({
+        ({
+          id,
+          fullName,
+          registrationDate,
+          registrationData,
+          state,
+          checkedIn,
+          checkedInDt,
+          occupiedSlots,
+        }) => ({
           indicoId: id,
           fullName,
           registrationDate,
           registrationData,
           state,
+          occupiedSlots,
           checkedIn,
           checkedInDt,
         })
@@ -162,14 +172,23 @@ export async function syncParticipant(event, regform, participant, signal, error
   });
 
   if (response.ok) {
-    const {id, fullName, registrationDate, registrationData, state, checkedIn, checkedInDt} =
-      response.data;
+    const {
+      id,
+      fullName,
+      registrationDate,
+      registrationData,
+      state,
+      checkedIn,
+      checkedInDt,
+      occupiedSlots,
+    } = response.data;
     await db.participants.update(participant.id, {
       indicoId: id,
       fullName,
       registrationDate,
       registrationData,
       state,
+      occupiedSlots,
       checkedIn,
       checkedInDt,
     });
