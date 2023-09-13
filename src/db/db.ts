@@ -61,8 +61,8 @@ class IndicoCheckin extends Dexie {
   participants!: Table<Participant>;
 
   constructor() {
-    super('myDatabase');
-    this.version(2).stores({
+    super('CheckinDatabase');
+    this.version(1).stores({
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, baseUrl, title',
       regforms: 'id++, indicoId, eventId, title',
