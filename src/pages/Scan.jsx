@@ -143,12 +143,12 @@ async function handleParticipant(data, errorModal, setProcessing, navigate, auto
   const participant = await db.participants.get({indicoId: data.registrantId});
   if (participant) {
     setProcessing(false);
-    navigate(`/event/${event.id}/${regform.id}/${participant.id}`, {
-      state: {autoCheckin},
-    });
     if (audio) {
       playAudio(audio);
     }
+    navigate(`/event/${event.id}/${regform.id}/${participant.id}`, {
+      state: {autoCheckin},
+    });
   } else {
     const response = await getParticipant(server, event, regform, {indicoId: data.registrantId});
     if (response.ok) {
