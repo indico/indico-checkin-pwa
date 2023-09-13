@@ -108,13 +108,13 @@ const SettingsPage = () => {
 
 function SettingsToggle({title, description, checked, onToggle}) {
   return (
-    <div className="flex justify-between items-center gap-4">
+    <div className="flex justify-between items-center gap-4" onClick={onToggle}>
       <div>
         <Typography variant="h4">{title}</Typography>
         {description && <Typography variant="body2">{description}</Typography>}
       </div>
       <div>
-        <Toggle size="md" checked={checked} onClick={onToggle} />
+        <Toggle size="md" checked={checked} />
       </div>
     </div>
   );
