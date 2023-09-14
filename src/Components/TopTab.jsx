@@ -9,14 +9,13 @@ const TopTab = ({settingsItems}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const {pathname} = useLocation();
-  const {backBtnText = ''} = location.state || {};
+  const {backBtnText = '', backNavigateTo = ''} = location.state || {};
+  const backPage = backNavigateTo || (backBtnText ? -1 : '/');
+  const backText = backBtnText || 'Home';
 
   const onLogoClick = () => {
-    navigate('/');
+    navigate('/', {replace: true});
   };
-
-  const backPage = backBtnText ? -1 : '/';
-  const backText = backBtnText || 'Home';
 
   if (pathname === '/') {
     return (

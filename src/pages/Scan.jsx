@@ -120,13 +120,15 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
     return;
   }
 
+  const regformPage = `/event/${event.id}/${regform.id}`;
   const participant = await db.participants.get({indicoId: data.registrationId});
   if (participant) {
     if (sound) {
       playSound(sound);
     }
-    navigate(`/event/${event.id}/${regform.id}/${participant.id}`, {
-      state: {autoCheckin},
+    const participantPage = `${regformPage}/${participant.id}`;
+    navigate(participantPage, {
+      state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
     });
   } else {
     const response = await getParticipant(server, event, regform, {indicoId: data.registrationId});
@@ -153,8 +155,9 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
         checkedInDt,
         notes: '',
       });
-      navigate(`/event/${event.id}/${regform.id}/${participantId}`, {
-        state: {autoCheckin},
+      const participantPage = `${regformPage}/${participantId}`;
+      navigate(participantPage, {
+        state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
       });
       if (sound) {
         playSound(sound);
