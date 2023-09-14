@@ -4,7 +4,6 @@ import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
-import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
 import TopTab from '../Components/TopTab';
 import db from '../db/db';
 import {useErrorModal} from '../hooks/useModal';
@@ -19,6 +18,7 @@ import {
   redirectUri,
 } from './Auth/utils';
 import {handleError} from './Events/sync';
+import LoadingBanner from './LoadingBanner';
 
 async function handleEvent(data, errorModal, navigate) {
   // Check if the serverData is already in indexedDB
@@ -244,20 +244,7 @@ const ScanPage = () => {
           />
         </div>
       )}
-      {processing && (
-        <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-10 pb-36 rounded-xl">
-            <Typography variant="h3">Loading..</Typography>
-            <div className="relative">
-              <div
-                className={`absolute left-1/2 -translate-x-1/2 transition ease-linear delay-1000`}
-              >
-                <LoadingIndicator size="lg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {processing && <LoadingBanner text="Loading.." />}
       {!hasPermission && (
         <div className="mx-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
           <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12">

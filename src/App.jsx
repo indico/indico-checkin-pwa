@@ -1,5 +1,5 @@
 import './App.css';
-import {useEffect} from 'react';
+import {useEffect, lazy, Suspense} from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Background from './Components/Background';
 import BottomTabs from './Components/BottomTabs';
@@ -10,8 +10,10 @@ import EventPage from './pages/Events/EventPage';
 import ParticipantPage from './pages/Events/ParticipantPage';
 import RegistrationFormPage from './pages/Events/RegFormPage';
 import Homepage from './pages/Homepage';
-import ScanPage from './pages/Scan';
+import LoadingFallback from './pages/LoadingFallback';
 import SettingsPage from './pages/Settings';
+
+const ScanPage = lazy(() => import('./pages/Scan'));
 
 const App = () => {
   const {darkMode} = useSettings();
@@ -24,17 +26,19 @@ const App = () => {
     <div className="w-screen min-h-screen h-full overflow-auto bg-gray-50 dark:bg-gray-900 pb-32">
       <BrowserRouter basename="/">
         <Background />
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/scan" element={<ScanPage />} />
-          <Route path="/event">
-            <Route path="/event/:id" element={<EventPage />} />
-            <Route path="/event/:id/:regformId" element={<RegistrationFormPage />} />
-            <Route path="/event/:id/:regformId/:participantId" element={<ParticipantPage />} />
-          </Route>
-          <Route path="/auth/redirect" element={<AuthRedirectPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/scan" element={<ScanPage />} />
+            <Route path="/event">
+              <Route path="/event/:id" element={<EventPage />} />
+              <Route path="/event/:id/:regformId" element={<RegistrationFormPage />} />
+              <Route path="/event/:id/:regformId/:participantId" element={<ParticipantPage />} />
+            </Route>
+            <Route path="/auth/redirect" element={<AuthRedirectPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </Suspense>
         <BottomTabs />
         <Modal />
       </BrowserRouter>
