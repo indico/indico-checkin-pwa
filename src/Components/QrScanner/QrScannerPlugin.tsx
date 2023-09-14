@@ -26,7 +26,6 @@ interface QrProps {
   qrCodeErrorCallback?: (errorMessage: string, error: any) => void;
   formatsToSupport?: Html5QrcodeSupportedFormats[];
   onPermRefused: () => void;
-  pause?: boolean;
 }
 
 const QrScannerPlugin = ({
@@ -34,7 +33,6 @@ const QrScannerPlugin = ({
   qrbox = 250,
   disableFlip = false,
   formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE],
-  pause = false,
   qrCodeSuccessCallback,
   qrCodeErrorCallback,
   onPermRefused,
@@ -50,21 +48,9 @@ const QrScannerPlugin = ({
         return;
       }
 
-      const currCamState = html5CustomScanner.current?.getState() || 0;
+      const cameraState = html5CustomScanner.current?.getState() || 0;
 
-      // Handle the pause logic
-      if (pause && currCamState === Html5QrcodeScannerState.SCANNING) {
-        // Try to pause the scanner
-        await html5CustomScanner?.current?.pause(true);
-        return;
-      }
-      if (!pause && currCamState === Html5QrcodeScannerState.PAUSED) {
-        // Try to resume the scanner
-        await html5CustomScanner?.current?.resume();
-        return;
-      }
-
-      if (currCamState <= Html5QrcodeScannerState.UNKNOWN) {
+      if (cameraState <= Html5QrcodeScannerState.UNKNOWN) {
         // when component mounts
         html5CustomScanner.current = new Html5Qrcode(qrcodeRegionId, {
           formatsToSupport,
@@ -100,7 +86,6 @@ const QrScannerPlugin = ({
     aspectRatio,
     disableFlip,
     formatsToSupport,
-    pause,
     qrCodeSuccessCallback,
     qrCodeErrorCallback,
     onPermRefused,
