@@ -12,7 +12,7 @@ COPY src src
 RUN npm ci
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginxinc/nginx-unprivileged:1.24.0-alpine3.18
 
 COPY --from=builder /app/build /html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
