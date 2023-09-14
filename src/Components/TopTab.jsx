@@ -21,7 +21,7 @@ const TopTab = ({settingsItems}) => {
     return (
       <div className="flex justify-between mb-4 p-2 bg-blue-600 dark:bg-blue-700">
         <div className="flex gap-4 h-12 items-center" onClick={onLogoClick}>
-          <img src={Logo} alt="Logo" className="h-full"></img>
+          <img src={Logo} alt="Logo" width={48} height={48}></img>
           <span className="text-xl font-semibold whitespace-nowrap text-white dark:text-gray-200">
             Indico check-in
           </span>
