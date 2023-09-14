@@ -4,7 +4,7 @@ import {LoadingIndicator} from './LoadingIndicator';
 interface ToggleProps {
   className?: HTMLDivElement['className'];
   checked: boolean;
-  onClick: () => void;
+  onChange: () => void;
   rounded?: boolean;
   size?: 'xs' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
@@ -27,7 +27,7 @@ export const Toggle = ({
   className,
   rounded = true,
   size = 'xs',
-  onClick,
+  onChange = () => {},
   disabled = false,
 }: ToggleProps) => {
   const roundedProps: HTMLDivElement['className'] = rounded
@@ -40,11 +40,10 @@ export const Toggle = ({
     <label className="relative inline-flex items-center cursor-pointer">
       <input
         type="checkbox"
-        value=""
         className="sr-only peer"
         checked={checked}
-        onClick={onClick}
-        onChange={e => e.stopPropagation()}
+        onChange={onChange}
+        onClick={e => e.stopPropagation()}
         disabled={disabled}
       />
       <div
