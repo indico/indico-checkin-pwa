@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
-import QrScannerPlugin, {calcAspectRatio} from '../Components/QrScanner/QrScannerPlugin';
+import QrScannerPlugin from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
 import TopTab from '../Components/TopTab';
 import db from '../db/db';
@@ -234,14 +234,7 @@ const ScanPage = () => {
       <TopTab />
       {!processing && (
         <div className="mt-[-1rem]">
-          <QrScannerPlugin
-            fps={10}
-            qrbox={250}
-            aspectRatio={calcAspectRatio()}
-            disableFlip={false}
-            qrCodeSuccessCallback={onScanResult}
-            onPermRefused={onPermRefused}
-          />
+          <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />
         </div>
       )}
       {processing && <LoadingBanner text="Loading.." />}

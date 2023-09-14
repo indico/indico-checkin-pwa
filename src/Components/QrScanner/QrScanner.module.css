@@ -1,23 +1,21 @@
-/* Video w/ Css Animation: https://www.youtube.com/watch?v=W9XEARppU8s */
-.qrRegion::after {
-  content: '';
-  width: 70%;
-  height: 2px;
-  background: #00ff00;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: animateLine 4s ease-in-out infinite;
+/* hide the default shaded region */
+:global(#qr-shaded-region) {
+  display: none !important;
 }
 
-@keyframes animateLine {
-  0% {
-    top: 16%;
-  }
-  50% {
-    top: calc(100% - 16%);
-  }
-  100% {
-    top: 16%;
-  }
+.wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.shaded-region {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border-radius: 20px;
+  outline: 100vw solid rgba(0, 0, 0, 0.48);
 }
