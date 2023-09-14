@@ -200,6 +200,7 @@ const ScanPage = () => {
       }
       await handleEvent(scannedData, errorModal, navigate);
     } else if (validateParticipantData(scannedData)) {
+      scannedData.eventId = parseInt(scannedData.eventId, 10);
       await handleParticipant(scannedData, errorModal, navigate, autoCheckin, sounds[soundEffect]);
     } else {
       errorModal({
