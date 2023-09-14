@@ -29,6 +29,7 @@ const BottomTabs = () => {
         <div className="relative inline-flex flex-col items-center justify-center px-5">
           <button
             type="button"
+            aria-label="Scan"
             onClick={() => navigate('/scan')}
             className="absolute top-[-50%] text-white rounded-full p-1 bg-gray-50 dark:bg-gray-900 group"
           >
