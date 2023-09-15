@@ -3,11 +3,10 @@
  * @param dt
  */
 export const formatDate = (dt: string | Date) => {
-  if (dt instanceof Date) {
-    return dt.toLocaleDateString();
-  } else {
-    return new Date(dt).toLocaleDateString(undefined, {dateStyle: 'short'});
+  if (!(dt instanceof Date)) {
+    dt = new Date(dt);
   }
+  return dt.toLocaleDateString(undefined, {dateStyle: 'short'});
 };
 
 /**
@@ -15,9 +14,8 @@ export const formatDate = (dt: string | Date) => {
  * @param dt
  */
 export const formatDatetime = (dt: string | Date) => {
-  if (dt instanceof Date) {
-    return dt.toLocaleString();
-  } else {
-    return new Date(dt).toLocaleString(undefined, {dateStyle: 'short', timeStyle: 'short'});
+  if (!(dt instanceof Date)) {
+    dt = new Date(dt);
   }
+  return dt.toLocaleString(undefined, {dateStyle: 'short', timeStyle: 'short'});
 };
