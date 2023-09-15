@@ -181,7 +181,7 @@ const ParticipantPage = () => {
               url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
             />
           </div>
-          <div className="flex justify-center mt-4 mb-4">
+          <div className="mb-4 mt-4 flex justify-center">
             <CheckinToggle
               checked={participant.checkedIn}
               isLoading={isCheckinLoading}
@@ -191,7 +191,7 @@ const ParticipantPage = () => {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <InformationCircleIcon className="w-6 h-6 text-primary dark:text-blue-500" />
+                <InformationCircleIcon className="h-6 w-6 text-primary dark:text-blue-500" />
                 <Typography variant="body2">Registration Status</Typography>
               </div>
               <Typography variant="body2" className="font-bold capitalize">
@@ -200,7 +200,7 @@ const ParticipantPage = () => {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CalendarDaysIcon className="w-6 h-6 text-primary dark:text-blue-500" />
+                <CalendarDaysIcon className="h-6 w-6 text-primary dark:text-blue-500" />
                 <Typography variant="body2">Registration Date</Typography>
               </div>
               <Typography variant="body2" className="font-bold">
@@ -208,14 +208,14 @@ const ParticipantPage = () => {
               </Typography>
             </div>
           </div>
-          <div className="flex justify-center mt-1">
+          <div className="mt-1 flex justify-center">
             <Typography variant="body1" className="w-full">
               <GrowingTextarea value={notes} onChange={onAddNotes} />
             </Typography>
           </div>
         </div>
       </div>
-      <div className="flex flex-col mt-5 px-4">{registrationData}</div>
+      <div className="mt-5 flex flex-col px-4">{registrationData}</div>
     </>
   );
 };
@@ -271,20 +271,20 @@ function RegistrationSection(section: SectionProps) {
         <button
           type="button"
           disabled={fields.length === 0}
-          className={`flex items-center justify-between w-full p-5 font-medium text-left border
-                      border-gray-200 dark:border-gray-700 transition-all ${bgColor} ${border}`}
+          className={`flex w-full items-center justify-between border border-gray-200 p-5 text-left
+                      font-medium transition-all dark:border-gray-700 ${bgColor} ${border}`}
           onClick={() => setIsOpen(o => !o)}
         >
-          <Typography variant="h4" className="flex justify-between w-full">
+          <Typography variant="h4" className="flex w-full justify-between">
             {title}
-            {isOpen && <ChevronDownIcon className="w-6 h-6" />}
-            {!isOpen && <ChevronLeftIcon className="w-6 h-6" />}
+            {isOpen && <ChevronDownIcon className="h-6 w-6" />}
+            {!isOpen && <ChevronLeftIcon className="h-6 w-6" />}
           </Typography>
         </button>
       </div>
       <div className={isOpen ? '' : 'hidden'}>
         <div
-          className={`flex flex-col gap-2 px-5 py-5 dark:border-gray-700 border-r border-l ${expandedBorder}`}
+          className={`flex flex-col gap-2 border-l border-r px-5 py-5 dark:border-gray-700 ${expandedBorder}`}
         >
           {fields.map(field => (
             <Field key={field.id} {...field} />

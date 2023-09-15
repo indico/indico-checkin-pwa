@@ -16,11 +16,12 @@ export default function Modal() {
 
   const modal = (
     <div
-      className="fixed flex justify-center items-center inset-0 z-50 bg-black bg-opacity-70"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
       onClick={closeModal}
     >
       <div
-        className="mx-4 w-full rounded-lg shadow-2xl relative flex flex-col bg-white dark:bg-gray-800 rounded pt-10 pb-4 px-4"
+        className="relative mx-4 flex w-full flex-col rounded rounded-lg
+                   bg-white px-4 pb-4 pt-10 shadow-2xl dark:bg-gray-800"
         onClick={e => e.stopPropagation()}
       >
         {type === 'error' && (
@@ -42,8 +43,8 @@ interface ErrorModalProps extends Omit<ErrorModalData, 'type'> {
 const ErrorModal = ({title, content, closeBtnText, closeModal}: ErrorModalProps) => {
   return (
     <>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-dangerDark rounded-full">
-        <ExclamationCircleIcon className="p-1 w-12 min-w-[3rem] text-white" />
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-dangerDark">
+        <ExclamationCircleIcon className="w-12 min-w-[3rem] p-1 text-white" />
       </div>
       <Typography variant="h3" className="text-center">
         {title}
@@ -53,7 +54,7 @@ const ErrorModal = ({title, content, closeBtnText, closeModal}: ErrorModalProps)
       </Typography>
       <div className="flex justify-center pt-8">
         <Button
-          className="font-bold shadow-lg outline-none min-w-[5rem] justify-center"
+          className="min-w-[5rem] justify-center font-bold shadow-lg outline-none"
           onClick={closeModal}
         >
           {closeBtnText}
@@ -77,8 +78,8 @@ const ConfirmModal = ({
 }: ConfirmModalProps) => {
   return (
     <>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-dangerDark rounded-full">
-        <XMarkIcon className="p-1 w-12 min-w-[3rem] text-white" />
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-dangerDark">
+        <XMarkIcon className="w-12 min-w-[3rem] p-1 text-white" />
       </div>
       <Typography variant="h3" className="text-center">
         {title}

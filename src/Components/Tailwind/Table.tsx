@@ -62,7 +62,7 @@ const Table = ({rows, className = ''}: TableProps) => {
         <td className="p-4">
           <div className="flex items-center justify-between">
             <Typography variant="body1">{fullName}</Typography>
-            {checkedIn && <CheckCircleIcon className="w-6 h-6 text-green-500" />}
+            {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
           </div>
         </td>
       </tr>
@@ -81,15 +81,15 @@ const Table = ({rows, className = ''}: TableProps) => {
             </div>
           )}
           {!searchFocused && (
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
             </div>
           )}
           {searchValue && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-1">
               <button
                 type="button"
-                className="p-2 transition-all rounded-full active:bg-gray-200 dark:active:bg-gray-500"
+                className="rounded-full p-2 transition-all active:bg-gray-200 dark:active:bg-gray-500"
                 onClick={() => {
                   setSearchValue('');
                   if (inputRef.current) {
@@ -104,9 +104,9 @@ const Table = ({rows, className = ''}: TableProps) => {
           <input
             type="text"
             ref={inputRef}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-full focus:ring-blue-500
-                       focus:border-blue-500 block w-full pl-10 pr-2.5 py-3 dark:bg-gray-700 dark:border-gray-600
-                       dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="text-md block w-full rounded-full border border-gray-300 bg-gray-50 py-3 pl-10 pr-2.5
+                       text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700
+                       dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             placeholder="Search participants..."
             value={searchValue}
             onChange={onSearchChange}
@@ -118,14 +118,14 @@ const Table = ({rows, className = ''}: TableProps) => {
       </div>
       <div className="mx-4">
         {filteredRows.length === 0 && (
-          <div className="flex flex-col items-center justify-center mt-2 rounded-xl">
+          <div className="mt-2 flex flex-col items-center justify-center rounded-xl">
             <div className="w-14 text-gray-500">
               <UserGroupIcon />
             </div>
             <Typography variant="h3">Not found</Typography>
           </div>
         )}
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 rounded-xl overflow-hidden">
+        <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
           <tbody>{filteredRows.length > 0 && <>{filteredRows}</>}</tbody>
         </table>
       </div>

@@ -189,7 +189,7 @@ function RegformStatus({isOpen}: {isOpen: boolean | undefined}) {
   }
 
   return (
-    <span className={`w-fit text-xs font-medium px-2.5 py-0.5 rounded-full ${color}`}>
+    <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}>
       {isOpen ? 'open' : 'closed'}
     </span>
   );
@@ -204,19 +204,19 @@ function RegistrationCount({
 }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <div className="flex self-center items-center rounded-full overflow-hidden">
+      <div className="flex items-center self-center overflow-hidden rounded-full">
         <div
-          className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100
+          className="flex items-center bg-blue-100 py-0.5 pl-2.5 text-xs font-medium
                      text-primary dark:bg-darkSecondary dark:text-secondary"
         >
-          <CheckCircleIcon className="w-4 h-4 mr-1" />
+          <CheckCircleIcon className="mr-1 h-4 w-4" />
           <Typography variant="body1">{checkedInCount}</Typography>
         </div>
         <div
-          className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100
+          className="flex items-center bg-blue-100 px-2.5 py-0.5 text-xs font-medium
                      text-primary dark:bg-darkSecondary dark:text-secondary"
         >
-          <UserGroupIcon className="w-4 h-4 mr-1" />
+          <UserGroupIcon className="mr-1 h-4 w-4" />
           <Typography variant="body1">{registrationCount}</Typography>
         </div>
       </div>
@@ -226,8 +226,8 @@ function RegistrationCount({
 
 function NoParticipantsBanner() {
   return (
-    <div className="mx-4 mt-10 bg-gray-100 dark:bg-gray-800 px-3 pb-2 rounded-xl">
-      <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12 rounded-xl">
+    <div className="mx-4 mt-10 rounded-xl bg-gray-100 px-3 pb-2 dark:bg-gray-800">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 pb-12 pt-10">
         <UserGroupIcon className="w-14 text-gray-500" />
         <Typography variant="h3" className="text-center">
           There are no registered participants

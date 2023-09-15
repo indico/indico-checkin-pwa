@@ -68,7 +68,7 @@ function FieldHeader({title, description}: {title: string; description: string})
         {title}
       </Typography>
       {description && (
-        <Typography variant="body2" className="text-gray-600 dark:text-gray-400 italic mb-1">
+        <Typography variant="body2" className="mb-1 italic text-gray-600 dark:text-gray-400">
           {description}
         </Typography>
       )}

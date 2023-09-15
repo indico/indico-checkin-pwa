@@ -239,8 +239,8 @@ const ScanPage = () => {
       )}
       {processing && <LoadingBanner text="Loading.." />}
       {!hasPermission && (
-        <div className="mx-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12">
+        <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
+          <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
             <VideoCameraSlashIcon className="w-20 text-gray-500" />
             <Typography variant="h3" className="text-center">
               Please give permission to access the camera and refresh the page
