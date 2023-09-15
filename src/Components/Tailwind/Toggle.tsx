@@ -37,19 +37,20 @@ export const Toggle = ({
   const dimensionsClassName = dimensionsClassNames[size];
 
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
+    <label className="relative inline-flex cursor-pointer items-center">
       <input
         type="checkbox"
-        className="sr-only peer"
+        className="peer sr-only"
         checked={checked}
         onChange={onChange}
         onClick={e => e.stopPropagation()}
         disabled={disabled}
       />
       <div
-        className={`bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800
-                    peer dark:bg-gray-500 after:content-[''] after:absolute after:bg-white after:border-gray-300 after:border
-                    after:transition-all dark:border-gray-600 peer-checked:after:border-white peer-checked:bg-blue-600
+        className={`peer bg-gray-200 after:absolute after:border after:border-gray-300
+                    after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600
+                    peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4
+                    peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-500 dark:peer-focus:ring-blue-800
                     ${roundedProps} ${className} ${dimensionsClassName} ${
                       disabled ? 'opacity-50' : ''
                     }`}
@@ -68,44 +69,45 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
   return (
     <label
       style={{WebkitTapHighlightColor: 'transparent'}}
-      className="relative inline-flex items-center cursor-pointer"
+      className="relative inline-flex cursor-pointer items-center"
     >
       <input
         type="checkbox"
         value=""
-        className="sr-only peer"
+        className="peer sr-only"
         checked={checked}
         onClick={onClick}
         onChange={e => e.stopPropagation()}
         disabled={isLoading}
       />
       <div
-        className={`relative flex items-center px-5 rounded-full after:rounded-full bg-gray-200
-                    w-44 h-16 after:h-14 after:w-14 after:left-[4px] after:top-[4px]
-                    peer-checked:after:translate-x-[200%] peer-focus:outline-none peer-focus:ring-4
-                    peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 peer dark:bg-gray-600
-                    after:content-[''] after:absolute after:z-[3] after:bg-white dark:after:bg-gray-300
-                    after:border-gray-300 after:border after:transition-all after:duration-[200ms]
-                    dark:border-gray-600 peer-checked:after:border-0 peer-checked:bg-blue-600
-                    peer-checked:after:bg-white dark:peer-checked:after:bg-gray-300 ${
+        className={`peer relative flex h-16 w-44 items-center rounded-full
+                    bg-gray-200 px-5 after:absolute after:left-[4px] after:top-[4px] after:z-[3]
+                    after:h-14 after:w-14 after:rounded-full
+                    after:border after:border-gray-300 after:bg-white after:transition-all
+                    after:duration-[200ms] after:content-[''] peer-checked:bg-blue-600
+                    peer-checked:after:translate-x-[200%] peer-checked:after:border-0
+                    peer-checked:after:bg-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300
+                    dark:border-gray-600 dark:bg-gray-600 dark:after:bg-gray-300
+                    dark:peer-checked:after:bg-gray-300 dark:peer-focus:ring-blue-800 ${
                       isLoading ? 'opacity-70' : ''
                     }`}
       >
-        <div className="relative flex w-full h-full">
+        <div className="relative flex h-full w-full">
           <div
             style={{
               transition: 'max-width 150ms',
               maxWidth: checked ? '11rem' : 0,
             }}
-            className={`absolute z-[2] flex justify-start items-center left-0 right-0 bottom-[20%] top-[20%]
-                        rounded-full whitespace-nowrap overflow-hidden ${
+            className={`absolute bottom-[20%] left-0 right-0 top-[20%] z-[2] flex items-center justify-start
+                        overflow-hidden whitespace-nowrap rounded-full ${
                           checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                         }`}
           >
-            <span className="text-white dark:text-gray-200 pl-1">Checked in</span>
+            <span className="pl-1 text-white dark:text-gray-200">Checked in</span>
           </div>
-          <div className="absolute z-[1] flex justify-end items-center left-0 right-0 bottom-[20%] top-[20%]">
-            <span className="text-gray-800 dark:text-gray-200 pr-4">Check in</span>
+          <div className="absolute bottom-[20%] left-0 right-0 top-[20%] z-[1] flex items-center justify-end">
+            <span className="pr-4 text-gray-800 dark:text-gray-200">Check in</span>
           </div>
         </div>
       </div>
@@ -115,14 +117,15 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
             ? 'none'
             : 'opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
-        className="absolute z-10 left-[12px] top-[12px] opacity-0 peer-checked:opacity-100 peer-checked:translate-x-[280%]"
+        className="absolute left-[12px] top-[12px] z-10 opacity-0 peer-checked:translate-x-[280%]
+                   peer-checked:opacity-100"
       >
-        {!isLoading && <CheckIcon className="w-10 h-10 text-blue-600" />}
+        {!isLoading && <CheckIcon className="h-10 w-10 text-blue-600" />}
       </div>
       {isLoading && (
         <LoadingIndicator
           size="md"
-          className={`absolute m-auto top-0 bottom-0 ${checked ? 'right-[12px]' : 'left-[12px]'}`}
+          className={`absolute bottom-0 top-0 m-auto ${checked ? 'right-[12px]' : 'left-[12px]'}`}
         />
       )}
     </label>

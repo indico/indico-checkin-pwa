@@ -8,8 +8,8 @@ export function Title({title}: {title: string}) {
   return (
     <Typography
       variant="h2"
-      className={`max-w-full cursor-pointer text-center break-words text-gray-600 ${
-        !fullTitleVisible ? 'whitespace-nowrap text-ellipsis overflow-hidden' : ''
+      className={`max-w-full cursor-pointer break-words text-center text-gray-600 ${
+        !fullTitleVisible ? 'overflow-hidden text-ellipsis whitespace-nowrap' : ''
       }`}
     >
       <span onClick={() => setFullTitleVisible((v: boolean) => !v)}>{title}</span>
@@ -24,7 +24,7 @@ export function IndicoLink({url, text}: {url: string; text: string}) {
         href={url}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
+        className="flex items-center gap-1 font-medium text-blue-600 hover:underline dark:text-blue-500"
       >
         {text}
         <ArrowTopRightOnSquareIcon className="w-4" />
