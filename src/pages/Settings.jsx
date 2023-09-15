@@ -38,10 +38,10 @@ const SettingsPage = () => {
   return (
     <>
       <TopTab />
-      <div className="p-4 flex flex-col gap-12">
+      <div className="flex flex-col gap-12 p-4">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+            <div className="border-b border-slate-200 pb-2 dark:border-slate-700">
               <Typography variant="body3" className="font-semibold uppercase text-gray-500">
                 Check-in
               </Typography>
@@ -62,7 +62,7 @@ const SettingsPage = () => {
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
+            <div className="border-b border-slate-200 pb-2 dark:border-slate-700">
               <Typography variant="body3" className="font-semibold uppercase text-gray-500">
                 Appearance
               </Typography>
@@ -73,10 +73,10 @@ const SettingsPage = () => {
           </div>
         </div>
         {isDev && (
-          <div className="flex flex-col gap-6 p-6 bg-gray-200 dark:bg-gray-700 rounded-xl">
+          <div className="flex flex-col gap-6 rounded-xl bg-gray-200 p-6 dark:bg-gray-700">
             <div className="flex items-center justify-center gap-2">
               <Typography variant="h3">Running in development mode</Typography>
-              <WrenchScrewdriverIcon className="min-w-[1.25rem] h-5 dark:text-gray-300" />
+              <WrenchScrewdriverIcon className="h-5 min-w-[1.25rem] dark:text-gray-300" />
             </div>
             <DangerButton
               className="w-fit self-center"
@@ -85,7 +85,7 @@ const SettingsPage = () => {
                 await db.open();
               }}
             >
-              <TrashIcon className="min-w-[1.25rem] h-5" />
+              <TrashIcon className="h-5 min-w-[1.25rem]" />
               Reset IndexedDB
             </DangerButton>
           </div>
@@ -97,7 +97,7 @@ const SettingsPage = () => {
 
 function SettingsToggle({title, description, checked, onToggle}) {
   return (
-    <div className="flex justify-between items-center gap-4" onClick={onToggle}>
+    <div className="flex items-center justify-between gap-4" onClick={onToggle}>
       <div>
         <Typography variant="h4">{title}</Typography>
         {description && <Typography variant="body2">{description}</Typography>}
@@ -130,7 +130,7 @@ function SettingsDropdown({title, description, values, selected, onChange}) {
   }, []);
 
   return (
-    <div className="flex justify-between items-center gap-4">
+    <div className="flex items-center justify-between gap-4">
       <div>
         <Typography variant="h4">{title}</Typography>
         {description && <Typography variant="body2">{description}</Typography>}
@@ -143,10 +143,10 @@ function SettingsDropdown({title, description, values, selected, onChange}) {
           }}
         >
           {selected}
-          <ChevronDownIcon className="min-w-[1.25rem] h-5" />
+          <ChevronDownIcon className="h-5 min-w-[1.25rem]" />
         </SimpleButton>
         <div
-          className={`absolute right-0 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 ${
+          className={`absolute right-0 z-10 w-44 divide-y divide-gray-100 rounded-lg bg-white shadow dark:bg-gray-700 ${
             visible ? '' : 'hidden'
           }`}
         >
@@ -155,7 +155,7 @@ function SettingsDropdown({title, description, values, selected, onChange}) {
               <li
                 key={v}
                 onClick={() => onChange(v)}
-                className="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                className="block cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 {v}
               </li>

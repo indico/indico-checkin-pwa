@@ -77,26 +77,26 @@ const EventPage = () => {
       key={idx}
       type="button"
       onClick={() => wait(100).then(() => navigateToRegform(idx))}
-      className="flex items-center gap-2 justify-between p-6 bg-white rounded-xl shadow cursor-pointer
-                 active:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:active:bg-gray-700 transition-all"
+      className="flex cursor-pointer items-center justify-between gap-2 rounded-xl bg-white p-6 shadow
+                 transition-all active:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:active:bg-gray-700"
     >
       <div className="flex flex-1 items-center">
-        <div className="flex flex-col gap-1 min-w-0">
-          <Typography variant="body1" className="whitespace-nowrap text-ellipsis overflow-hidden">
+        <div className="flex min-w-0 flex-col gap-1">
+          <Typography variant="body1" className="overflow-hidden text-ellipsis whitespace-nowrap">
             {regform.title}
           </Typography>
           {regform.isOpen && (
             <span
-              className="w-fit bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5
-                         rounded-full dark:bg-green-900 dark:text-green-300"
+              className="w-fit rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium
+                         text-green-800 dark:bg-green-900 dark:text-green-300"
             >
               open
             </span>
           )}
           {regform.isOpen === false && (
             <span
-              className="w-fit bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5
-                         rounded-full dark:bg-red-900 dark:text-red-300"
+              className="w-fit rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium
+                         text-red-800 dark:bg-red-900 dark:text-red-300"
             >
               closed
             </span>
@@ -104,19 +104,19 @@ const EventPage = () => {
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <div className="flex self-center items-center rounded-full overflow-hidden">
+        <div className="flex items-center self-center overflow-hidden rounded-full">
           <div
-            className="flex items-center text-xs font-medium pl-2.5 py-0.5 bg-blue-100
+            className="flex items-center bg-blue-100 py-0.5 pl-2.5 text-xs font-medium
                        text-primary dark:bg-darkSecondary dark:text-secondary"
           >
-            <CheckCircleIcon className="w-4 h-4 mr-1" />
+            <CheckCircleIcon className="mr-1 h-4 w-4" />
             <Typography variant="body1">{regform.checkedInCount}</Typography>
           </div>
           <div
-            className="flex items-center text-xs font-medium px-2.5 py-0.5 bg-blue-100
+            className="flex items-center bg-blue-100 px-2.5 py-0.5 text-xs font-medium
                        text-primary dark:bg-darkSecondary dark:text-secondary"
           >
-            <UserGroupIcon className="w-4 h-4 mr-1" />
+            <UserGroupIcon className="mr-1 h-4 w-4" />
             <Typography variant="body1">{regform.registrationCount}</Typography>
           </div>
         </div>
@@ -157,8 +157,8 @@ const EventPage = () => {
             url={`${event.baseUrl}/event/${event.indicoId}/manage`}
           />
           <span
-            className="w-fit bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5
-                       rounded-full dark:bg-yellow-900 dark:text-yellow-300"
+            className="mr-2 w-fit rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium
+                       text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
           >
             {formatDatetime(event.date)}
           </span>
@@ -174,8 +174,8 @@ export default EventPage;
 
 function NoRegformsBanner() {
   return (
-    <div className="mx-4 mt-10 bg-gray-100 dark:bg-gray-800 px-3 pb-2 rounded-xl">
-      <div className="flex flex-col gap-2 items-center justify-center px-6 pt-10 pb-12 rounded-xl">
+    <div className="mx-4 mt-10 rounded-xl bg-gray-100 px-3 pb-2 dark:bg-gray-800">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 pb-12 pt-10">
         <IconFeather className="w-14 text-gray-500" />
         <Typography variant="h3" className="text-center">
           There are no registration forms

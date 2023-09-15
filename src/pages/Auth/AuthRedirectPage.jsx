@@ -124,8 +124,8 @@ const AuthRedirectPage = () => {
     return (
       <>
         <TopTab />
-        <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          <div className="flex flex-col items-center justify-center p-6 rounded-xl gap-2">
+        <div className="mx-4 rounded-xl bg-gray-100 dark:bg-gray-800">
+          <div className="flex flex-col items-center justify-center gap-2 rounded-xl p-6">
             <Typography variant="h3">{error.title}</Typography>
             <Typography variant="body1">{error.description}</Typography>
             <Button className="mt-4" onClick={() => navigate('/scan', {replace: true})}>
@@ -139,20 +139,20 @@ const AuthRedirectPage = () => {
     return (
       <>
         <TopTab />
-        <div className="mx-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          <div className="relative flex flex-col items-center justify-center gap-4 px-6 pt-10 pb-36 rounded-xl">
+        <div className="mx-4 rounded-xl bg-gray-100 dark:bg-gray-800">
+          <div className="relative flex flex-col items-center justify-center gap-4 rounded-xl px-6 pb-36 pt-10">
             <Typography variant="h3">Authenticating..</Typography>
             <div className="relative">
               <div
-                className={`absolute left-1/2 -translate-x-1/2 transition ease-linear delay-1000 ${
+                className={`absolute left-1/2 -translate-x-1/2 transition delay-1000 ease-linear ${
                   success ? 'opacity-0' : 'opacity-100'
                 }`}
               >
                 <LoadingIndicator size="lg" />
               </div>
               <CheckCircleIcon
-                className={`absolute top-[-0.5rem] left-1/2 -translate-x-1/2 w-28 text-green-500 transition
-                            ease-linear delay-1000 ${success ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute left-1/2 top-[-0.5rem] w-28 -translate-x-1/2 text-green-500 transition
+                            delay-1000 ease-linear ${success ? 'opacity-100' : 'opacity-0'}`}
               />
             </div>
           </div>

@@ -125,10 +125,10 @@ export default Homepage;
 function NoEventsBanner() {
   return (
     <div
-      className="flex items-center justify-center text-center mx-4 p-6
-                 m-auto rounded-xl bg-gray-100 dark:bg-gray-800"
+      className="m-auto mx-4 flex items-center justify-center rounded-xl
+                 bg-gray-100 p-6 text-center dark:bg-gray-800"
     >
-      <div className="flex flex-col gap-2 justify-center">
+      <div className="flex flex-col justify-center gap-2">
         <CalendarDaysIcon className="w-20 self-center text-gray-500 dark:text-gray-400" />
         <Typography variant="h2">No events found</Typography>
         <Typography variant="body1">Scan a QR code to add one</Typography>

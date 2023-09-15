@@ -30,7 +30,7 @@ const Background = () => {
     onSwipedRight: onSwipeRight,
   });
 
-  return <div {...swipeHandlers} className="fixed w-screen h-screen z-[-1]" />;
+  return <div {...swipeHandlers} className="fixed z-[-1] h-screen w-screen" />;
 };
 
 export default Background;

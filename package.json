@@ -44,7 +44,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint src/",
+    "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
     "prepare": "husky install"
   },
   "eslintConfig": {
@@ -67,7 +67,8 @@
   },
   "lint-staged": {
     "src/**": [
-      "eslint --fix"
+      "eslint --fix --ext js,jsx,ts,tsx",
+      "prettier --write"
     ]
   },
   "devDependencies": {

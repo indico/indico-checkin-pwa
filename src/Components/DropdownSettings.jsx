@@ -24,16 +24,16 @@ export default function DropdownSettings({items}) {
           e.stopPropagation();
           setIsVisible(v => !v);
         }}
-        className="inline-flex items-center p-2 text-sm font-medium text-center
-                   text-gray-100 rounded-full focus:bg-blue-700
-                   focus:outline-none transition-all
+        className="inline-flex items-center rounded-full p-2 text-center text-sm
+                   font-medium text-gray-100 transition-all
+                   focus:bg-blue-700 focus:outline-none
                    dark:focus:bg-blue-600"
       >
-        <EllipsisVerticalIcon className="min-w-[1.5rem] min-h-[1.5rem]" />
+        <EllipsisVerticalIcon className="min-h-[1.5rem] min-w-[1.5rem]" />
       </button>
       <ul
-        className={`absolute z-10 right-0 top-full w-max bg-white divide-y divide-gray-100 dark:divide-gray-600 rounded-lg shadow
-                   py-2 text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-700 ${
+        className={`absolute right-0 top-full z-10 w-max divide-y divide-gray-100 rounded-lg bg-white py-2 text-sm
+                   text-gray-700 shadow dark:divide-gray-600 dark:bg-gray-700 dark:text-gray-200 ${
                      isVisible ? '' : 'hidden'
                    }`}
       >
@@ -44,7 +44,7 @@ export default function DropdownSettings({items}) {
               className="flex w-full gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               onClick={item.onClick}
             >
-              <span className="min-w-[1.25rem] h-5 text-red-700 dark:text-red-500">
+              <span className="h-5 min-w-[1.25rem] text-red-700 dark:text-red-500">
                 {item.icon}
               </span>
               <span>{item.text}</span>

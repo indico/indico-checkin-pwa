@@ -23,7 +23,7 @@ const App = () => {
   }, [darkMode]);
 
   return (
-    <div className="w-screen min-h-screen h-full overflow-auto bg-gray-50 dark:bg-gray-900 pb-32">
+    <div className="h-full min-h-screen w-screen overflow-auto bg-gray-50 pb-32 dark:bg-gray-900">
       <BrowserRouter basename="/">
         <Background />
         <Suspense fallback={<LoadingFallback />}>

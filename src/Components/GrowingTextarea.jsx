@@ -10,9 +10,9 @@ export default function GrowingTextarea({value, onChange}) {
         rows={1}
         value={value}
         onInput={onChange}
-        className={`rounded-xl dark:bg-gray-800 border resize-none
-                    border-slate-300 dark:border-slate-700
-                    focus:ring-2 focus:ring-blue-400 focus:outline-none`}
+        className={`resize-none rounded-xl border border-slate-300
+                    focus:outline-none focus:ring-2
+                    focus:ring-blue-400 dark:border-slate-700 dark:bg-gray-800`}
       />
     </div>
   );

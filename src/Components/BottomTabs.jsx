@@ -10,8 +10,8 @@ const BottomTabs = () => {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white dark:bg-gray-700 border-t border-gray-50 dark:border-gray-800">
-      <div className="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+    <div className="fixed bottom-0 left-0 z-50 h-16 w-full border-t border-gray-50 bg-white dark:border-gray-800 dark:bg-gray-700">
+      <div className="mx-auto grid h-full max-w-lg grid-cols-3 font-medium">
         <button
           type="button"
           onClick={() => navigate('/', {replace: true})}
@@ -19,10 +19,10 @@ const BottomTabs = () => {
             borderTopRightRadius: '10% 70%',
             borderBottomRightRadius: '10% 70%',
           }}
-          className="inline-flex flex-col items-center justify-center px-5 transition-all active:bg-gray-200 dark:active:bg-gray-800 group"
+          className="group inline-flex flex-col items-center justify-center px-5 transition-all active:bg-gray-200 dark:active:bg-gray-800"
         >
-          <HomeIcon className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 transition-all group-active:text-blue-600 dark:group-active:text-blue-500" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 transition-all group-active:text-blue-600 dark:group-active:text-blue-500">
+          <HomeIcon className="mb-1 h-6 w-6 text-gray-500 transition-all group-active:text-blue-600 dark:text-gray-400 dark:group-active:text-blue-500" />
+          <span className="text-sm text-gray-500 transition-all group-active:text-blue-600 dark:text-gray-400 dark:group-active:text-blue-500">
             Home
           </span>
         </button>
@@ -31,12 +31,12 @@ const BottomTabs = () => {
             type="button"
             aria-label="Scan"
             onClick={() => navigate('/scan')}
-            className="absolute top-[-50%] text-white rounded-full p-1 bg-gray-50 dark:bg-gray-900 group"
+            className="group absolute top-[-50%] rounded-full bg-gray-50 p-1 text-white dark:bg-gray-900"
           >
-            <QrCodeIcon className="w-6 h-6 min-w-[3rem] min-h-[3rem] rounded-full p-2 bg-blue-600" />
+            <QrCodeIcon className="h-6 min-h-[3rem] w-6 min-w-[3rem] rounded-full bg-blue-600 p-2" />
           </button>
-          <Cog8ToothIcon className="invisible w-6 h-6 mb-2" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500">
+          <Cog8ToothIcon className="invisible mb-2 h-6 w-6" />
+          <span className="text-sm text-gray-500 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-500">
             Scan
           </span>
         </div>
@@ -47,10 +47,10 @@ const BottomTabs = () => {
             borderTopLeftRadius: '10% 70%',
             borderBottomLeftRadius: '10% 70%',
           }}
-          className="inline-flex flex-col items-center justify-center px-5 active:bg-gray-200 dark:active:bg-gray-800 group"
+          className="group inline-flex flex-col items-center justify-center px-5 active:bg-gray-200 dark:active:bg-gray-800"
         >
-          <Cog8ToothIcon className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 transition-all group-active:text-blue-600 dark:group-active:text-blue-500" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 transition-all group-active:text-blue-600 dark:group-active:text-blue-500">
+          <Cog8ToothIcon className="mb-1 h-6 w-6 text-gray-500 transition-all group-active:text-blue-600 dark:text-gray-400 dark:group-active:text-blue-500" />
+          <span className="text-sm text-gray-500 transition-all group-active:text-blue-600 dark:text-gray-400 dark:group-active:text-blue-500">
             Settings
           </span>
         </button>
