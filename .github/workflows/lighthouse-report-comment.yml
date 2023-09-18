@@ -1,0 +1,78 @@
+name: Attach Lighthouse report
+
+# taken from https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+# This is to prevent exposing a github token with write permissions to a potentially malicious code 
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Download artifact from parent workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+
+            const artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            })
+
+            const matchArtifact = artifacts.data.artifacts.find(artifact => artifact.name == "lighthouse")
+
+            const download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+
+            fs.writeFileSync('${{github.workspace}}/lighthouse.zip', Buffer.from(download.data))
+      - run: unzip lighthouse.zip
+
+      - name: Delete old comments
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+            const issue_number = Number(fs.readFileSync('./lighthouse/pull-request-id'))
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number
+            })
+
+            comments.forEach(c => {
+              if(c.user.login === 'github-actions[bot]') {
+                github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: c.id
+                })
+              }
+            })
+
+      - name: Create new comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+            const issue_number = Number(fs.readFileSync('./lighthouse/pull-request-id'))
+            const url = fs.readFileSync('./lighthouse/report-url').trim()
+            console.log(`Report url: <${url}>`)
+
+            github.rest.issues.createComment({
+              issue_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `[📝 Lighthouse report](${url})`
+            })
