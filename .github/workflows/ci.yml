@@ -33,3 +33,44 @@ jobs:
 
       - name: Build the app
         run: npm run build
+
+      - name: Run Lighthouse CI
+        id: lhci
+        if: github.event_name == 'pull_request'
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          lhci_output=$(lhci autorun)
+          echo "$lhci_output"
+          url=$(echo "$lhci_output" | grep -o "https://storage.\+")
+          echo "report_url=$url" >> $GITHUB_OUTPUT
+
+      - name: 'Add link to Lighthouse report'
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const url = `${{ steps.lhci.outputs.report_url }}`.trim()
+            console.log(`Report url: <${url}>`)
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+            })
+
+            comments.forEach(c => {
+              if(c.user.login === 'github-actions[bot]') {
+                github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: c.id
+                })
+              }
+            })
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `[📝 Lighthouse report](${url})`
+            })
