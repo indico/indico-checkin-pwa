@@ -11,6 +11,9 @@ export const sounds = {
   'Level up': levelUp,
 };
 
-export function playSound(sound) {
-  new Audio(sound).play();
+export function playSound(name: string) {
+  const sound = sounds[name as keyof typeof sounds];
+  if (sound) {
+    new Audio(sound).play();
+  }
 }

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import {ModalContextProvider} from './context/ModalContextProvider';
-import {SettingsProvider} from './context/SettingsProvider.jsx';
+import {SettingsProvider} from './context/SettingsProvider';
 // import reportWebVitals from './reportWebVitals';
 // import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 

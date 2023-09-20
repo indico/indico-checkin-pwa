@@ -29,10 +29,7 @@ const SettingsPage = () => {
   const onSoundEffectChange = v => {
     localStorage.setItem('soundEffect', v);
     setSoundEffect(v);
-    const sound = sounds[v];
-    if (sound) {
-      playSound(sound);
-    }
+    playSound(v);
   };
 
   return (
@@ -54,7 +51,7 @@ const SettingsPage = () => {
                 onToggle={toggleAutoCheckin}
               />
               <SettingsDropdown
-                title="Sound effect"
+                title="Check-in sound effect"
                 values={Object.keys(sounds)}
                 selected={soundEffect}
                 onChange={onSoundEffectChange}

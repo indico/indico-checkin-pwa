@@ -1,5 +1,5 @@
 import {useContext} from 'react';
-import SettingsContext from '../context/SettingsProvider';
+import {SettingsContext} from '../context/SettingsProvider';
 
 /**
  * A hook to access the SettingsContext. It is just a shorthand for useContext(SettingsContext).

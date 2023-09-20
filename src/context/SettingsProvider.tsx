@@ -1,9 +1,25 @@
-import {createContext, useState} from 'react';
+import {ReactNode, createContext, useState} from 'react';
 import PropTypes from 'prop-types';
 
-const SettingsContext = createContext({});
+interface SettingsContextProps {
+  darkMode: boolean;
+  setDarkMode: (v: boolean) => void;
+  autoCheckin: boolean;
+  setAutoCheckin: (v: boolean) => void;
+  soundEffect: string;
+  setSoundEffect: (v: string) => void;
+}
 
-export const SettingsProvider = ({children}) => {
+export const SettingsContext = createContext<SettingsContextProps>({
+  darkMode: false,
+  setDarkMode: () => {},
+  autoCheckin: false,
+  setAutoCheckin: () => {},
+  soundEffect: 'None',
+  setSoundEffect: () => {},
+});
+
+export const SettingsProvider = ({children}: {children: ReactNode}) => {
   // On render, check if the user has a theme preference. If not, check if their system is set to dark mode. If so, set the theme to dark.
   // If neither, set the theme to light.
   const storedTheme = localStorage.getItem('theme');
@@ -11,9 +27,10 @@ export const SettingsProvider = ({children}) => {
     storedTheme === 'dark' ||
     (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [darkMode, setDarkMode] = useState(isDarkMode);
-  const [autoCheckin, setAutoCheckin] = useState(
-    JSON.parse(localStorage.getItem('autoCheckin') || false)
-  );
+
+  const storedCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
+  const [autoCheckin, setAutoCheckin] = useState(storedCheckin);
+
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
   return (
@@ -28,5 +45,3 @@ export const SettingsProvider = ({children}) => {
 SettingsProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
-
-export default SettingsContext;

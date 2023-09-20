@@ -14,6 +14,7 @@ import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopTab from '../../Components/TopTab';
 import db, {Event, Regform, Participant} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
+import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {useQuery, isLoading, hasValue} from '../../utils/db';
@@ -37,6 +38,7 @@ const ParticipantPage = () => {
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
   const {id, regformId, participantId} = useParams();
+  const {soundEffect} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [isCheckinLoading, setIsCheckinLoading] = useState(false);
@@ -66,14 +68,14 @@ const ParticipantPage = () => {
 
       setIsCheckinLoading(true);
       try {
-        await checkIn(event, regform, participant, newCheckinState, errorModal);
+        await checkIn(event, regform, participant, newCheckinState, soundEffect, errorModal);
       } catch (err: any) {
         errorModal({title: 'Could not update check-in status', content: err.message});
       } finally {
         setIsCheckinLoading(false);
       }
     },
-    [offline, errorModal]
+    [offline, errorModal, soundEffect]
   );
 
   useEffect(() => {

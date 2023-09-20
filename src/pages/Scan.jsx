@@ -10,7 +10,6 @@ import {useErrorModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
 import {camelizeKeys} from '../utils/case';
 import {getParticipant, useIsOffline} from '../utils/client';
-import {playSound, sounds} from '../utils/sound';
 import {
   validateParticipantData,
   validateEventData,
@@ -92,7 +91,7 @@ async function handleEvent(data, errorModal, navigate) {
   }
 }
 
-async function handleParticipant(data, errorModal, navigate, autoCheckin, sound) {
+async function handleParticipant(data, errorModal, navigate, autoCheckin) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
     errorModal({
@@ -129,10 +128,6 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
         content: 'Please try again',
       });
       return;
-    }
-
-    if (sound) {
-      playSound(sound);
     }
 
     const participantPage = `${regformPage}/${participant.id}`;
@@ -181,9 +176,6 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
       navigate(participantPage, {
         state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
       });
-      if (sound) {
-        playSound(sound);
-      }
     } else {
       handleError(response, 'Could not fetch participant data');
     }
@@ -195,7 +187,6 @@ const ScanPage = () => {
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const {autoCheckin} = useSettings();
   const navigate = useNavigate();
-  const {soundEffect} = useSettings();
   const errorModal = useErrorModal();
   const offline = useIsOffline();
 
@@ -226,7 +217,7 @@ const ScanPage = () => {
       await handleEvent(scannedData, errorModal, navigate);
     } else if (validateParticipantData(scannedData)) {
       scannedData.eventId = parseInt(scannedData.eventId, 10);
-      await handleParticipant(scannedData, errorModal, navigate, autoCheckin, sounds[soundEffect]);
+      await handleParticipant(scannedData, errorModal, navigate, autoCheckin);
     } else {
       errorModal({
         title: 'QR code data is not valid',
