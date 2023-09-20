@@ -123,15 +123,25 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
   const regformPage = `/event/${event.id}/${regform.id}`;
   const participant = await db.participants.get({indicoId: data.registrationId});
   if (participant) {
+    if (participant.checkinSecret !== data.checkinSecret) {
+      errorModal({
+        title: 'QR code data is not valid',
+        content: 'Please try again',
+      });
+      return;
+    }
+
     if (sound) {
       playSound(sound);
     }
+
     const participantPage = `${regformPage}/${participant.id}`;
     navigate(participantPage, {
       state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
     });
   } else {
     const response = await getParticipant(server, event, regform, {indicoId: data.registrationId});
+
     if (response.ok) {
       const {
         id,
@@ -139,10 +149,20 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
         registrationDate,
         registrationData,
         state,
+        checkinSecret,
         checkedIn,
         checkedInDt,
         occupiedSlots,
       } = response.data;
+
+      if (checkinSecret !== data.checkinSecret) {
+        errorModal({
+          title: 'QR code data is not valid',
+          content: 'Please try again',
+        });
+        return;
+      }
+
       const participantId = await db.participants.add({
         indicoId: id,
         regformId: regform.id,
@@ -150,9 +170,11 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin, sound)
         registrationDate,
         registrationData,
         state,
-        occupiedSlots,
+        checkinSecret,
         checkedIn,
         checkedInDt,
+        occupiedSlots,
+        deleted: false,
         notes: '',
       });
       const participantPage = `${regformPage}/${participantId}`;
@@ -207,8 +229,8 @@ const ScanPage = () => {
       await handleParticipant(scannedData, errorModal, navigate, autoCheckin, sounds[soundEffect]);
     } else {
       errorModal({
-        title: 'QRCode data is not valid',
-        content: 'Some fields are missing. Please try again.',
+        title: 'QR code data is not valid',
+        content: 'Some fields are missing. Please try again',
       });
     }
   }

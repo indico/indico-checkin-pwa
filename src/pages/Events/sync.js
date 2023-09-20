@@ -132,6 +132,7 @@ export async function syncParticipants(event, regform, signal, errorModal) {
           registrationDate,
           registrationData,
           state,
+          checkinSecret,
           checkedIn,
           checkedInDt,
           occupiedSlots,
@@ -141,9 +142,10 @@ export async function syncParticipants(event, regform, signal, errorModal) {
           registrationDate,
           registrationData,
           state,
-          occupiedSlots,
+          checkinSecret,
           checkedIn,
           checkedInDt,
+          occupiedSlots,
         })
       );
       const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);

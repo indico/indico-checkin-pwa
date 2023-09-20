@@ -45,6 +45,7 @@ export interface Participant {
   registrationDate: string;
   registrationData: RegistrationData[];
   state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
+  checkinSecret: string;
   checkedIn: boolean;
   checkedInDt: string;
   occupiedSlots: number;
