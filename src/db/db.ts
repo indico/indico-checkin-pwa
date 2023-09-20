@@ -40,7 +40,6 @@ export interface Participant {
   id: number;
   indicoId: number;
   regformId: number;
-  eventId: number;
   fullName: string;
   registrationDate: string;
   registrationData: RegistrationData[];
@@ -67,7 +66,7 @@ class IndicoCheckin extends Dexie {
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, baseUrl, title',
       regforms: 'id++, indicoId, eventId, title',
-      participants: 'id++, indicoId, regformId, eventId, fullName, state, checkedIn',
+      participants: 'id++, indicoId, regformId, fullName, state, checkedIn',
     });
   }
 }
