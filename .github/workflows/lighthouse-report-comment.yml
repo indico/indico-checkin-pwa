@@ -20,22 +20,22 @@ jobs:
           script: |
             const fs = require('fs')
 
-            const artifacts = await github.actions.listWorkflowRunArtifacts({
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               run_id: ${{github.event.workflow_run.id }},
+               run_id: ${{ github.event.workflow_run.id }},
             })
 
             const matchArtifact = artifacts.data.artifacts.find(artifact => artifact.name == "lighthouse")
 
-            const download = await github.actions.downloadArtifact({
+            const download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
                archive_format: 'zip',
             });
 
-            fs.writeFileSync('${{github.workspace}}/lighthouse.zip', Buffer.from(download.data))
+            fs.writeFileSync('./lighthouse.zip', Buffer.from(download.data))
       - run: unzip lighthouse.zip
 
       - name: Delete old comments
@@ -43,7 +43,7 @@ jobs:
         with:
           script: |
             const fs = require('fs')
-            const issue_number = Number(fs.readFileSync('./lighthouse/pull-request-id'))
+            const issue_number = Number(fs.readFileSync('./pull-request-id'), 'utf8')
 
             const comments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
@@ -66,8 +66,8 @@ jobs:
         with:
           script: |
             const fs = require('fs')
-            const issue_number = Number(fs.readFileSync('./lighthouse/pull-request-id'))
-            const url = fs.readFileSync('./lighthouse/report-url').trim()
+            const issue_number = Number(fs.readFileSync('./pull-request-id'), 'utf8')
+            const url = fs.readFileSync('./report-url', 'utf8').trim()
             console.log(`Report url: <${url}>`)
 
             github.rest.issues.createComment({
