@@ -92,9 +92,11 @@ function RegformPage({
       return [];
     }
 
-    return participants.map(({id, checkedIn, fullName}) => ({
+    return participants.map(({id, checkedIn, fullName, state, registrationDate}) => ({
       fullName,
       checkedIn,
+      state,
+      registrationDate,
       onClick: async () => {
         await wait(100);
         navigate(`/event/${event.id}/${regform.id}/${id}`, {
