@@ -3,20 +3,22 @@ import {ComponentProps, ReactNode} from 'react';
 interface ButtonProps {
   children: ReactNode;
   className?: ComponentProps<'div'>['className'];
+  variant?: 'default' | 'success';
   onClick: () => void;
 }
 
 const variants = {
   default: `bg-primary hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600
             dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800`,
+  success: `bg-green-500 active:bg-green-600 dark:bg-green-600 dark:active:bg-green-700 focus:outline-none`,
 };
 
 const defaultBtnClassName: ComponentProps<'div'>['className'] = `
-  flex gap-2 text-white bg-primary font-medium rounded-lg
+  flex gap-2 text-white font-medium rounded-lg
   text-sm px-4 h-fit py-3 justify-self-center`;
 
-const Button = ({children, className, onClick}: ButtonProps) => {
-  const color = variants.default;
+const Button = ({children, variant, className, onClick}: ButtonProps) => {
+  const color = variants[variant || 'default'];
   const fullClassname = `${defaultBtnClassName} ${color} ${className}`;
 
   return (

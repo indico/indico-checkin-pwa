@@ -6,6 +6,12 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
+import {
+  ParticipantFilters,
+  ToggleFiltersButton,
+  isDefaultFilterState,
+  makeDefaultFilterState,
+} from './filters';
 import Typography from './Typography';
 
 /**
@@ -14,17 +20,16 @@ import Typography from './Typography';
 export interface rowProps {
   fullName: string;
   checkedIn: boolean;
+  state: string;
+  registrationDate: string;
   onClick?: () => void;
 }
 
-interface TableProps {
-  rows: rowProps[];
-  className?: HTMLDivElement['className'];
-}
-
-const Table = ({rows, className = ''}: TableProps) => {
+const Table = ({rows}: {rows: rowProps[]}) => {
   const [searchValue, setSearchValue] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [filters, setFilters] = useState(makeDefaultFilterState());
+  const [filtersVisible, setFiltersVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const shownRows = useMemo(() => {
@@ -32,8 +37,40 @@ const Table = ({rows, className = ''}: TableProps) => {
       return rows;
     }
 
-    return rows.filter(row => row.fullName.toLowerCase().includes(searchValue));
-  }, [searchValue, rows]);
+    return rows
+      .filter(row => {
+        let checkedInValues = [];
+        if (filters.checkedIn.yes) {
+          checkedInValues.push(true);
+        }
+        if (filters.checkedIn.no) {
+          checkedInValues.push(false);
+        }
+
+        const stateValues = Object.entries(filters.state)
+          .filter(([k, v]) => v)
+          .map(([k, v]) => k);
+
+        return (
+          (checkedInValues.length === 0 || checkedInValues.includes(row.checkedIn)) &&
+          (stateValues.length === 0 || stateValues.includes(row.state)) &&
+          row.fullName.toLowerCase().includes(searchValue)
+        );
+      })
+      .sort((a, b) => {
+        const {key, ascending} = filters.sortBy;
+        if (!ascending) {
+          [b, a] = [a, b];
+        }
+        if (a[key] > b[key]) {
+          return 1;
+        } else if (a[key] < b[key]) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+  }, [searchValue, filters, rows]);
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value.toLowerCase());
@@ -45,7 +82,7 @@ const Table = ({rows, className = ''}: TableProps) => {
     }
   };
 
-  const filteredRows = shownRows.map(({fullName, checkedIn, onClick}, idx) => {
+  const filteredRows = shownRows.map(({fullName, checkedIn, state, onClick}, idx) => {
     const alternatingClass: HTMLElement['className'] =
       idx % 2 === 1
         ? 'bg-gray-100 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
@@ -61,7 +98,12 @@ const Table = ({rows, className = ''}: TableProps) => {
       >
         <td className="p-4">
           <div className="flex items-center justify-between">
-            <Typography variant="body1">{fullName}</Typography>
+            <Typography
+              variant="body1"
+              className={state === 'rejected' || state === 'withdrawn' ? 'line-through' : ''}
+            >
+              {fullName}
+            </Typography>
             {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
           </div>
         </td>
@@ -70,9 +112,9 @@ const Table = ({rows, className = ''}: TableProps) => {
   });
 
   return (
-    <div className={className}>
-      <div className="px-4 py-4">
-        <div className="relative w-full">
+    <div>
+      <div className="flex gap-2 px-4 pb-2 pt-4">
+        <div className="relative grow">
           {searchFocused && (
             <div className="absolute inset-y-0 left-0 flex items-center pl-1">
               <button type="button" className="p-1">
@@ -104,7 +146,7 @@ const Table = ({rows, className = ''}: TableProps) => {
           <input
             type="text"
             ref={inputRef}
-            className="text-md block w-full rounded-full border border-gray-300 bg-gray-50 py-3 pl-10 pr-2.5
+            className="text-md block w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-2.5
                        text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-transparent dark:bg-gray-700
                        dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             placeholder="Search participants..."
@@ -115,10 +157,24 @@ const Table = ({rows, className = ''}: TableProps) => {
             onKeyUp={onKeyUp}
           />
         </div>
+        <ToggleFiltersButton
+          defaultState={isDefaultFilterState(filters)}
+          filtersVisible={filtersVisible}
+          onClick={() => setFiltersVisible(v => !v)}
+        />
       </div>
-      <div className="mx-4">
+      {filtersVisible && (
+        <div className="px-4 pb-2">
+          <ParticipantFilters
+            filters={filters}
+            setFilters={setFilters}
+            onClose={() => setFiltersVisible(false)}
+          />
+        </div>
+      )}
+      <div className="mx-4 mt-2">
         {filteredRows.length === 0 && (
-          <div className="mt-2 flex flex-col items-center justify-center rounded-xl">
+          <div className="mt-6 flex flex-col items-center justify-center rounded-xl">
             <div className="w-14 text-gray-500">
               <UserGroupIcon />
             </div>
