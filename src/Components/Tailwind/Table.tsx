@@ -48,8 +48,8 @@ const Table = ({rows, className = ''}: TableProps) => {
   const filteredRows = shownRows.map(({fullName, checkedIn, onClick}, idx) => {
     const alternatingClass: HTMLElement['className'] =
       idx % 2 === 1
-        ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-600'
-        : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600';
+        ? 'bg-gray-100 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
+        : 'bg-gray-200 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
 
     return (
       <tr
