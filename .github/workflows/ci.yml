@@ -40,7 +40,8 @@ jobs:
           npm install -g @lhci/cli@0.12.x
           lhci_output=$(lhci autorun)
           echo "$lhci_output"
-          url=$(echo "$lhci_output" | grep -o "https://storage.\+")
+          url=$(echo "$lhci_output" | grep -o "https://.\+")
+          echo "Found storage url: <$url>"
           echo "report_url=$url" >> $GITHUB_OUTPUT
 
       - name: Save data needed by the Lighthouse workflow
