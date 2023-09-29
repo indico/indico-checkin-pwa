@@ -105,7 +105,7 @@ const Table = ({rows, className = ''}: TableProps) => {
             type="text"
             ref={inputRef}
             className="text-md block w-full rounded-full border border-gray-300 bg-gray-50 py-3 pl-10 pr-2.5
-                       text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700
+                       text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-transparent dark:bg-gray-700
                        dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             placeholder="Search participants..."
             value={searchValue}
