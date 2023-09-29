@@ -1,10 +1,10 @@
 import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {OAuth2Client} from '@badgateway/oauth2-client';
 import {CheckCircleIcon} from '@heroicons/react/20/solid';
 import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
-import TopTab from '../../Components/TopTab';
+import TopNav from '../../Components/TopNav';
 import db from '../../db/db';
 import {discoveryEndpoint, redirectUri, validateEventData} from './utils';
 
@@ -36,6 +36,7 @@ async function getToken({baseUrl, clientId}, codeVerifier) {
 
 const AuthRedirectPage = () => {
   const navigate = useNavigate();
+  const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
 
@@ -114,21 +115,26 @@ const AuthRedirectPage = () => {
       }
 
       setSuccess(true);
-      await wait(2000).then(() => navigate(`/event/${eventId}`, {replace: true}));
+      await wait(2000).then(() =>
+        navigate(`/event/${eventId}`, {
+          replace: true,
+          state,
+        })
+      );
     };
 
     onLoad();
-  }, [navigate]);
+  }, [navigate, state]);
 
   if (error) {
     return (
       <>
-        <TopTab />
+        <TopNav />
         <div className="mx-4 rounded-xl bg-gray-100 dark:bg-gray-800">
           <div className="flex flex-col items-center justify-center gap-2 rounded-xl p-6">
             <Typography variant="h3">{error.title}</Typography>
             <Typography variant="body1">{error.description}</Typography>
-            <Button className="mt-4" onClick={() => navigate('/scan', {replace: true})}>
+            <Button className="mt-4" onClick={() => navigate('/scan', {replace: true, state})}>
               Try again
             </Button>
           </div>
@@ -138,7 +144,7 @@ const AuthRedirectPage = () => {
   } else {
     return (
       <>
-        <TopTab />
+        <TopNav />
         <div className="mx-4 rounded-xl bg-gray-100 dark:bg-gray-800">
           <div className="relative flex flex-col items-center justify-center gap-4 rounded-xl px-6 pb-36 pt-10">
             <Typography variant="h3">Authenticating..</Typography>

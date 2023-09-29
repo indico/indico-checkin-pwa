@@ -6,25 +6,22 @@ import {
   TrashIcon,
   UserGroupIcon,
 } from '@heroicons/react/20/solid';
+import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
-import TopTab from '../../Components/TopTab';
-import db, {deleteRegform as _deleteRegform} from '../../db/db';
+import TopNav from '../../Components/TopNav';
+import db, {Event, Participant, Regform, deleteRegform as _deleteRegform} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
-import {isLoading, hasValue, useQuery} from '../../utils/db';
+import {isLoading, hasValue, useQuery, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
 import {syncEvent, syncParticipants, syncRegform} from './sync';
 import {IndicoLink, Title} from './utils';
 
-const RegistrationFormPage = () => {
+export default function RegformPageWrapper() {
   const {id, regformId} = useParams();
-  const navigate = useNavigate();
-  const errorModal = useErrorModal();
-  const confirmModal = useConfirmModal();
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
   const regform = useQuery(
@@ -32,9 +29,34 @@ const RegistrationFormPage = () => {
     [id, regformId]
   );
   const participants = useQuery(
-    () => db.participants.where({regformId: Number(regformId)}).sortBy('fullName'),
+    () => db.participants.where({regformId: Number(regformId)}).toArray(),
     [regformId]
   );
+
+  const title = hasValue(regform) ? regform.title : '';
+
+  return (
+    <>
+      <RegformTopNav event={event} regform={regform} />
+      <RegformPage event={event} regform={regform} participants={participants} />
+      <BottomNav backBtnText={title} />
+    </>
+  );
+}
+
+function RegformPage({
+  event,
+  regform,
+  participants,
+}: {
+  event: DBResult<Event>;
+  regform: DBResult<Regform>;
+  participants: DBResult<Participant[]>;
+}) {
+  const {id, regformId} = useParams();
+  const navigate = useNavigate();
+  const errorModal = useErrorModal();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     async function _sync() {
@@ -75,106 +97,51 @@ const RegistrationFormPage = () => {
       checkedIn,
       onClick: async () => {
         await wait(100);
-        navigate(`/event/${event.id}/${regform.id}/${id}`, {state: {backBtnText: regform.title}});
+        navigate(`/event/${event.id}/${regform.id}/${id}`, {
+          state: {backBtnText: regform.title},
+        });
       },
     }));
   }, [event, regform, participants, navigate]);
 
-  const deleteRegform = async (id: number) => {
-    try {
-      await _deleteRegform(id);
-    } catch (err: any) {
-      errorModal({
-        title: 'Something went wrong when deleting a registration form',
-        content: err.message,
-      });
-    }
-  };
-
-  let topTab;
-  if (hasValue(event) && hasValue(regform)) {
-    topTab = (
-      <TopTab
-        settingsItems={[
-          {
-            text: 'Remove registration form',
-            icon: <TrashIcon />,
-            onClick: () => {
-              if (!hasValue(event) || !hasValue(regform)) {
-                return;
-              }
-
-              confirmModal({
-                title: 'Are you sure?',
-                content: 'You can always re-add the registration form by scanning its QR code',
-                confirmBtnText: 'Delete',
-                onConfirm: async () => {
-                  await deleteRegform(regform.id);
-                  navigate(`/event/${event.id}`);
-                },
-              });
-            },
-          },
-        ]}
-      />
-    );
-  } else {
-    topTab = <TopTab />;
-  }
-
   if (isLoading(event) || isLoading(regform) || isLoading(participants)) {
-    return topTab;
+    return null;
   }
 
   if (!event) {
-    return (
-      <>
-        {topTab}
-        <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
-      </>
-    );
+    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
   } else if (!regform) {
-    return (
-      <>
-        {topTab}
-        <NotFound text="Registration form not found" icon={<IconFeather />} />
-      </>
-    );
+    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
   }
 
   return (
-    <>
-      {topTab}
-      <div className="pt-1">
-        <div>
-          <div className="flex flex-col items-center gap-2 px-4">
-            <Title title={regform.title} />
-            <IndicoLink
-              text="Indico registration page"
-              url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}`}
+    <div className="pt-1">
+      <div>
+        <div className="flex flex-col items-center gap-2 px-4">
+          <Title title={regform.title} />
+          <IndicoLink
+            text="Indico registration page"
+            url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}`}
+          />
+          <div className="flex items-center gap-2">
+            <RegformStatus isOpen={regform.isOpen} />
+            <RegistrationCount
+              checkedInCount={regform.checkedInCount}
+              registrationCount={regform.registrationCount}
             />
-            <div className="flex items-center gap-2">
-              <RegformStatus isOpen={regform.isOpen} />
-              <RegistrationCount
-                checkedInCount={regform.checkedInCount}
-                registrationCount={regform.registrationCount}
-              />
-            </div>
           </div>
         </div>
-        {participants.length === 0 && isSyncing && <LoadingParticipantsBanner />}
-        {participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
-        {participants.length > 0 && (
-          <div className="mt-6">
-            <Table rows={tableRows} />
-          </div>
-        )}
       </div>
-    </>
+      {participants.length === 0 && isSyncing && <LoadingParticipantsBanner />}
+      {participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
+      {participants.length > 0 && (
+        <div className="mt-6">
+          <Table rows={tableRows} />
+        </div>
+      )}
+    </div>
   );
-};
-
-export default RegistrationFormPage;
+}
 
 function RegformStatus({isOpen}: {isOpen: boolean | undefined}) {
   if (isOpen === undefined) {
@@ -245,5 +212,53 @@ function LoadingParticipantsBanner() {
       </Typography>
       <LoadingIndicator size="md" />
     </div>
+  );
+}
+
+function RegformTopNav({event, regform}: {event: DBResult<Event>; regform: DBResult<Regform>}) {
+  const navigate = useNavigate();
+  const errorModal = useErrorModal();
+  const confirmModal = useConfirmModal();
+
+  if (!hasValue(event) || !hasValue(regform)) {
+    return <TopNav />;
+  }
+
+  const deleteRegform = async (id: number) => {
+    try {
+      await _deleteRegform(id);
+    } catch (err: any) {
+      errorModal({
+        title: 'Something went wrong when deleting a registration form',
+        content: err.message,
+      });
+    }
+  };
+
+  return (
+    <TopNav
+      backBtnText={event.title}
+      settingsItems={[
+        {
+          text: 'Remove registration form',
+          icon: <TrashIcon />,
+          onClick: () => {
+            if (!hasValue(event) || !hasValue(regform)) {
+              return;
+            }
+
+            confirmModal({
+              title: 'Are you sure?',
+              content: 'You can always re-add the registration form by scanning its QR code',
+              confirmBtnText: 'Delete',
+              onConfirm: async () => {
+                await deleteRegform(regform.id);
+                navigate(`/event/${event.id}`, {replace: true});
+              },
+            });
+          },
+        },
+      ]}
+    />
   );
 }

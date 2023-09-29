@@ -2,29 +2,43 @@ import {useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
+import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
-import TopTab from '../../Components/TopTab';
-import db, {deleteEvent as _deleteEvent} from '../../db/db';
+import TopNav from '../../Components/TopNav';
+import db, {Event, Regform, deleteEvent as _deleteEvent} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
-import {useQuery, isLoading, hasValue} from '../../utils/db';
+import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {NotFound} from '../NotFound';
 import {syncEvent, syncRegforms} from './sync';
 import {IndicoLink, Title} from './utils';
 
-const EventPage = () => {
-  const navigate = useNavigate();
+export default function EventPageWrapper() {
   const {id: eventId} = useParams();
-  const errorModal = useErrorModal();
-  const confirmModal = useConfirmModal();
 
   const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
   const regforms = useQuery(
     () => db.regforms.where({eventId: Number(eventId)}).toArray(),
     [eventId]
   );
+
+  const title = hasValue(event) ? event.title : '';
+
+  return (
+    <>
+      <EventTopNav event={event} />
+      <EventPage event={event} regforms={regforms} />
+      <BottomNav backBtnText={title} />
+    </>
+  );
+}
+
+function EventPage({event, regforms}: {event: DBResult<Event>; regforms: DBResult<Regform[]>}) {
+  const navigate = useNavigate();
+  const {id: eventId} = useParams();
+  const errorModal = useErrorModal();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,30 +60,16 @@ const EventPage = () => {
     return () => controller.abort();
   }, [eventId, errorModal]);
 
-  const deleteEvent = async id => {
-    try {
-      await _deleteEvent(id);
-    } catch (err) {
-      errorModal({
-        title: 'Something went wrong when deleting a registration form',
-        content: err.message,
-      });
-    }
-  };
-
   if (isLoading(event) || isLoading(regforms)) {
-    return <TopTab />;
+    return null;
   } else if (!hasValue(event)) {
-    return (
-      <>
-        <TopTab />
-        <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
-      </>
-    );
+    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
   }
 
   const navigateToRegform = (idx = 0) => {
-    navigate(`/event/${eventId}/${regforms[idx].id}`, {state: {backBtnText: event.title}});
+    navigate(`/event/${eventId}/${regforms[idx].id}`, {
+      state: {backBtnText: event.title},
+    });
   };
 
   const regformList = regforms.map((regform, idx) => (
@@ -124,6 +124,60 @@ const EventPage = () => {
     </button>
   ));
 
+  return (
+    <div className="px-4 pt-1">
+      <div className="flex flex-col items-center gap-2">
+        <Title title={event.title} />
+        <IndicoLink
+          text="Indico event page"
+          url={`${event.baseUrl}/event/${event.indicoId}/manage`}
+        />
+        <span
+          className="mr-2 w-fit rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium
+                       text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        >
+          {formatDatetime(event.date)}
+        </span>
+      </div>
+      {regformList.length === 0 && <NoRegformsBanner />}
+      {regformList.length > 0 && <div className="mt-10 flex flex-col gap-4">{regformList}</div>}
+    </div>
+  );
+}
+
+function NoRegformsBanner() {
+  return (
+    <div className="mx-4 mt-10 rounded-xl bg-gray-100 px-3 pb-2 dark:bg-gray-800">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 pb-12 pt-10">
+        <IconFeather className="w-14 text-gray-500" />
+        <Typography variant="h3" className="text-center">
+          There are no registration forms
+        </Typography>
+      </div>
+    </div>
+  );
+}
+
+function EventTopNav({event}: {event: DBResult<Event>}) {
+  const navigate = useNavigate();
+  const errorModal = useErrorModal();
+  const confirmModal = useConfirmModal();
+
+  if (!hasValue(event)) {
+    return <TopNav backBtnText="Home" />;
+  }
+
+  const deleteEvent = async (id: number) => {
+    try {
+      await _deleteEvent(id);
+    } catch (err: any) {
+      errorModal({
+        title: 'Something went wrong when deleting a registration form',
+        content: err.message,
+      });
+    }
+  };
+
   const settingsItems = [
     {
       text: 'Remove event',
@@ -139,48 +193,12 @@ const EventPage = () => {
           confirmBtnText: 'Delete',
           onConfirm: async () => {
             await deleteEvent(event.id);
-            navigate(`/`);
+            navigate(`/`, {replace: true});
           },
         });
       },
     },
   ];
 
-  return (
-    <>
-      <TopTab settingsItems={settingsItems} />
-      <div className="px-4 pt-1">
-        <div className="flex flex-col items-center gap-2">
-          <Title title={event.title} />
-          <IndicoLink
-            text="Indico event page"
-            url={`${event.baseUrl}/event/${event.indicoId}/manage`}
-          />
-          <span
-            className="mr-2 w-fit rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium
-                       text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-          >
-            {formatDatetime(event.date)}
-          </span>
-        </div>
-        {regformList.length === 0 && <NoRegformsBanner />}
-        {regformList.length > 0 && <div className="mt-10 flex flex-col gap-4">{regformList}</div>}
-      </div>
-    </>
-  );
-};
-
-export default EventPage;
-
-function NoRegformsBanner() {
-  return (
-    <div className="mx-4 mt-10 rounded-xl bg-gray-100 px-3 pb-2 dark:bg-gray-800">
-      <div className="flex flex-col items-center justify-center gap-2 rounded-xl px-6 pb-12 pt-10">
-        <IconFeather className="w-14 text-gray-500" />
-        <Typography variant="h3" className="text-center">
-          There are no registration forms
-        </Typography>
-      </div>
-    </div>
-  );
+  return <TopNav backBtnText="Home" settingsItems={settingsItems} />;
 }

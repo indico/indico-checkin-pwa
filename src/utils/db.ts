@@ -2,6 +2,10 @@ import {useLiveQuery} from 'dexie-react-hooks';
 
 export const LOADING: unique symbol = Symbol('loading');
 
+type Result<Type> = Type | typeof LOADING | undefined;
+type ResultCollection<Type> = Type[] | typeof LOADING;
+export type DBResult<Type> = Type extends Array<infer Item> ? ResultCollection<Item> : Result<Type>;
+
 export function isLoading(v: object | typeof LOADING | undefined): v is typeof LOADING {
   return v === LOADING;
 }

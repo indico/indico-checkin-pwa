@@ -4,7 +4,7 @@ import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin from '../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../Components/Tailwind';
-import TopTab from '../Components/TopTab';
+import TopNav from '../Components/TopNav';
 import db from '../db/db';
 import {useErrorModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
@@ -55,7 +55,7 @@ async function handleEvent(data, errorModal, navigate) {
       }
     });
 
-    navigate(`/event/${id}`);
+    navigate(`/event/${id}`, {replace: true, state: {backBtnText: 'Home'}});
     return;
   }
 
@@ -132,6 +132,7 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin) {
 
     const participantPage = `${regformPage}/${participant.id}`;
     navigate(participantPage, {
+      replace: true,
       state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
     });
   } else {
@@ -174,6 +175,7 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin) {
       });
       const participantPage = `${regformPage}/${participantId}`;
       navigate(participantPage, {
+        replace: true,
         state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
       });
     } else {
@@ -244,7 +246,7 @@ const ScanPage = () => {
 
   return (
     <div>
-      <TopTab />
+      <TopNav />
       {!processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />

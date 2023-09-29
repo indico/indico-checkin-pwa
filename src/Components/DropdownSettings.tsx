@@ -1,8 +1,13 @@
-import {useEffect, useState} from 'react';
+import {ReactNode, useEffect, useState} from 'react';
 import {EllipsisVerticalIcon} from '@heroicons/react/20/solid';
-import PropTypes from 'prop-types';
 
-export default function DropdownSettings({items}) {
+export interface SettingsItem {
+  text: string;
+  icon: ReactNode;
+  onClick: () => void;
+}
+
+export default function DropdownSettings({items}: {items: SettingsItem[]}) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -24,10 +29,8 @@ export default function DropdownSettings({items}) {
           e.stopPropagation();
           setIsVisible(v => !v);
         }}
-        className="inline-flex items-center rounded-full p-2 text-center text-sm
-                   font-medium text-gray-100 transition-all
-                   focus:bg-blue-700 focus:outline-none
-                   dark:focus:bg-blue-600"
+        className="inline-flex items-center rounded-full p-2 text-center text-sm font-medium text-gray-100
+                   transition-all focus:bg-blue-700 focus:outline-none dark:focus:bg-blue-600"
       >
         <EllipsisVerticalIcon className="min-h-[1.5rem] min-w-[1.5rem]" />
       </button>
@@ -55,13 +58,3 @@ export default function DropdownSettings({items}) {
     </div>
   );
 }
-
-DropdownSettings.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      icon: PropTypes.node.isRequired,
-      text: PropTypes.string.isRequired,
-      onClick: PropTypes.func.isRequired,
-    })
-  ),
-};

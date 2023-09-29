@@ -2,13 +2,12 @@ import './App.css';
 import {useEffect, lazy, Suspense} from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Background from './Components/Background';
-import BottomTabs from './Components/BottomTabs';
 import Modal from './Components/Tailwind/Modal/Modal';
 import useSettings from './hooks/useSettings';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
 import EventPage from './pages/Events/EventPage';
 import ParticipantPage from './pages/Events/ParticipantPage';
-import RegistrationFormPage from './pages/Events/RegFormPage';
+import RegistrationFormPage from './pages/Events/RegformPage';
 import Homepage from './pages/Homepage';
 import LoadingFallback from './pages/LoadingFallback';
 import SettingsPage from './pages/Settings';
@@ -39,7 +38,6 @@ const App = () => {
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </Suspense>
-        <BottomTabs />
         <Modal />
       </BrowserRouter>
     </div>

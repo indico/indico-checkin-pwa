@@ -1,5 +1,5 @@
 import {ChangeEvent, useCallback, useEffect, useState} from 'react';
-import {useLocation, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   ChevronLeftIcon,
@@ -7,17 +7,18 @@ import {
   InformationCircleIcon,
   UserIcon,
 } from '@heroicons/react/20/solid';
+import BottomNav from '../../Components/BottomNav';
 import GrowingTextarea from '../../Components/GrowingTextarea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
-import TopTab from '../../Components/TopTab';
+import TopNav from '../../Components/TopNav';
 import db, {Event, Regform, Participant} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
-import {useQuery, isLoading, hasValue} from '../../utils/db';
+import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {NotFound} from '../NotFound';
 import {checkIn} from './checkin';
 import {Field, FieldProps} from './fields';
@@ -34,15 +35,8 @@ const makeDebounce = (delay: number) => {
 
 const debounce = makeDebounce(300);
 
-const ParticipantPage = () => {
-  const {state} = useLocation();
-  const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
+export default function ParticipantPageWrapper() {
   const {id, regformId, participantId} = useParams();
-  const {soundEffect} = useSettings();
-  const offline = useIsOffline();
-  const errorModal = useErrorModal();
-  const [isCheckinLoading, setIsCheckinLoading] = useState(false);
-  const [notes, setNotes] = useState('');
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
   const regform = useQuery(
@@ -54,10 +48,43 @@ const ParticipantPage = () => {
     [regformId, participantId]
   );
 
+  const title = hasValue(participant) ? participant.fullName : '';
+
+  return (
+    <>
+      <ParticipantTopNav regform={regform} />
+      <ParticipantPage event={event} regform={regform} participant={participant} />
+      <BottomNav backBtnText={title} />
+    </>
+  );
+}
+
+function ParticipantPage({
+  event,
+  regform,
+  participant,
+}: {
+  event: DBResult<Event>;
+  regform: DBResult<Regform>;
+  participant: DBResult<Participant>;
+}) {
+  const navigate = useNavigate();
+  const {state} = useLocation();
+  const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
+  const {id, regformId, participantId} = useParams();
+  const {soundEffect} = useSettings();
+  const offline = useIsOffline();
+  const errorModal = useErrorModal();
+  const [isCheckinLoading, setIsCheckinLoading] = useState(false);
+  const [notes, setNotes] = useState('');
+
   useEffect(() => {
-    // reset autoCheckin from location state
-    window.history.replaceState({}, document.title);
-  }, [state]);
+    // remove autoCheckin from location state
+    if (state?.autoCheckin !== undefined) {
+      const {autoCheckin, ...rest} = state || {};
+      navigate('.', {replace: true, state: rest});
+    }
+  }, [navigate, state]);
 
   const performCheckin = useCallback(
     async (event: Event, regform: Regform, participant: Participant, newCheckinState: boolean) => {
@@ -113,30 +140,15 @@ const ParticipantPage = () => {
   }, [participant]);
 
   if (isLoading(event) || isLoading(regform) || isLoading(participant)) {
-    return <TopTab />;
+    return null;
   }
 
   if (!event) {
-    return (
-      <>
-        <TopTab />
-        <NotFound text="Event not found" icon={<CalendarDaysIcon />} />
-      </>
-    );
+    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
   } else if (!regform) {
-    return (
-      <>
-        <TopTab />
-        <NotFound text="Registration form not found" icon={<IconFeather />} />
-      </>
-    );
+    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
   } else if (!participant) {
-    return (
-      <>
-        <TopTab />
-        <NotFound text="Participant not found" icon={<UserIcon />} />
-      </>
-    );
+    return <NotFound text="Participant not found" icon={<UserIcon />} />;
   }
 
   const onAddNotes = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -173,7 +185,6 @@ const ParticipantPage = () => {
 
   return (
     <>
-      <TopTab />
       <div className="px-4 pt-1">
         <div className="mt-2 flex flex-col gap-4">
           <div className="flex flex-col items-center">
@@ -220,9 +231,15 @@ const ParticipantPage = () => {
       <div className="mt-5 flex flex-col px-4">{registrationData}</div>
     </>
   );
-};
+}
 
-export default ParticipantPage;
+function ParticipantTopNav({regform}: {regform: DBResult<Regform>}) {
+  if (!hasValue(regform)) {
+    return <TopNav />;
+  }
+
+  return <TopNav backBtnText={regform.title} />;
+}
 
 interface Section {
   id: number;

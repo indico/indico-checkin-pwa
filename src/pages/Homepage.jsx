@@ -1,16 +1,27 @@
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, ServerStackIcon} from '@heroicons/react/20/solid';
+import BottomNav from '../Components/BottomNav';
 import EventItem from '../Components/Events/EventItem.tsx';
 import {Typography} from '../Components/Tailwind/index.jsx';
-import TopTab from '../Components/TopTab.jsx';
+import TopNav from '../Components/TopNav';
 import db from '../db/db';
 import {useErrorModal} from '../hooks/useModal';
 import {useQuery, isLoading} from '../utils/db';
 import {wait} from '../utils/wait.ts';
 import {syncEvents} from './Events/sync.js';
 
-const Homepage = () => {
+export default function Homepage() {
+  return (
+    <>
+      <TopNav />
+      <HomepageContent />
+      <BottomNav backBtnText="Home" />
+    </>
+  );
+}
+
+function HomepageContent() {
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const servers = useQuery(() => db.servers.toArray());
@@ -37,7 +48,7 @@ const Homepage = () => {
   };
 
   if (isLoading(servers) || isLoading(events) || isLoading(regforms)) {
-    return <TopTab />;
+    return null;
   }
 
   const serversById = servers.reduce((acc, server) => {
@@ -59,68 +70,55 @@ const Homepage = () => {
   }, {});
 
   if (events.length === 0) {
-    return (
-      <>
-        <TopTab />
-        <NoEventsBanner />
-      </>
-    );
+    return <NoEventsBanner />;
   }
 
   if (servers.length === 1) {
     return (
-      <>
-        <TopTab />
-        <div className="flex flex-col gap-4 px-4 pt-1">
-          {events.map(event => {
-            return (
-              <EventItem
-                key={event.id}
-                event={event}
-                onClick={() => navigateToEvent(event)}
-                quantity={regformsByEvent[event.id] || 0}
-              />
-            );
-          })}
-        </div>
-      </>
+      <div className="flex flex-col gap-4 px-4 pt-1">
+        {events.map(event => {
+          return (
+            <EventItem
+              key={event.id}
+              event={event}
+              onClick={() => navigateToEvent(event)}
+              quantity={regformsByEvent[event.id] || 0}
+            />
+          );
+        })}
+      </div>
     );
   }
 
   return (
-    <>
-      <TopTab />
-      <div className="flex flex-col gap-8 px-4 pt-1">
-        {Object.entries(eventsByServer).map(([serverId, events]) => {
-          const server = serversById[serverId];
-          const host = new URL(server.baseUrl).host;
-          return (
-            <div key={serverId} className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <ServerStackIcon className="w-5 text-gray-700 dark:text-gray-400" />
-                <Typography variant="body2">{host}</Typography>
-              </div>
-              <div className="flex flex-col gap-4">
-                {events.map(event => {
-                  return (
-                    <EventItem
-                      key={event.id}
-                      event={event}
-                      onClick={() => navigateToEvent(event)}
-                      quantity={regformsByEvent[event.id] || 0}
-                    />
-                  );
-                })}
-              </div>
+    <div className="flex flex-col gap-8 px-4 pt-1">
+      {Object.entries(eventsByServer).map(([serverId, events]) => {
+        const server = serversById[serverId];
+        const host = new URL(server.baseUrl).host;
+        return (
+          <div key={serverId} className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <ServerStackIcon className="w-5 text-gray-700 dark:text-gray-400" />
+              <Typography variant="body2">{host}</Typography>
             </div>
-          );
-        })}
-      </div>
-    </>
+            <div className="flex flex-col gap-4">
+              {events.map(event => {
+                return (
+                  <EventItem
+                    key={event.id}
+                    event={event}
+                    onClick={() => navigateToEvent(event)}
+                    quantity={regformsByEvent[event.id] || 0}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
-};
-
-export default Homepage;
+}
 
 function NoEventsBanner() {
   return (

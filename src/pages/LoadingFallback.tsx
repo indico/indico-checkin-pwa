@@ -1,10 +1,10 @@
-import TopTab from '../Components/TopTab';
+import TopNav from '../Components/TopNav';
 import LoadingBanner from './LoadingBanner';
 
 export default function LoadingFallback() {
   return (
     <>
-      <TopTab />
+      <TopNav />
       <LoadingBanner text="Loading.." />
     </>
   );

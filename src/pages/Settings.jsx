@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import {ChevronDownIcon, TrashIcon, WrenchScrewdriverIcon} from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
+import BottomNav from '../Components/BottomNav';
 import {Typography} from '../Components/Tailwind';
 import {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
 import {Toggle} from '../Components/Tailwind/Toggle';
-import TopTab from '../Components/TopTab';
+import TopNav from '../Components/TopNav';
 import db from '../db/db';
 import useSettings from '../hooks/useSettings';
 import {playSound, sounds} from '../utils/sound';
@@ -34,7 +35,7 @@ const SettingsPage = () => {
 
   return (
     <>
-      <TopTab />
+      <TopNav />
       <div className="flex flex-col gap-12 p-4">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
@@ -88,6 +89,7 @@ const SettingsPage = () => {
           </div>
         )}
       </div>
+      <BottomNav />
     </>
   );
 };
