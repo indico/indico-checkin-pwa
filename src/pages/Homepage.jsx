@@ -22,7 +22,7 @@ const Homepage = () => {
 
     async function sync() {
       const events = await db.events.toArray();
-      syncEvents(events, controller.signal, errorModal);
+      await syncEvents(events, controller.signal, errorModal);
     }
 
     sync().catch(err =>
