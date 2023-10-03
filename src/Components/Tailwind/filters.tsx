@@ -8,6 +8,8 @@ import Typography from './Typography';
 
 const registrationStates = ['complete', 'pending', 'unpaid', 'rejected', 'withdrawn'];
 
+export type RegistrationState = 'complete' | 'pending' | 'unpaid' | 'rejected' | 'withdrawn';
+
 interface CheckedInFilterData {
   yes: boolean;
   no: boolean;

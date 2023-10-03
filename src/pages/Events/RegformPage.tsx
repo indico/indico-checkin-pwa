@@ -109,6 +109,7 @@ function RegformPage({
     }
 
     return participants.map(({id, checkedIn, fullName, state, registrationDate}) => ({
+      id,
       fullName,
       checkedIn,
       state,
