@@ -258,7 +258,7 @@ export function FilterButton({
         type="button"
         onClick={onClick}
         className="flex rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-center text-sm
-                   font-medium text-white focus:outline-none dark:bg-blue-600 dark:text-gray-200"
+                   font-medium text-white focus:outline-none dark:bg-blue-700 dark:text-gray-200"
       >
         {children}
       </button>
@@ -293,7 +293,7 @@ export function SortButton({
       <button
         type="button"
         className="flex items-center gap-3 overflow-hidden rounded-full border border-transparent bg-blue-600
-                   py-1 pl-5 pr-1 text-center text-sm font-medium text-white focus:outline-none dark:bg-blue-600
+                   py-1 pl-5 pr-1 text-center text-sm font-medium text-white focus:outline-none dark:bg-blue-700
                    dark:text-gray-200"
         onClick={onClick}
       >
@@ -312,4 +312,22 @@ export function SortButton({
       </FilterButton>
     );
   }
+}
+
+export function ResultCount({count, onClick}: {count: number; onClick: () => void}) {
+  const message = count === 1 ? '1 result' : `${count} results`; // i18n? never heard of it..
+
+  return (
+    <div className="flex justify-center">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-2 rounded-full bg-blue-600 py-2 pl-3 pr-2 text-gray-100
+                   active:bg-blue-700 dark:bg-blue-700 dark:text-gray-200 dark:active:bg-blue-800"
+      >
+        <span className="whitespace-nowrap">{message}</span>
+        <XMarkIcon className="h-5 w-5" />
+      </button>
+    </div>
+  );
 }
