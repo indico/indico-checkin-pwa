@@ -6,7 +6,14 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import {Filters, ParticipantFilters, ToggleFiltersButton, isDefaultFilterState} from './filters';
+import {
+  Filters,
+  ParticipantFilters,
+  ResultCount,
+  ToggleFiltersButton,
+  isDefaultFilterState,
+  makeDefaultFilterState,
+} from './filters';
 import Typography from './Typography';
 
 /**
@@ -177,13 +184,23 @@ const Table = ({
           />
         </div>
       )}
+      {(searchValue !== '' || !isDefaultFilterState(filters)) && (
+        <div className="mb-4 mt-2">
+          <ResultCount
+            count={filteredRows.length}
+            onClick={() => {
+              setSearchValue('');
+              setFilters(makeDefaultFilterState());
+            }}
+          />
+        </div>
+      )}
       <div className="mx-4 mt-2">
         {filteredRows.length === 0 && (
-          <div className="mt-6 flex flex-col items-center justify-center rounded-xl">
-            <div className="w-14 text-gray-500">
+          <div className="mt-10 flex flex-col items-center justify-center rounded-xl">
+            <div className="w-24 text-gray-500">
               <UserGroupIcon />
             </div>
-            <Typography variant="h3">Not found</Typography>
           </div>
         )}
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
