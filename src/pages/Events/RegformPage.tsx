@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -9,6 +9,7 @@ import {
 import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
+import {Filters, makeDefaultFilterState} from '../../Components/Tailwind/filters';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Table, {rowProps} from '../../Components/Tailwind/Table';
 import TopNav from '../../Components/TopNav';
@@ -55,8 +56,13 @@ function RegformPage({
 }) {
   const {id, regformId} = useParams();
   const navigate = useNavigate();
+  const {state} = useLocation();
   const errorModal = useErrorModal();
   const [isSyncing, setIsSyncing] = useState(false);
+  const initialSearchValue = state?.search || '';
+  const [searchValue, _setSearchValue] = useState(initialSearchValue);
+  const initialFilters = state?.filters || makeDefaultFilterState();
+  const [filters, _setFilters] = useState(initialFilters);
 
   useEffect(() => {
     async function _sync() {
@@ -85,6 +91,16 @@ function RegformPage({
 
     sync();
   }, [id, regformId, errorModal]);
+
+  const setSearchValue = (v: string) => {
+    _setSearchValue(v);
+    navigate('.', {replace: true, state: {...(state || {}), search: v}});
+  };
+
+  const setFilters = (filters: Filters) => {
+    _setFilters(filters);
+    navigate('.', {replace: true, state: {...(state || {}), filters}});
+  };
 
   // Build the table rows array
   const tableRows: rowProps[] = useMemo(() => {
@@ -138,7 +154,13 @@ function RegformPage({
       {participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
       {participants.length > 0 && (
         <div className="mt-6">
-          <Table rows={tableRows} />
+          <Table
+            rows={tableRows}
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            filters={filters}
+            setFilters={setFilters}
+          />
         </div>
       )}
     </div>

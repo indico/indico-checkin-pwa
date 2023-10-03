@@ -6,12 +6,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import {
-  ParticipantFilters,
-  ToggleFiltersButton,
-  isDefaultFilterState,
-  makeDefaultFilterState,
-} from './filters';
+import {Filters, ParticipantFilters, ToggleFiltersButton, isDefaultFilterState} from './filters';
 import Typography from './Typography';
 
 /**
@@ -25,10 +20,20 @@ export interface rowProps {
   onClick?: () => void;
 }
 
-const Table = ({rows}: {rows: rowProps[]}) => {
-  const [searchValue, setSearchValue] = useState('');
+const Table = ({
+  rows,
+  searchValue,
+  setSearchValue,
+  filters,
+  setFilters,
+}: {
+  rows: rowProps[];
+  searchValue: string;
+  setSearchValue: (v: string) => void;
+  filters: Filters;
+  setFilters: (f: Filters) => void;
+}) => {
   const [searchFocused, setSearchFocused] = useState(false);
-  const [filters, setFilters] = useState(makeDefaultFilterState());
   const [filtersVisible, setFiltersVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 

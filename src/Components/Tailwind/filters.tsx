@@ -213,8 +213,8 @@ export function ToggleFiltersButton({
   defaultState: boolean;
   onClick: () => void;
 }) {
-  const commonClasses =
-    'self-center rounded-full p-3 text-center text-sm font-medium focus:outline-none active:bg-gray-300 dark:text-gray-400 transition-all dark:active:bg-gray-600';
+  const commonClasses = `self-center rounded-full p-3 text-center text-sm font-medium focus:outline-none
+                         active:bg-gray-300 dark:text-gray-400 transition-all dark:active:bg-gray-600`;
 
   if (!defaultState) {
     return (
@@ -258,8 +258,7 @@ export function FilterButton({
         type="button"
         onClick={onClick}
         className="flex rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-center text-sm
-                   font-medium text-white focus:outline-none active:bg-blue-700 dark:bg-blue-600 dark:text-gray-200
-                   dark:active:bg-blue-800"
+                   font-medium text-white focus:outline-none dark:bg-blue-600 dark:text-gray-200"
       >
         {children}
       </button>
@@ -270,8 +269,7 @@ export function FilterButton({
         type="button"
         onClick={onClick}
         className="flex rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium
-                   text-gray-900 focus:outline-none active:bg-gray-200 dark:border-gray-800
-                   dark:bg-gray-800 dark:text-gray-400 dark:active:bg-gray-900"
+                   text-gray-900 focus:outline-none dark:border-gray-900 dark:bg-gray-900 dark:text-gray-400"
       >
         {children}
       </button>
@@ -294,9 +292,9 @@ export function SortButton({
     return (
       <button
         type="button"
-        className="flex items-center gap-3 overflow-hidden rounded-full border border-transparent
-                   bg-blue-600 py-1 pl-5 pr-1 text-center text-sm font-medium text-white focus:outline-none
-                   active:bg-blue-700 dark:bg-blue-600 dark:text-gray-200 dark:active:bg-blue-700"
+        className="flex items-center gap-3 overflow-hidden rounded-full border border-transparent bg-blue-600
+                   py-1 pl-5 pr-1 text-center text-sm font-medium text-white focus:outline-none dark:bg-blue-600
+                   dark:text-gray-200"
         onClick={onClick}
       >
         {children}
