@@ -68,7 +68,10 @@ function ScanButton({backBtnText}: {backBtnText: string}) {
         onClick={goToScan}
         className="group absolute top-[-50%] rounded-full bg-gray-50 p-1 text-white dark:bg-gray-900"
       >
-        <QrCodeIcon className="h-6 min-h-[3rem] w-6 min-w-[3rem] rounded-full bg-blue-600 p-2" />
+        <QrCodeIcon
+          className="h-6 min-h-[3rem] w-6 min-w-[3rem] rounded-full
+                     bg-blue-600 p-2 transition-all active:bg-blue-700"
+        />
       </button>
       <span
         className="mt-7 text-sm text-gray-500 group-hover:text-blue-600
