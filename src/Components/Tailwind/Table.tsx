@@ -159,7 +159,7 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
   return (
     <tr
       style={{WebkitTapHighlightColor: 'transparent'}}
-      className={`cursor-pointer ${alternatingClass} transition-all active:bg-gray-300 dark:active:bg-gray-600`}
+      className={`cursor-pointer ${alternatingClass} select-none transition-all active:bg-gray-300 dark:active:bg-gray-600`}
       onClick={onClick}
     >
       <td className="p-4">
