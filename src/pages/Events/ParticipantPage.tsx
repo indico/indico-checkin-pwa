@@ -8,7 +8,7 @@ import {
   UserIcon,
 } from '@heroicons/react/20/solid';
 import BottomNav from '../../Components/BottomNav';
-import GrowingTextarea from '../../Components/GrowingTextarea';
+import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
@@ -223,7 +223,7 @@ function ParticipantPage({
           </div>
           <div className="mt-1 flex justify-center">
             <Typography variant="body1" className="w-full">
-              <GrowingTextarea value={notes} onChange={onAddNotes} />
+              <GrowingTextArea value={notes} onChange={onAddNotes} />
             </Typography>
           </div>
         </div>

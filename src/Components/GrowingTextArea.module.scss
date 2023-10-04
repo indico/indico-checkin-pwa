@@ -12,7 +12,7 @@
 
   &::after {
     padding: 0.75rem 0.75rem; // same as textarea padding
-    border: 1px solid transparent; // same border witdth as textarea
+    border: 1px solid transparent; // same border width as textarea
     content: attr(data-value) ' ';
     visibility: hidden;
     white-space: pre-wrap;

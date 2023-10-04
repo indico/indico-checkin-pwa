@@ -1,8 +1,14 @@
-import PropTypes from 'prop-types';
-import styles from './GrowingTextarea.module.scss';
+import {ChangeEvent} from 'react';
+import styles from './GrowingTextArea.module.scss';
 
 // https://css-tricks.com/auto-growing-inputs-textareas/
-export default function GrowingTextarea({value, onChange}) {
+export default function GrowingTextArea({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+}) {
   return (
     <div data-value={value} className={styles.sizer}>
       <textarea
@@ -17,8 +23,3 @@ export default function GrowingTextarea({value, onChange}) {
     </div>
   );
 }
-
-GrowingTextarea.propTypes = {
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-};
