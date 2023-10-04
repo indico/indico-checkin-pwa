@@ -146,14 +146,15 @@ interface RowProps {
 }
 
 function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
-  const alternatingClass: HTMLElement['className'] = isEven
+  const background: HTMLElement['className'] = isEven
     ? 'bg-gray-200 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
     : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
 
   return (
     <tr
       style={{WebkitTapHighlightColor: 'transparent'}}
-      className={`cursor-pointer ${alternatingClass} select-none transition-all active:bg-gray-300 dark:active:bg-gray-600`}
+      className={`${background} cursor-pointer select-none active:bg-gray-300
+                  active:transition-all dark:active:bg-gray-600`}
       onClick={onClick}
     >
       <td className="p-4">
