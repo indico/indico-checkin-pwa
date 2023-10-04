@@ -1,10 +1,10 @@
-import {ComponentProps, ReactNode} from 'react';
+import {ComponentProps, ReactNode, MouseEvent} from 'react';
 
 interface ButtonProps {
   children: ReactNode;
   className?: ComponentProps<'div'>['className'];
   variant?: 'default' | 'success';
-  onClick: () => void;
+  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const variants = {

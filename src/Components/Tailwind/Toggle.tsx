@@ -4,7 +4,7 @@ import {LoadingIndicator} from './LoadingIndicator';
 interface ToggleProps {
   className?: HTMLDivElement['className'];
   checked: boolean;
-  onChange: () => void;
+  onChange?: () => void;
   rounded?: boolean;
   size?: 'xs' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
