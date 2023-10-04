@@ -6,6 +6,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
+import {Participant} from '../../db/db';
 import {
   Filters,
   ParticipantFilters,
@@ -17,83 +18,46 @@ import {
 } from './filters';
 import Typography from './Typography';
 
-/**
- * Props of a Single Row in the table
- */
-export interface rowProps {
-  id: number;
-  fullName: string;
-  checkedIn: boolean;
-  state: RegistrationState;
-  registrationDate: string;
-  onClick: () => void;
+export interface SearchData {
+  searchValue: string;
+  filters: Filters;
 }
 
-const Table = ({
-  rows,
-  searchValue,
-  setSearchValue,
-  filters,
-  setFilters,
+export default function Table({
+  participants,
+  searchData,
+  setSearchData,
+  onRowClick,
 }: {
-  rows: rowProps[];
-  searchValue: string;
-  setSearchValue: (v: string) => void;
-  filters: Filters;
-  setFilters: (f: Filters) => void;
-}) => {
+  participants: Participant[];
+  searchData: SearchData;
+  setSearchData: (data: SearchData) => void;
+  onRowClick: (p: Participant) => void;
+}) {
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const {filters, searchValue} = searchData;
 
-  const shownRows = useMemo(() => {
-    if (rows.length === 0) {
-      return rows;
-    }
+  const setFilters = (f: Filters) => setSearchData({...searchData, filters: f});
+  const setSearchValue = (v: string) => setSearchData({...searchData, searchValue: v});
+  const resetSearchData = () => setSearchData({searchValue: '', filters: makeDefaultFilterState()});
 
-    return rows
-      .filter(row => {
-        let checkedInValues = [];
-        if (filters.checkedIn.yes) {
-          checkedInValues.push(true);
-        }
-        if (filters.checkedIn.no) {
-          checkedInValues.push(false);
-        }
+  const filteredParticipants = useMemo(
+    () => filterParticipants(participants, searchData),
+    [participants, searchData]
+  );
 
-        const stateValues = Object.entries(filters.state)
-          .filter(([k, v]) => v)
-          .map(([k, v]) => k);
-
-        return (
-          (checkedInValues.length === 0 || checkedInValues.includes(row.checkedIn)) &&
-          (stateValues.length === 0 || stateValues.includes(row.state)) &&
-          row.fullName.toLowerCase().includes(searchValue)
-        );
-      })
-      .sort((a, b) => {
-        const {key, ascending} = filters.sortBy;
-        if (!ascending) {
-          [b, a] = [a, b];
-        }
-        if (a[key] > b[key]) {
-          return 1;
-        } else if (a[key] < b[key]) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
-  }, [searchValue, filters, rows]);
-
-  const filteredRows = shownRows.map(({id, fullName, checkedIn, state, onClick}, idx) => (
+  const rows = filteredParticipants.map((p, i) => (
     <Row
-      key={id}
-      fullName={fullName}
-      checkedIn={checkedIn}
-      state={state}
-      onClick={onClick}
-      isEven={idx % 2 === 0}
+      key={p.id}
+      fullName={p.fullName}
+      checkedIn={p.checkedIn}
+      state={p.state}
+      isEven={i % 2 === 0}
+      onClick={() => onRowClick(p)}
     />
   ));
+
+  const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
 
   return (
     <div>
@@ -114,19 +78,13 @@ const Table = ({
           />
         </div>
       )}
-      {(searchValue !== '' || !isDefaultFilterState(filters)) && (
+      {filtersActive && (
         <div className="mb-4 mt-2">
-          <ResultCount
-            count={filteredRows.length}
-            onClick={() => {
-              setSearchValue('');
-              setFilters(makeDefaultFilterState());
-            }}
-          />
+          <ResultCount count={rows.length} onClick={resetSearchData} />
         </div>
       )}
       <div className="mx-4 mt-2">
-        {filteredRows.length === 0 && (
+        {rows.length === 0 && (
           <div className="mt-10 flex flex-col items-center justify-center rounded-xl">
             <div className="w-24 text-gray-500">
               <UserGroupIcon />
@@ -134,14 +92,50 @@ const Table = ({
           </div>
         )}
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
-          <tbody>{filteredRows.length > 0 && <>{filteredRows}</>}</tbody>
+          <tbody>{rows}</tbody>
         </table>
       </div>
     </div>
   );
-};
+}
 
-export default Table;
+function filterParticipants(participants: Participant[], data: SearchData) {
+  const {searchValue, filters} = data;
+
+  return participants
+    .filter(p => {
+      let checkedInValues = [];
+      if (filters.checkedIn.yes) {
+        checkedInValues.push(true);
+      }
+      if (filters.checkedIn.no) {
+        checkedInValues.push(false);
+      }
+
+      const stateValues = Object.entries(filters.state)
+        .filter(([, v]) => v)
+        .map(([k]) => k);
+
+      return (
+        (checkedInValues.length === 0 || checkedInValues.includes(p.checkedIn)) &&
+        (stateValues.length === 0 || stateValues.includes(p.state)) &&
+        p.fullName.toLowerCase().includes(searchValue)
+      );
+    })
+    .sort((a, b) => {
+      const {key, ascending} = filters.sortBy;
+      if (!ascending) {
+        [b, a] = [a, b];
+      }
+      if (a[key] > b[key]) {
+        return 1;
+      } else if (a[key] < b[key]) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+}
 
 interface RowProps {
   fullName: string;
@@ -153,8 +147,8 @@ interface RowProps {
 
 function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
   const alternatingClass: HTMLElement['className'] = isEven
-    ? 'bg-gray-100 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
-    : 'bg-gray-200 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
+    ? 'bg-gray-200 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
+    : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
 
   return (
     <tr
