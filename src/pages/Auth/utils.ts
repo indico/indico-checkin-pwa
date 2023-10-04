@@ -1,7 +1,7 @@
 export const redirectUri = `${window.location.origin}/auth/redirect`;
 export const discoveryEndpoint = '.well-known/oauth-authorization-server';
 
-export function validateEventData(data) {
+export function validateEventData(data: any) {
   const {eventId, regformId, title, regformTitle, date} = data;
   if (!Number.isInteger(eventId) || !Number.isInteger(regformId)) {
     return false;
@@ -13,7 +13,8 @@ export function validateEventData(data) {
     return false;
   }
 
-  const {server: {baseUrl, clientId, scope} = {}} = data;
+  const {server = {}} = data;
+  const {baseUrl, clientId, scope} = server;
   try {
     new URL(baseUrl);
   } catch (err) {
@@ -25,7 +26,7 @@ export function validateEventData(data) {
   return true;
 }
 
-export function validateParticipantData(data) {
+export function validateParticipantData(data: any) {
   const {checkinSecret, eventId, registrationId, serverUrl, regformId} = data;
 
   if (
