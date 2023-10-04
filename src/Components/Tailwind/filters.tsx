@@ -324,7 +324,7 @@ export function ResultCount({count, onClick}: {count: number; onClick: () => voi
       <button
         type="button"
         onClick={onClick}
-        className="flex items-center gap-2 rounded-full bg-blue-600 py-2 pl-3 pr-2 text-gray-100
+        className="flex items-center gap-2 rounded-full bg-blue-600 py-2 pl-4 pr-3 text-gray-100
                    active:bg-blue-700 dark:bg-blue-700 dark:text-gray-200 dark:active:bg-blue-800"
       >
         <span className="whitespace-nowrap">{message}</span>
