@@ -89,12 +89,12 @@ export function ParticipantFilters({
             </Typography>
           </div>
         )}
-        <FilterCheckin
+        <CheckedInFilter
           checkedIn={checkedIn}
           onChange={v => setFilters({...filters, checkedIn: v})}
         />
-        <FilterState state={state} onChange={v => setFilters({...filters, state: v})} />
-        <SortBy sortBy={sortBy} onChange={v => setFilters({...filters, sortBy: v})} />
+        <RegistrationStateFilter state={state} onChange={v => setFilters({...filters, state: v})} />
+        <SortFilter sortBy={sortBy} onChange={v => setFilters({...filters, sortBy: v})} />
         <div className="mt-6 flex justify-between">
           <Button onClick={onClose} className="basis-full justify-center" variant="success">
             <CheckIcon className="h-5 w-5" />
@@ -106,7 +106,7 @@ export function ParticipantFilters({
   );
 }
 
-export function FilterCheckin({
+export function CheckedInFilter({
   checkedIn,
   onChange,
 }: {
@@ -138,7 +138,7 @@ export function FilterCheckin({
   );
 }
 
-export function FilterState({
+export function RegistrationStateFilter({
   state,
   onChange,
 }: {
@@ -168,7 +168,7 @@ export function FilterState({
   );
 }
 
-export function SortBy({
+export function SortFilter({
   sortBy,
   onChange,
 }: {
