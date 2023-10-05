@@ -1,9 +1,9 @@
 import {useNavigate} from 'react-router-dom';
 import IconFeather from '../../Components/Icons/Feather';
+import {Typography} from '../../Components/Tailwind';
 import {Event} from '../../db/db';
 import {formatDatetime} from '../../utils/date';
 import {wait} from '../../utils/wait';
-import {Typography} from '../Tailwind/';
 
 interface EventItemProps {
   event: Event;

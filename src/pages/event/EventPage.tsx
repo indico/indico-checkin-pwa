@@ -5,15 +5,16 @@ import {TrashIcon} from '@heroicons/react/24/solid';
 import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
+import IndicoLink from '../../Components/Tailwind/IndicoLink';
+import Title from '../../Components/Tailwind/PageTitle';
 import TopNav from '../../Components/TopNav';
 import db, {Event, Regform, deleteEvent as _deleteEvent} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
 import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
+import {syncEvent, syncRegforms} from '../Events/sync';
 import {NotFound} from '../NotFound';
-import {syncEvent, syncRegforms} from './sync';
-import {IndicoLink, Title} from './utils';
 
 export default function EventPage() {
   const {id: eventId} = useParams();

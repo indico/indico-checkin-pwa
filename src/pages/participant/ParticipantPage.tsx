@@ -11,6 +11,8 @@ import BottomNav from '../../Components/BottomNav';
 import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
+import IndicoLink from '../../Components/Tailwind/IndicoLink';
+import Title from '../../Components/Tailwind/PageTitle';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
 import db, {Event, Regform, Participant} from '../../db/db';
@@ -19,11 +21,10 @@ import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDate} from '../../utils/date';
 import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
+import {checkIn} from '../Events/checkin';
+import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
 import {NotFound} from '../NotFound';
-import {checkIn} from './checkin';
 import {Field, FieldProps} from './fields';
-import {syncEvent, syncParticipant, syncRegform} from './sync';
-import {IndicoLink, Title} from './utils';
 
 const makeDebounce = (delay: number) => {
   let timer: number;
@@ -154,8 +155,7 @@ function ParticipantPageContent({
   const onAddNotes = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
     debounce(() => {
-      console.log(e.target.value);
-      db.participants.update(participant.id, {notes: e.target.value});
+      db.participants.update(participant.id!, {notes: e.target.value});
     });
   };
 

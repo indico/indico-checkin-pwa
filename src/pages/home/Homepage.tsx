@@ -1,13 +1,13 @@
 import {useEffect} from 'react';
 import {CalendarDaysIcon, ServerStackIcon} from '@heroicons/react/20/solid';
-import BottomNav from '../Components/BottomNav';
-import EventItem from '../Components/Events/EventItem';
-import {Typography} from '../Components/Tailwind/index.jsx';
-import TopNav from '../Components/TopNav';
-import db, {Event, Regform, Server} from '../db/db';
-import {useErrorModal} from '../hooks/useModal';
-import {useQuery, isLoading} from '../utils/db';
-import {syncEvents} from './Events/sync.js';
+import BottomNav from '../../Components/BottomNav';
+import {Typography} from '../../Components/Tailwind';
+import TopNav from '../../Components/TopNav';
+import db, {Event, Regform, Server} from '../../db/db';
+import {useErrorModal} from '../../hooks/useModal';
+import {useQuery, isLoading} from '../../utils/db';
+import {syncEvents} from '../Events/sync.js';
+import EventItem from './EventItem';
 
 export default function Homepage() {
   return (

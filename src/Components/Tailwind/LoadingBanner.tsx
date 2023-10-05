@@ -1,5 +1,5 @@
-import {Typography} from '../Components/Tailwind';
-import {LoadingIndicator} from '../Components/Tailwind/LoadingIndicator';
+import {LoadingIndicator} from './LoadingIndicator';
+import Typography from './Typography';
 
 export default function LoadingBanner({text}: {text: string}) {
   return (

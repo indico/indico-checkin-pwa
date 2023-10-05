@@ -1,5 +1,5 @@
+import LoadingBanner from '../Components/Tailwind/LoadingBanner';
 import TopNav from '../Components/TopNav';
-import LoadingBanner from './LoadingBanner';
 
 export default function LoadingFallback() {
   return (

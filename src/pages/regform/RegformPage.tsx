@@ -10,16 +10,17 @@ import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {makeDefaultFilterState} from '../../Components/Tailwind/filters';
+import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
+import Title from '../../Components/Tailwind/PageTitle';
 import Table, {SearchData} from '../../Components/Tailwind/Table';
 import TopNav from '../../Components/TopNav';
 import db, {Event, Participant, Regform, deleteRegform as _deleteRegform} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {isLoading, hasValue, useQuery, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
+import {syncEvent, syncParticipants, syncRegform} from '../Events/sync';
 import {NotFound} from '../NotFound';
-import {syncEvent, syncParticipants, syncRegform} from './sync';
-import {IndicoLink, Title} from './utils';
 
 export default function RegformPage() {
   const {id, regformId} = useParams();
