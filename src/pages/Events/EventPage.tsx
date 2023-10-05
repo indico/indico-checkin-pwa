@@ -15,7 +15,7 @@ import {NotFound} from '../NotFound';
 import {syncEvent, syncRegforms} from './sync';
 import {IndicoLink, Title} from './utils';
 
-export default function EventPageWrapper() {
+export default function EventPage() {
   const {id: eventId} = useParams();
 
   const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
@@ -29,13 +29,19 @@ export default function EventPageWrapper() {
   return (
     <>
       <EventTopNav event={event} />
-      <EventPage event={event} regforms={regforms} />
+      <EventPageContent event={event} regforms={regforms} />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
-function EventPage({event, regforms}: {event: DBResult<Event>; regforms: DBResult<Regform[]>}) {
+function EventPageContent({
+  event,
+  regforms,
+}: {
+  event: DBResult<Event>;
+  regforms: DBResult<Regform[]>;
+}) {
   const navigate = useNavigate();
   const {id: eventId} = useParams();
   const errorModal = useErrorModal();

@@ -21,7 +21,7 @@ import {NotFound} from '../NotFound';
 import {syncEvent, syncParticipants, syncRegform} from './sync';
 import {IndicoLink, Title} from './utils';
 
-export default function RegformPageWrapper() {
+export default function RegformPage() {
   const {id, regformId} = useParams();
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
@@ -39,13 +39,13 @@ export default function RegformPageWrapper() {
   return (
     <>
       <RegformTopNav event={event} regform={regform} />
-      <RegformPage event={event} regform={regform} participants={participants} />
+      <RegformPageContent event={event} regform={regform} participants={participants} />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
-function RegformPage({
+function RegformPageContent({
   event,
   regform,
   participants,

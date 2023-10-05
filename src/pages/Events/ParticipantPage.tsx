@@ -35,7 +35,7 @@ const makeDebounce = (delay: number) => {
 
 const debounce = makeDebounce(300);
 
-export default function ParticipantPageWrapper() {
+export default function ParticipantPage() {
   const {id, regformId, participantId} = useParams();
 
   const event = useQuery(() => db.events.get(Number(id)), [id]);
@@ -53,13 +53,13 @@ export default function ParticipantPageWrapper() {
   return (
     <>
       <ParticipantTopNav regform={regform} />
-      <ParticipantPage event={event} regform={regform} participant={participant} />
+      <ParticipantPageContent event={event} regform={regform} participant={participant} />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
-function ParticipantPage({
+function ParticipantPageContent({
   event,
   regform,
   participant,
