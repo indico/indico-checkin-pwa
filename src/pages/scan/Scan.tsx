@@ -1,25 +1,31 @@
 import {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {NavigateFunction, useNavigate} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
-import QrScannerPlugin from '../Components/QrScanner/QrScannerPlugin';
-import {Typography} from '../Components/Tailwind';
-import TopNav from '../Components/TopNav';
-import db from '../db/db';
-import {useErrorModal} from '../hooks/useModal';
-import useSettings from '../hooks/useSettings';
-import {camelizeKeys} from '../utils/case';
-import {getParticipant, useIsOffline} from '../utils/client';
+import QrScannerPlugin from '../../Components/QrScanner/QrScannerPlugin';
+import {Typography} from '../../Components/Tailwind';
+import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
+import TopNav from '../../Components/TopNav';
+import {ErrorModalFunction} from '../../context/ModalContextProvider';
+import db from '../../db/db';
+import {useErrorModal} from '../../hooks/useModal';
+import useSettings from '../../hooks/useSettings';
+import {camelizeKeys} from '../../utils/case';
+import {getParticipant, useIsOffline} from '../../utils/client';
 import {
   validateParticipantData,
   validateEventData,
   discoveryEndpoint,
   redirectUri,
-} from './Auth/utils';
-import {handleError} from './Events/sync';
-import LoadingBanner from './LoadingBanner';
+} from '../Auth/utils';
+import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
+import {handleError} from '../Events/sync';
 
-async function handleEvent(data, errorModal, navigate) {
+async function handleEvent(
+  data: QRCodeEventData,
+  errorModal: ErrorModalFunction,
+  navigate: NavigateFunction
+) {
   // Check if the serverData is already in indexedDB
   const server = await db.servers.get({baseUrl: data.server.baseUrl});
   if (server) {
@@ -34,7 +40,7 @@ async function handleEvent(data, errorModal, navigate) {
       } else {
         id = await db.events.add({
           indicoId: eventId,
-          serverId: server.id,
+          serverId: server.id!,
           baseUrl: server.baseUrl,
           title,
           date,
@@ -46,11 +52,12 @@ async function handleEvent(data, errorModal, navigate) {
       if (!regform) {
         await db.regforms.add({
           indicoId: regformId,
-          eventId: id,
+          eventId: id!,
           title: regformTitle,
           registrationCount: 0,
           checkedInCount: 0,
           deleted: false,
+          isOpen: true,
         });
       }
     });
@@ -75,7 +82,8 @@ async function handleEvent(data, errorModal, navigate) {
 
   const codeVerifier = await generateCodeVerifier();
   // Store the eventData in the browser's session storage. This is used later to verify the code challenge
-  sessionStorage.setItem('eventData', JSON.stringify({...data, codeVerifier}));
+  sessionStorage.setItem('eventData', JSON.stringify(data));
+  sessionStorage.setItem('codeVerifier', codeVerifier);
 
   try {
     // Redirect the user to the Authentication Server (OAuth2 Server)
@@ -86,12 +94,17 @@ async function handleEvent(data, errorModal, navigate) {
       codeVerifier,
       scope: [scope],
     });
-  } catch (err) {
+  } catch (err: any) {
     errorModal({title: 'OAuth authorization failed', content: err.message});
   }
 }
 
-async function handleParticipant(data, errorModal, navigate, autoCheckin) {
+async function handleParticipant(
+  data: QRCodeParticipantData,
+  errorModal: ErrorModalFunction,
+  navigate: NavigateFunction,
+  autoCheckin: boolean
+) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
     errorModal({
@@ -136,7 +149,12 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin) {
       state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
     });
   } else {
-    const response = await getParticipant(server, event, regform, {indicoId: data.registrationId});
+    const response = await getParticipant({
+      serverId: server.id!,
+      eventId: event.indicoId,
+      regformId: regform.indicoId,
+      participantId: data.registrationId,
+    });
 
     if (response.ok) {
       const {
@@ -161,7 +179,7 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin) {
 
       const participantId = await db.participants.add({
         indicoId: id,
-        regformId: regform.id,
+        regformId: regform.id!,
         fullName,
         registrationDate,
         registrationData,
@@ -179,7 +197,7 @@ async function handleParticipant(data, errorModal, navigate, autoCheckin) {
         state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
       });
     } else {
-      handleError(response, 'Could not fetch participant data');
+      handleError(response, 'Could not fetch participant data', errorModal);
     }
   }
 }
@@ -192,7 +210,7 @@ const ScanPage = () => {
   const errorModal = useErrorModal();
   const offline = useIsOffline();
 
-  async function processCode(decodedText) {
+  async function processCode(decodedText: string) {
     if (processing) {
       // Prevent multiple scans at the same time
       return;
@@ -202,7 +220,7 @@ const ScanPage = () => {
     let scannedData;
     try {
       scannedData = JSON.parse(decodedText);
-    } catch (e) {
+    } catch (e: any) {
       errorModal({title: 'Error parsing the QRCode data', content: e.message});
       return;
     }
@@ -218,8 +236,8 @@ const ScanPage = () => {
       }
       await handleEvent(scannedData, errorModal, navigate);
     } else if (validateParticipantData(scannedData)) {
-      scannedData.eventId = parseInt(scannedData.eventId, 10);
-      await handleParticipant(scannedData, errorModal, navigate, autoCheckin);
+      const participantData = {...scannedData, eventId: parseInt(scannedData.eventId, 10)};
+      await handleParticipant(participantData, errorModal, navigate, autoCheckin);
     } else {
       errorModal({
         title: 'QR code data is not valid',
@@ -228,10 +246,10 @@ const ScanPage = () => {
     }
   }
 
-  const onScanResult = async (decodedText, _decodedResult) => {
+  const onScanResult = async (decodedText: string, _decodedResult: any) => {
     try {
       await processCode(decodedText);
-    } catch (e) {
+    } catch (e: any) {
       errorModal({title: 'Error processing QR code', content: e.message});
     } finally {
       setProcessing(false);

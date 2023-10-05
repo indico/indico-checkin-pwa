@@ -258,7 +258,7 @@ function RegformTopNav({event, regform}: {event: DBResult<Event>; regform: DBRes
               content: 'You can always re-add the registration form by scanning its QR code',
               confirmBtnText: 'Delete',
               onConfirm: async () => {
-                await deleteRegform(regform.id);
+                await deleteRegform(regform.id!);
                 navigate(`/event/${event.id}`, {replace: true});
               },
             });

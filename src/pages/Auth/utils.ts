@@ -1,7 +1,22 @@
 export const redirectUri = `${window.location.origin}/auth/redirect`;
 export const discoveryEndpoint = '.well-known/oauth-authorization-server';
 
-export function validateEventData(data: any) {
+interface QRCodeServerData {
+  baseUrl: string;
+  clientId: string;
+  scope: string;
+}
+
+export interface QRCodeEventData {
+  eventId: number;
+  regformId: number;
+  title: string;
+  date: string;
+  regformTitle: string;
+  server: QRCodeServerData;
+}
+
+export function validateEventData(data: any): data is QRCodeEventData {
   if (typeof data !== 'object') {
     return false;
   }
@@ -34,7 +49,24 @@ export function validateEventData(data: any) {
   return true;
 }
 
-export function validateParticipantData(data: any) {
+interface _BaseQRCodeParticipantData {
+  serverUrl: string;
+  regformId: number;
+  registrationId: number;
+  checkinSecret: string;
+}
+
+// For compatibility with legacy string event ids, the API returns eventId as a string
+// TODO: Update the API to return a number instead
+interface IndicoQRCodeParticipantData extends _BaseQRCodeParticipantData {
+  eventId: string;
+}
+
+export interface QRCodeParticipantData extends _BaseQRCodeParticipantData {
+  eventId: number;
+}
+
+export function validateParticipantData(data: any): data is IndicoQRCodeParticipantData {
   if (typeof data !== 'object') {
     return false;
   }

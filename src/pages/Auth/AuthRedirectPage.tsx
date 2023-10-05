@@ -6,13 +6,10 @@ import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import db from '../../db/db';
+import {wait} from '../../utils/wait';
 import {discoveryEndpoint, redirectUri, validateEventData} from './utils';
 
-async function wait(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-async function getToken({baseUrl, clientId}, codeVerifier) {
+async function getToken(baseUrl: string, clientId: string, codeVerifier: string) {
   const client = new OAuth2Client({
     server: baseUrl,
     clientId: clientId,
@@ -24,7 +21,7 @@ async function getToken({baseUrl, clientId}, codeVerifier) {
   });
 
   // The user is now at the redirectUri (Back to the App), so we can now get the access token
-  return await client.authorizationCode.getTokenFromCodeRedirect(document.location, {
+  return await client.authorizationCode.getTokenFromCodeRedirect(document.location.href, {
     /**
      * The redirect URI is not actually used for any redirects, but MUST be the
      * same as what you passed earlier to "authorizationCode"
@@ -38,14 +35,16 @@ const AuthRedirectPage = () => {
   const navigate = useNavigate();
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<{title?: string; description?: string} | null>(null);
 
   useEffect(() => {
     const onLoad = async () => {
       let eventData = sessionStorage.getItem('eventData');
+      const codeVerifier = sessionStorage.getItem('codeVerifier');
       sessionStorage.removeItem('eventData');
+      sessionStorage.removeItem('codeVerifier');
 
-      if (!eventData) {
+      if (!eventData || !codeVerifier) {
         return;
       }
 
@@ -62,7 +61,6 @@ const AuthRedirectPage = () => {
       }
 
       const {
-        codeVerifier,
         eventId: indicoEventId,
         regformId: indicoRegformId,
         title,
@@ -74,8 +72,8 @@ const AuthRedirectPage = () => {
       // The user is now at the redirectUri (Back to the App), so we can now get the access token
       let oauth2Token;
       try {
-        oauth2Token = await getToken(eventData.server, codeVerifier);
-      } catch (err) {
+        oauth2Token = await getToken(baseUrl, clientId, codeVerifier);
+      } catch (err: any) {
         setError({title: 'OAuth authorization failed', description: err.message});
         return;
       }
@@ -85,7 +83,7 @@ const AuthRedirectPage = () => {
         return;
       }
 
-      let eventId;
+      let eventId: number;
       try {
         const serverId = await db.servers.add({
           baseUrl,
@@ -108,8 +106,9 @@ const AuthRedirectPage = () => {
           registrationCount: 0,
           checkedInCount: 0,
           deleted: false,
+          isOpen: true,
         });
-      } catch (err) {
+      } catch (err: any) {
         setError({title: 'OAuth authorization failed', description: err.message});
         return;
       }

@@ -1,8 +1,8 @@
 import Dexie, {Table} from 'dexie';
-import {FieldProps} from '../pages/Events/fields';
+import {FieldProps} from '../pages/participant/fields';
 
 export interface Server {
-  id: number;
+  id?: number;
   baseUrl: string;
   clientId: string;
   scope: string;
@@ -10,7 +10,7 @@ export interface Server {
 }
 
 export interface Event {
-  id: number;
+  id?: number;
   indicoId: number;
   serverId: number;
   baseUrl: string;
@@ -19,7 +19,7 @@ export interface Event {
   deleted: boolean;
 }
 export interface Regform {
-  id: number;
+  id?: number;
   indicoId: number;
   eventId: number;
   title: string;
@@ -29,36 +29,38 @@ export interface Regform {
   deleted: false;
 }
 
-interface RegistrationData {
+export interface RegistrationData {
   id: number;
   title: string;
   description: string;
   fields: FieldProps[];
 }
 
+export type RegistrationState = 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
+
 export interface Participant {
-  id: number;
+  id?: number;
   indicoId: number;
   regformId: number;
   fullName: string;
   registrationDate: string;
   registrationData: RegistrationData[];
-  state: 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
+  state: RegistrationState;
   checkinSecret: string;
   checkedIn: boolean;
-  checkedInDt: string;
+  checkedInDt?: string;
   occupiedSlots: number;
-  deleted: false;
+  deleted: boolean;
   notes: string;
 }
 
 class IndicoCheckin extends Dexie {
   // Declare implicit table properties.
   // (just to inform Typescript. Instanciated by Dexie in stores() method)
-  servers!: Table<Server>;
-  events!: Table<Event>;
-  regforms!: Table<Regform>;
-  participants!: Table<Participant>;
+  servers!: Table<Server, number>;
+  events!: Table<Event, number>;
+  regforms!: Table<Regform, number>;
+  participants!: Table<Participant, number>;
 
   constructor() {
     super('CheckinDatabase');
@@ -78,7 +80,7 @@ export default db;
 export async function deleteEvent(id: number) {
   const regforms = await db.regforms.where({eventId: id}).toArray();
   for (const regform of regforms) {
-    await deleteRegform(regform.id);
+    await deleteRegform(regform.id!);
   }
   await db.events.delete(id);
 }

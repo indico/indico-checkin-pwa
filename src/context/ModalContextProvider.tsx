@@ -13,6 +13,8 @@ interface ErrorModalParams {
   closeBtnText?: string;
 }
 
+export type ErrorModalFunction = (data: ErrorModalParams) => void;
+
 export interface ConfirmModalData {
   type: 'confirm';
   title: string;

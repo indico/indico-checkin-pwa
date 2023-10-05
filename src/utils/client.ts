@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Event, Participant, Regform, Server} from '../db/db';
+import db, {RegistrationData, RegistrationState} from '../db/db';
 import {camelizeKeys} from './case';
 
 export const useIsOffline = () => {
@@ -21,20 +21,81 @@ export const useIsOffline = () => {
   return offline;
 };
 
-interface Response {
-  ok: boolean;
+interface IndicoEvent {
+  id: number;
+  title: string;
+  description?: string;
+  startDt: string;
+  endDt: string;
+}
+
+interface IndicoRegform {
+  id: number;
+  eventId: number;
+  title: string;
+  introduction?: string;
+  startDt?: string;
+  endDt?: string;
+  registrationCount: number;
+  checkedInCount: number;
+  isOpen: boolean;
+}
+
+interface IndicoParticipant {
+  id: number;
+  regformId: number;
+  eventId: number;
+  fullName: string;
+  email: string;
+  state: RegistrationState;
+  registrationDate: string;
+  checkedIn: boolean;
+  checkedInDt?: string;
+  checkinSecret: string;
+  occupiedSlots: number;
+  registrationData: RegistrationData[];
+  tags: string[];
+}
+
+interface EventLocator {
+  serverId: number;
+  eventId: number;
+}
+
+interface RegformLocator extends EventLocator {
+  regformId: number;
+}
+
+interface ParticipantLocator extends RegformLocator {
+  participantId: number;
+}
+
+interface SuccessfulResponse<T> {
+  ok: true;
+  status: number;
+  data: T;
+}
+
+export interface FailedResponse {
+  ok: false;
   status?: number;
   aborted?: boolean;
   network?: boolean;
   err?: any;
-  data?: any;
 }
 
-async function makeRequest(
-  server: {baseUrl: string; authToken: string},
+type Response<T> = SuccessfulResponse<T> | FailedResponse;
+
+async function makeRequest<T>(
+  serverId: number,
   endpoint: string,
   options: object = {}
-): Promise<Response> {
+): Promise<Response<T>> {
+  const server = await db.servers.get(serverId);
+  if (!server) {
+    return {ok: false};
+  }
+
   const url = new URL(endpoint, server.baseUrl);
   let response;
   try {
@@ -68,59 +129,55 @@ async function makeRequest(
   return {ok: true, status: response.status, data};
 }
 
-export async function getEvent(server: Server, event: Event, options?: object) {
-  return makeRequest(server, `api/checkin/event/${event.indicoId}`, options);
+export async function getEvent({serverId, eventId}: EventLocator, options?: object) {
+  return makeRequest<IndicoEvent>(serverId, `api/checkin/event/${eventId}`, options);
 }
 
-export async function getRegform(server: Server, event: Event, regform: Regform, options?: object) {
-  return makeRequest(
-    server,
-    `api/checkin/event/${event.indicoId}/registration/${regform.indicoId}`,
+export async function getRegform({serverId, eventId, regformId}: RegformLocator, options?: object) {
+  return makeRequest<IndicoRegform>(
+    serverId,
+    `api/checkin/event/${eventId}/registration/${regformId}`,
     options
   );
 }
 
-export async function getRegforms(server: Server, event: Event, options?: object) {
-  return makeRequest(server, `api/checkin/event/${event.indicoId}/registrations`, options);
+export async function getRegforms({serverId, eventId}: EventLocator, options?: object) {
+  return makeRequest<IndicoRegform[]>(
+    serverId,
+    `api/checkin/event/${eventId}/registrations`,
+    options
+  );
 }
 
 export async function getParticipant(
-  server: Server,
-  event: Event,
-  regform: Regform,
-  participant: Participant,
+  {serverId, eventId, regformId, participantId}: ParticipantLocator,
   options?: object
 ) {
-  return makeRequest(
-    server,
-    `api/checkin/event/${event.indicoId}/registration/${regform.indicoId}/${participant.indicoId}`,
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
     options
   );
 }
 
 export async function getParticipants(
-  server: Server,
-  event: Event,
-  regform: Regform,
+  {serverId, eventId, regformId}: RegformLocator,
   options?: object
 ) {
-  return makeRequest(
-    server,
-    `api/checkin/event/${event.indicoId}/registration/${regform.indicoId}/registrations`,
+  return makeRequest<IndicoParticipant[]>(
+    serverId,
+    `api/checkin/event/${eventId}/registration/${regformId}/registrations`,
     options
   );
 }
 
 export async function checkInParticipant(
-  server: Server,
-  event: Event,
-  regform: Regform,
-  participant: Participant,
+  {serverId, eventId, regformId, participantId}: ParticipantLocator,
   checkInState: boolean
 ) {
   return makeRequest(
-    server,
-    `api/checkin/event/${event.indicoId}/registration/${regform.indicoId}/${participant.indicoId}`,
+    serverId,
+    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({checked_in: checkInState}),

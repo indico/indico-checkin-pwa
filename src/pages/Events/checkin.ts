@@ -1,4 +1,4 @@
-import {ErrorModalData} from '../../context/ModalContextProvider';
+import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {Event, Regform, Participant} from '../../db/db';
 import {checkInParticipant} from '../../utils/client';
 import {playSound} from '../../utils/sound';
@@ -10,10 +10,10 @@ async function updateCheckinState(
   newCheckInState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
-    await db.participants.update(participant.id, {checkedIn: newCheckInState});
+    await db.participants.update(participant.id!, {checkedIn: newCheckInState});
     const slots = participant.occupiedSlots;
     const checkedInCount = regform.checkedInCount + (newCheckInState ? slots : -slots);
-    await db.regforms.update(regform.id, {checkedInCount});
+    await db.regforms.update(regform.id!, {checkedInCount});
   });
 }
 
@@ -23,13 +23,17 @@ export async function checkIn(
   participant: Participant,
   newCheckInState: boolean,
   sound: string,
-  errorModal: (data: ErrorModalData) => void
+  errorModal: ErrorModalFunction
 ) {
-  const server = await db.servers.get(event.serverId);
-  if (!server) {
-    return;
-  }
-  const response = await checkInParticipant(server, event, regform, participant, newCheckInState);
+  const response = await checkInParticipant(
+    {
+      serverId: event.serverId,
+      eventId: event.indicoId,
+      regformId: regform.indicoId,
+      participantId: participant.indicoId,
+    },
+    newCheckInState
+  );
 
   if (response.ok) {
     await updateCheckinState(regform, participant, newCheckInState);
