@@ -1,18 +1,23 @@
+import {useNavigate} from 'react-router-dom';
 import IconFeather from '../../Components/Icons/Feather';
+import {Event} from '../../db/db';
 import {formatDatetime} from '../../utils/date';
+import {wait} from '../../utils/wait';
 import {Typography} from '../Tailwind/';
 
 interface EventItemProps {
-  event: {
-    id: string;
-    title: string;
-    date: string;
-  };
-  onClick: () => void;
-  quantity: number;
+  event: Event;
+  regformCount: number;
 }
 
-const EventItem = ({event, onClick, quantity}: EventItemProps) => {
+const EventItem = ({event, regformCount}: EventItemProps) => {
+  const navigate = useNavigate();
+
+  const onClick = async () => {
+    await wait(100);
+    navigate(`/event/${event.id}`);
+  };
+
   return (
     <button
       type="button"
@@ -37,7 +42,7 @@ const EventItem = ({event, onClick, quantity}: EventItemProps) => {
                      text-primary dark:bg-darkSecondary dark:text-secondary"
         >
           <IconFeather className="mr-1 h-4 w-4" />
-          <Typography variant="body1">{quantity}</Typography>
+          <Typography variant="body1">{regformCount}</Typography>
         </div>
       </div>
     </button>
