@@ -4,8 +4,8 @@ import {
   CalendarDaysIcon,
   ChevronLeftIcon,
   ChevronDownIcon,
-  InformationCircleIcon,
   UserIcon,
+  BanknotesIcon,
 } from '@heroicons/react/20/solid';
 import BottomNav from '../../Components/BottomNav';
 import GrowingTextArea from '../../Components/GrowingTextArea';
@@ -19,12 +19,15 @@ import db, {Event, Regform, Participant} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
-import {formatDate} from '../../utils/date';
+import {formatDatetime} from '../../utils/date';
 import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
 import {NotFound} from '../NotFound';
-import {Field, FieldProps} from './fields';
+import AccompanyingPersons from './AccompanyingPersons';
+import {Field, Section, getAccompanyingPersons} from './fields';
+import {PaymentWarning, markAsUnpaid} from './payment';
+import {RegistrationState} from './RegistrationState';
 
 const makeDebounce = (delay: number) => {
   let timer: number;
@@ -53,7 +56,7 @@ export default function ParticipantPage() {
 
   return (
     <>
-      <ParticipantTopNav regform={regform} />
+      <ParticipantTopNav event={event} regform={regform} participant={participant} />
       <ParticipantPageContent event={event} regform={regform} participant={participant} />
       <BottomNav backBtnText={title} />
     </>
@@ -187,13 +190,31 @@ function ParticipantPageContent({
     <>
       <div className="px-4 pt-1">
         <div className="mt-2 flex flex-col gap-4">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-2 px-4">
             <Title title={participant.fullName} />
             <IndicoLink
               text="Indico participant page"
               url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
             />
+            <div className="flex items-center gap-2">
+              <RegistrationState state={participant.state} />
+              {participant.price > 0 && (
+                <span
+                  className="w-fit rounded-full bg-green-100 px-2.5 py-1 text-sm font-medium
+                       text-green-800 dark:bg-green-900 dark:text-green-300"
+                >
+                  {participant.formattedPrice}
+                </span>
+              )}
+              <span
+                className="w-fit rounded-full bg-yellow-100 px-2.5 py-1 text-sm font-medium
+                       text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+              >
+                {formatDatetime(participant.registrationDate)}
+              </span>
+            </div>
           </div>
+
           <div className="mb-4 mt-4 flex justify-center">
             <CheckinToggle
               checked={participant.checkedIn}
@@ -201,26 +222,17 @@ function ParticipantPageContent({
               onClick={onCheckInToggle}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <InformationCircleIcon className="h-6 w-6 text-primary dark:text-blue-500" />
-                <Typography variant="body2">Registration Status</Typography>
-              </div>
-              <Typography variant="body2" className="font-bold capitalize">
-                {participant.state}
-              </Typography>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CalendarDaysIcon className="h-6 w-6 text-primary dark:text-blue-500" />
-                <Typography variant="body2">Registration Date</Typography>
-              </div>
-              <Typography variant="body2" className="font-bold">
-                {formatDate(participant.registrationDate)}
-              </Typography>
-            </div>
-          </div>
+          {participant.state === 'unpaid' && (
+            <PaymentWarning
+              event={event}
+              regform={regform}
+              participant={participant}
+              errorModal={errorModal}
+            />
+          )}
+          {participant.occupiedSlots > 1 && (
+            <AccompanyingPersons persons={getAccompanyingPersons(participant.registrationData)} />
+          )}
           <div className="mt-1 flex justify-center">
             <Typography variant="body1" className="w-full">
               <GrowingTextArea value={notes} onChange={onAddNotes} />
@@ -233,19 +245,43 @@ function ParticipantPageContent({
   );
 }
 
-function ParticipantTopNav({regform}: {regform: DBResult<Regform>}) {
-  if (!hasValue(regform)) {
+function ParticipantTopNav({
+  event,
+  regform,
+  participant,
+}: {
+  event: DBResult<Event>;
+  regform: DBResult<Regform>;
+  participant: DBResult<Participant>;
+}) {
+  const errorModal = useErrorModal();
+
+  if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
     return <TopNav />;
   }
 
-  return <TopNav backBtnText={regform.title} />;
-}
+  if (participant.price === 0 || !participant.isPaid) {
+    return <TopNav />;
+  }
 
-interface Section {
-  id: number;
-  title: string;
-  description: string;
-  fields: FieldProps[];
+  return (
+    <TopNav
+      backBtnText={regform.title}
+      settingsItems={[
+        {
+          text: 'Mark as unpaid',
+          icon: <BanknotesIcon className="text-green-500" />,
+          onClick: async () => {
+            if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
+              return;
+            }
+
+            await markAsUnpaid(event, regform, participant, errorModal);
+          },
+        },
+      ]}
+    />
+  );
 }
 
 interface SectionProps extends Section {

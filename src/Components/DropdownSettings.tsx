@@ -47,9 +47,7 @@ export default function DropdownSettings({items}: {items: SettingsItem[]}) {
               className="flex w-full gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               onClick={item.onClick}
             >
-              <span className="h-5 min-w-[1.25rem] text-red-700 dark:text-red-500">
-                {item.icon}
-              </span>
+              <span className="h-5 min-w-[1.25rem]">{item.icon}</span>
               <span>{item.text}</span>
             </button>
           </li>

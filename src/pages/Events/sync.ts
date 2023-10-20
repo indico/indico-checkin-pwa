@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import db, {Event, Participant, Regform} from '../../db/db';
+import db, {Event, Participant, Regform, updateParticipant} from '../../db/db';
 import {
   FailedResponse,
   getEvent,
@@ -165,6 +165,10 @@ export async function syncParticipants(
           checkedIn,
           checkedInDt,
           occupiedSlots,
+          price,
+          currency,
+          formattedPrice,
+          isPaid,
         }) => ({
           indicoId: id,
           fullName,
@@ -175,6 +179,10 @@ export async function syncParticipants(
           checkedIn,
           checkedInDt,
           occupiedSlots,
+          price,
+          currency,
+          formattedPrice,
+          isPaid,
         })
       );
       const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);
@@ -221,26 +229,7 @@ export async function syncParticipant(
   );
 
   if (response.ok) {
-    const {
-      id,
-      fullName,
-      registrationDate,
-      registrationData,
-      state,
-      checkedIn,
-      checkedInDt,
-      occupiedSlots,
-    } = response.data;
-    await db.participants.update(participant.id!, {
-      indicoId: id,
-      fullName,
-      registrationDate,
-      registrationData,
-      state,
-      occupiedSlots,
-      checkedIn,
-      checkedInDt,
-    });
+    await updateParticipant(participant.id!, response.data);
   } else if (response.status === 404) {
     await db.participants.update(participant.id!, {deleted: true});
   } else {

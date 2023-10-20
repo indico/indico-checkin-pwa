@@ -1,4 +1,5 @@
 import {Typography} from '../../Components/Tailwind';
+import {RegistrationData} from '../../db/db';
 import {formatDatetime} from '../../utils/date';
 
 export interface FieldProps {
@@ -9,6 +10,13 @@ export interface FieldProps {
   data: any;
   defaultValue: any;
   price?: number;
+}
+
+export interface Section {
+  id: number;
+  title: string;
+  description: string;
+  fields: FieldProps[];
 }
 
 interface Choice {
@@ -223,7 +231,7 @@ function AccommodationField({title, description, choices, data}: ChoiceFieldProp
   );
 }
 
-interface AccompanyingPersonsFieldData {
+export interface AccompanyingPersonsFieldData {
   id: string;
   firstName: string;
   lastName: string;
@@ -248,4 +256,16 @@ function AccompanyingPersonsField({title, description, data}: AccompanyingPerson
       </Typography>
     </div>
   );
+}
+
+export function getAccompanyingPersons(sections: Section[]) {
+  const persons = [];
+  for (const section of sections) {
+    for (const field of section.fields) {
+      if (field.inputType === 'accompanying_persons') {
+        persons.push(field.data);
+      }
+    }
+  }
+  return persons;
 }

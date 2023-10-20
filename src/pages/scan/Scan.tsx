@@ -167,6 +167,10 @@ async function handleParticipant(
         checkedIn,
         checkedInDt,
         occupiedSlots,
+        price,
+        currency,
+        formattedPrice,
+        isPaid,
       } = response.data;
 
       if (checkinSecret !== data.checkinSecret) {
@@ -188,6 +192,10 @@ async function handleParticipant(
         checkedIn,
         checkedInDt,
         occupiedSlots,
+        price,
+        currency,
+        formattedPrice,
+        isPaid,
         deleted: false,
         notes: '',
       });

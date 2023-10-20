@@ -247,7 +247,7 @@ function RegformTopNav({event, regform}: {event: DBResult<Event>; regform: DBRes
       settingsItems={[
         {
           text: 'Remove registration form',
-          icon: <TrashIcon />,
+          icon: <TrashIcon className="text-red-700 dark:text-red-500" />,
           onClick: () => {
             if (!hasValue(event) || !hasValue(regform)) {
               return;

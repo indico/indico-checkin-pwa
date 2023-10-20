@@ -188,7 +188,7 @@ function EventTopNav({event}: {event: DBResult<Event>}) {
   const settingsItems = [
     {
       text: 'Remove event',
-      icon: <TrashIcon />,
+      icon: <TrashIcon className="text-red-700 dark:text-red-500" />,
       onClick: () => {
         if (!hasValue(event)) {
           return;

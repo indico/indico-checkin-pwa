@@ -41,7 +41,7 @@ interface IndicoRegform {
   isOpen: boolean;
 }
 
-interface IndicoParticipant {
+export interface IndicoParticipant {
   id: number;
   regformId: number;
   eventId: number;
@@ -55,6 +55,10 @@ interface IndicoParticipant {
   occupiedSlots: number;
   registrationData: RegistrationData[];
   tags: string[];
+  price: number;
+  currency?: string; // TODO: check if nullable
+  formattedPrice?: string;
+  isPaid: boolean;
 }
 
 interface EventLocator {
@@ -175,12 +179,26 @@ export async function checkInParticipant(
   {serverId, eventId, regformId, participantId}: ParticipantLocator,
   checkInState: boolean
 ) {
-  return makeRequest(
+  return makeRequest<IndicoParticipant>(
     serverId,
     `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({checked_in: checkInState}),
+    }
+  );
+}
+
+export async function togglePayment(
+  {serverId, eventId, regformId, participantId}: ParticipantLocator,
+  paid: boolean
+) {
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({paid}),
     }
   );
 }

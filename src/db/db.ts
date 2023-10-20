@@ -1,5 +1,6 @@
 import Dexie, {Table} from 'dexie';
 import {FieldProps} from '../pages/participant/fields';
+import {IndicoParticipant} from '../utils/client';
 
 export interface Server {
   id?: number;
@@ -26,7 +27,7 @@ export interface Regform {
   isOpen: boolean;
   registrationCount: number;
   checkedInCount: number;
-  deleted: false;
+  deleted: boolean;
 }
 
 export interface RegistrationData {
@@ -50,6 +51,10 @@ export interface Participant {
   checkedIn: boolean;
   checkedInDt?: string;
   occupiedSlots: number;
+  price: number;
+  currency?: string;
+  formattedPrice?: string;
+  isPaid: boolean;
   deleted: boolean;
   notes: string;
 }
@@ -88,4 +93,35 @@ export async function deleteEvent(id: number) {
 export async function deleteRegform(id: number) {
   await db.participants.where({regformId: id}).delete();
   await db.regforms.delete(id);
+}
+
+export async function updateParticipant(id: number, data: IndicoParticipant) {
+  const {
+    id: indicoId,
+    fullName,
+    registrationDate,
+    registrationData,
+    state,
+    checkedIn,
+    checkedInDt,
+    occupiedSlots,
+    price,
+    currency,
+    formattedPrice,
+    isPaid,
+  } = data;
+  await db.participants.update(id, {
+    indicoId,
+    fullName,
+    registrationDate,
+    registrationData,
+    state,
+    occupiedSlots,
+    checkedIn,
+    checkedInDt,
+    price,
+    currency,
+    formattedPrice,
+    isPaid,
+  });
 }
