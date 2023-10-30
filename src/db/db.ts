@@ -85,16 +85,21 @@ const db = new IndicoCheckin();
 export default db;
 
 export async function deleteEvent(id: number) {
-  const regforms = await db.regforms.where({eventId: id}).toArray();
-  for (const regform of regforms) {
-    await deleteRegform(regform.id);
-  }
-  await db.events.delete(id);
+  return db.transaction('readwrite', [db.events, db.regforms, db.participants], async () => {
+    const regforms = await db.regforms.where({eventId: id}).toArray();
+    for (const regform of regforms) {
+      await db.participants.where({regformId: regform.id}).delete();
+      await db.regforms.delete(regform.id);
+    }
+    await db.events.delete(id);
+  });
 }
 
 export async function deleteRegform(id: number) {
-  await db.participants.where({regformId: id}).delete();
-  await db.regforms.delete(id);
+  return db.transaction('readwrite', [db.regforms, db.participants], async () => {
+    await db.participants.where({regformId: id}).delete();
+    await db.regforms.delete(id);
+  });
 }
 
 export async function updateParticipant(id: number, data: IndicoParticipant) {
