@@ -19,7 +19,6 @@ import db, {Event, Regform, Participant} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
-import {formatDatetime} from '../../utils/date';
 import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
@@ -200,18 +199,12 @@ function ParticipantPageContent({
               <RegistrationState state={participant.state} />
               {participant.price > 0 && (
                 <span
-                  className="w-fit rounded-full bg-green-100 px-2.5 py-1 text-sm font-medium
-                       text-green-800 dark:bg-green-900 dark:text-green-300"
+                  className="w-fit rounded-full bg-purple-100 px-2.5 py-1 text-sm font-medium
+                             text-purple-800 dark:bg-purple-900 dark:text-purple-300"
                 >
                   {participant.formattedPrice}
                 </span>
               )}
-              <span
-                className="w-fit rounded-full bg-yellow-100 px-2.5 py-1 text-sm font-medium
-                       text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-              >
-                {formatDatetime(participant.registrationDate)}
-              </span>
             </div>
           </div>
 
