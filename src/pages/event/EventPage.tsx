@@ -199,7 +199,7 @@ function EventTopNav({event}: {event: DBResult<Event>}) {
           content: 'You can always re-add the event by scanning its QR code',
           confirmBtnText: 'Delete',
           onConfirm: async () => {
-            await deleteEvent(event.id!);
+            await deleteEvent(event.id);
             navigate(`/`, {replace: true});
           },
         });

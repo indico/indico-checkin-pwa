@@ -44,7 +44,7 @@ async function togglePayment(
   );
 
   if (response.ok) {
-    await updateParticipant(participant.id!, response.data);
+    await updateParticipant(participant.id, response.data);
   } else {
     handleError(response, 'Something went wrong when updating payment status', errorModal);
   }

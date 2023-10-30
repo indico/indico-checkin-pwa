@@ -1,9 +1,9 @@
-import Dexie, {Table} from 'dexie';
+import Dexie, {type EntityTable} from 'dexie';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoParticipant} from '../utils/client';
 
 export interface Server {
-  id?: number;
+  id: number;
   baseUrl: string;
   clientId: string;
   scope: string;
@@ -11,7 +11,7 @@ export interface Server {
 }
 
 export interface Event {
-  id?: number;
+  id: number;
   indicoId: number;
   serverId: number;
   baseUrl: string;
@@ -20,7 +20,7 @@ export interface Event {
   deleted: boolean;
 }
 export interface Regform {
-  id?: number;
+  id: number;
   indicoId: number;
   eventId: number;
   title: string;
@@ -40,7 +40,7 @@ export interface RegistrationData {
 export type RegistrationState = 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
 
 export interface Participant {
-  id?: number;
+  id: number;
   indicoId: number;
   regformId: number;
   fullName: string;
@@ -62,10 +62,10 @@ export interface Participant {
 class IndicoCheckin extends Dexie {
   // Declare implicit table properties.
   // (just to inform Typescript. Instanciated by Dexie in stores() method)
-  servers!: Table<Server, number>;
-  events!: Table<Event, number>;
-  regforms!: Table<Regform, number>;
-  participants!: Table<Participant, number>;
+  servers!: EntityTable<Server, 'id'>;
+  events!: EntityTable<Event, 'id'>;
+  regforms!: EntityTable<Regform, 'id'>;
+  participants!: EntityTable<Participant, 'id'>;
 
   constructor() {
     super('CheckinDatabase');
@@ -85,7 +85,7 @@ export default db;
 export async function deleteEvent(id: number) {
   const regforms = await db.regforms.where({eventId: id}).toArray();
   for (const regform of regforms) {
-    await deleteRegform(regform.id!);
+    await deleteRegform(regform.id);
   }
   await db.events.delete(id);
 }

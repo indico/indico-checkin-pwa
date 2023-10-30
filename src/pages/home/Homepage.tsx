@@ -125,7 +125,7 @@ function EventList({
   return (
     <div className="flex flex-col gap-4">
       {events.map(event => (
-        <EventItem key={event.id} event={event} regformCount={regformCount[event.id!] || 0} />
+        <EventItem key={event.id} event={event} regformCount={regformCount[event.id] || 0} />
       ))}
     </div>
   );
@@ -148,7 +148,7 @@ function groupServersById(servers: Server[]) {
   }
 
   return servers.reduce((acc, server) => {
-    acc[server.id!] = server;
+    acc[server.id] = server;
     return acc;
   }, {} as ServerMap);
 }

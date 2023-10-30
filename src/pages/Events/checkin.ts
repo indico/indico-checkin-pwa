@@ -10,10 +10,10 @@ async function updateCheckinState(
   newCheckInState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
-    await db.participants.update(participant.id!, {checkedIn: newCheckInState});
+    await db.participants.update(participant.id, {checkedIn: newCheckInState});
     const slots = participant.occupiedSlots;
     const checkedInCount = regform.checkedInCount + (newCheckInState ? slots : -slots);
-    await db.regforms.update(regform.id!, {checkedInCount});
+    await db.regforms.update(regform.id, {checkedInCount});
   });
 }
 

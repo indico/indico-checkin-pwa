@@ -55,9 +55,9 @@ export async function syncEvents(
   for (const [i, response] of responses.entries()) {
     if (response.ok) {
       const {id, title, startDt: date} = response.data;
-      await db.events.update(events[i].id!, {indicoId: id, title, date});
+      await db.events.update(events[i].id, {indicoId: id, title, date});
     } else if (response.status === 404) {
-      await db.events.update(events[i].id!, {deleted: true});
+      await db.events.update(events[i].id, {deleted: true});
     } else {
       handleError(response, 'Something went wrong when updating events', errorModal);
     }
@@ -96,11 +96,11 @@ export async function syncRegforms(
 
       // no bulkUpdate yet..
       // regforms that don't exist in Indico anymore, mark them as deleted
-      const existingIds = onlyExisting.map(r => r.id!);
+      const existingIds = onlyExisting.map(r => r.id);
       const deleted = onlyExisting.map(() => ({deleted: true}));
       await bulkUpdate(db.regforms, existingIds, deleted);
       // regforms that we have both locally and in Indico, just update them
-      const commonIds = common.map(([r]) => r.id!);
+      const commonIds = common.map(([r]) => r.id);
       const commonData = common.map(([, r]) => r);
       await bulkUpdate(db.regforms, commonIds, commonData);
     });
@@ -124,7 +124,7 @@ export async function syncRegform(
 
   if (response.ok) {
     const {id, title, isOpen, registrationCount, checkedInCount} = response.data;
-    await db.regforms.update(regform.id!, {
+    await db.regforms.update(regform.id, {
       indicoId: id,
       title,
       isOpen,
@@ -132,7 +132,7 @@ export async function syncRegform(
       checkedInCount,
     });
   } else if (response.status === 404) {
-    await db.regforms.update(regform.id!, {deleted: true});
+    await db.regforms.update(regform.id, {deleted: true});
   } else {
     handleError(response, 'Something went wrong when updating registration form', errorModal);
   }
@@ -188,7 +188,7 @@ export async function syncParticipants(
       const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);
 
       // participants that don't exist in Indico anymore, mark them as deleted
-      const existingIds = onlyExisting.map(r => r.id!);
+      const existingIds = onlyExisting.map(r => r.id);
       const deleted = onlyExisting.map(() => ({deleted: true}));
       await bulkUpdate(db.participants, existingIds, deleted);
       // participants that we don't have locally, add them
@@ -200,7 +200,7 @@ export async function syncParticipants(
       }));
       await db.participants.bulkAdd(newData);
       // participants that we have both locally and in Indico, just update them
-      const commonIds = common.map(([r]) => r.id!);
+      const commonIds = common.map(([r]) => r.id);
       const commonData = common.map(([, r]) => r);
       await bulkUpdate(db.participants, commonIds, commonData);
     });
@@ -229,9 +229,9 @@ export async function syncParticipant(
   );
 
   if (response.ok) {
-    await updateParticipant(participant.id!, response.data);
+    await updateParticipant(participant.id, response.data);
   } else if (response.status === 404) {
-    await db.participants.update(participant.id!, {deleted: true});
+    await db.participants.update(participant.id, {deleted: true});
   } else {
     handleError(response, 'Something went wrong when updating participant', errorModal);
   }

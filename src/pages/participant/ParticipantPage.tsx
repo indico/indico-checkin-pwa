@@ -158,7 +158,7 @@ function ParticipantPageContent({
   const onAddNotes = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
     debounce(() => {
-      db.participants.update(participant.id!, {notes: e.target.value});
+      db.participants.update(participant.id, {notes: e.target.value});
     });
   };
 

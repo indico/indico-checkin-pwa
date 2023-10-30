@@ -40,7 +40,7 @@ async function handleEvent(
       } else {
         id = await db.events.add({
           indicoId: eventId,
-          serverId: server.id!,
+          serverId: server.id,
           baseUrl: server.baseUrl,
           title,
           date,
@@ -150,7 +150,7 @@ async function handleParticipant(
     });
   } else {
     const response = await getParticipant({
-      serverId: server.id!,
+      serverId: server.id,
       eventId: event.indicoId,
       regformId: regform.indicoId,
       participantId: data.registrationId,
@@ -183,7 +183,7 @@ async function handleParticipant(
 
       const participantId = await db.participants.add({
         indicoId: id,
-        regformId: regform.id!,
+        regformId: regform.id,
         fullName,
         registrationDate,
         registrationData,
