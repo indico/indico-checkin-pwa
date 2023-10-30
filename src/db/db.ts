@@ -52,8 +52,8 @@ export interface Participant {
   checkedInDt?: string;
   occupiedSlots: number;
   price: number;
-  currency?: string;
-  formattedPrice?: string;
+  currency: string;
+  formattedPrice: string;
   isPaid: boolean;
   deleted: boolean;
   notes: string;

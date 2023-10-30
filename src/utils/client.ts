@@ -56,8 +56,8 @@ export interface IndicoParticipant {
   registrationData: RegistrationData[];
   tags: string[];
   price: number;
-  currency?: string; // TODO: check if nullable
-  formattedPrice?: string;
+  currency: string;
+  formattedPrice: string;
   isPaid: boolean;
 }
 
