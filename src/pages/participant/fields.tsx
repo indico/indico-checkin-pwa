@@ -1,5 +1,4 @@
 import {Typography} from '../../Components/Tailwind';
-import {RegistrationData} from '../../db/db';
 import {formatDatetime} from '../../utils/date';
 
 export interface FieldProps {
