@@ -97,7 +97,7 @@ const AuthRedirectPage = () => {
           baseUrl,
           title,
           date,
-          deleted: false,
+          deleted: 0,
         });
         await db.regforms.add({
           indicoId: indicoRegformId,
@@ -105,7 +105,7 @@ const AuthRedirectPage = () => {
           title: regformTitle,
           registrationCount: 0,
           checkedInCount: 0,
-          deleted: false,
+          deleted: 0,
           isOpen: true,
         });
       } catch (err: any) {

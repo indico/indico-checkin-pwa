@@ -44,7 +44,7 @@ async function handleEvent(
           baseUrl: server.baseUrl,
           title,
           date,
-          deleted: false,
+          deleted: 0,
         });
       }
 
@@ -56,7 +56,7 @@ async function handleEvent(
           title: regformTitle,
           registrationCount: 0,
           checkedInCount: 0,
-          deleted: false,
+          deleted: 0,
           isOpen: true,
         });
       }
@@ -196,7 +196,7 @@ async function handleParticipant(
         currency,
         formattedPrice,
         isPaid,
-        deleted: false,
+        deleted: 0,
         notes: '',
       });
       const participantPage = `${regformPage}/${participantId}`;

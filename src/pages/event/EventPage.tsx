@@ -21,7 +21,7 @@ export default function EventPage() {
 
   const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
   const regforms = useQuery(
-    () => db.regforms.where({eventId: Number(eventId)}).toArray(),
+    () => db.regforms.where({eventId: Number(eventId), deleted: 0}).toArray(),
     [eventId]
   );
 

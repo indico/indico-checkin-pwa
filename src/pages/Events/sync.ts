@@ -1,5 +1,5 @@
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import db, {Event, Participant, Regform, updateParticipant} from '../../db/db';
+import db, {Event, type IDBBoolean, Participant, Regform, updateParticipant} from '../../db/db';
 import {
   FailedResponse,
   getEvent,
@@ -52,7 +52,7 @@ export async function syncEvents(
       const {id, title, startDt: date} = response.data;
       await db.events.update(events[i].id, {indicoId: id, title, date});
     } else if (response.status === 404) {
-      await db.events.update(events[i].id, {deleted: true});
+      await db.events.update(events[i].id, {deleted: 1});
     } else {
       handleError(response, 'Something went wrong when updating events', errorModal);
     }
@@ -90,7 +90,7 @@ export async function syncRegforms(
       const [onlyExisting, , common] = split(existingRegforms, newRegforms);
 
       // regforms that don't exist in Indico anymore, mark them as deleted
-      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: true}}));
+      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.regforms.bulkUpdate(deleted);
       // regforms that we have both locally and in Indico, just update them
       const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
@@ -124,7 +124,7 @@ export async function syncRegform(
       checkedInCount,
     });
   } else if (response.status === 404) {
-    await db.regforms.update(regform.id, {deleted: true});
+    await db.regforms.update(regform.id, {deleted: 1});
   } else {
     handleError(response, 'Something went wrong when updating registration form', errorModal);
   }
@@ -180,13 +180,13 @@ export async function syncParticipants(
       const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);
 
       // participants that don't exist in Indico anymore, mark them as deleted
-      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: true}}));
+      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.participants.bulkUpdate(deleted);
       // participants that we don't have locally, add them
       const newData = onlyNew.map(p => ({
         ...p,
         notes: '',
-        deleted: false,
+        deleted: 0 as IDBBoolean,
         regformId: regform.id as number,
       }));
       await db.participants.bulkAdd(newData);
@@ -221,7 +221,7 @@ export async function syncParticipant(
   if (response.ok) {
     await updateParticipant(participant.id, response.data);
   } else if (response.status === 404) {
-    await db.participants.update(participant.id, {deleted: true});
+    await db.participants.update(participant.id, {deleted: 1});
   } else {
     handleError(response, 'Something went wrong when updating participant', errorModal);
   }

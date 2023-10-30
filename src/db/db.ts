@@ -2,6 +2,8 @@ import Dexie, {type EntityTable} from 'dexie';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoParticipant} from '../utils/client';
 
+export type IDBBoolean = 1 | 0; // IndexedDB doesn support indexing boolean, so we use 1/0 instead
+
 export interface Server {
   id: number;
   baseUrl: string;
@@ -17,7 +19,7 @@ export interface Event {
   baseUrl: string;
   title: string;
   date: string;
-  deleted: boolean;
+  deleted: IDBBoolean;
 }
 export interface Regform {
   id: number;
@@ -27,7 +29,7 @@ export interface Regform {
   isOpen: boolean;
   registrationCount: number;
   checkedInCount: number;
-  deleted: boolean;
+  deleted: IDBBoolean;
 }
 
 export interface RegistrationData {
@@ -55,7 +57,7 @@ export interface Participant {
   currency: string;
   formattedPrice: string;
   isPaid: boolean;
-  deleted: boolean;
+  deleted: IDBBoolean;
   notes: string;
 }
 
@@ -70,10 +72,10 @@ class IndicoCheckin extends Dexie {
   constructor() {
     super('CheckinDatabase');
     this.version(1).stores({
-      servers: 'id++, baseUrl, clientId',
-      events: 'id++, indicoId, serverId, baseUrl, title',
-      regforms: 'id++, indicoId, eventId, title',
-      participants: 'id++, indicoId, regformId, fullName, state, checkedIn',
+      servers: 'id++, clientId',
+      events: 'id++, indicoId, serverId, deleted',
+      regforms: 'id++, indicoId, eventId, deleted',
+      participants: 'id++, indicoId, regformId, deleted',
     });
   }
 }

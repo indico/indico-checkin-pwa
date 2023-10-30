@@ -22,8 +22,8 @@ export default function Homepage() {
 function HomepageContent() {
   const errorModal = useErrorModal();
   const servers = useQuery(() => db.servers.toArray());
-  const events = useQuery(() => db.events.toArray());
-  const regforms = useQuery(() => db.regforms.toArray());
+  const events = useQuery(() => db.events.where({deleted: 0}).toArray());
+  const regforms = useQuery(() => db.regforms.where({deleted: 0}).toArray());
 
   useEffect(() => {
     const controller = new AbortController();

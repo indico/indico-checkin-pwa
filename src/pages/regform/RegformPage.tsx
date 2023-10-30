@@ -31,7 +31,7 @@ export default function RegformPage() {
     [id, regformId]
   );
   const participants = useQuery(
-    () => db.participants.where({regformId: Number(regformId)}).toArray(),
+    () => db.participants.where({regformId: Number(regformId), deleted: 0}).toArray(),
     [regformId]
   );
 

@@ -140,7 +140,7 @@ describe('test syncRegform()', () => {
     expect(updatedRegforms[0]).toEqual({
       id: 3,
       eventId: 1,
-      deleted: true,
+      deleted: 1,
     });
     expect(errorModal).not.toHaveBeenCalled();
   });
@@ -208,7 +208,7 @@ describe('test syncRegforms()', () => {
         id: 2,
         indicoId: 20,
         eventId: 1,
-        deleted: true,
+        deleted: 1,
       },
     ]);
     expect(errorModal).not.toHaveBeenCalled();
@@ -291,7 +291,7 @@ describe('test syncParticipant()', () => {
     expect(updatedParticipants[0]).toEqual({
       id: 7,
       regformId: 3,
-      deleted: true,
+      deleted: 1,
     });
     expect(errorModal).not.toHaveBeenCalled();
   });
@@ -375,7 +375,7 @@ describe('test syncParticipants()', () => {
         id: 2,
         indicoId: 20,
         regformId: 3,
-        deleted: true,
+        deleted: 1,
       },
       {
         id: 3,
@@ -390,7 +390,7 @@ describe('test syncParticipants()', () => {
         checkinSecret: '1111',
         occupiedSlots: 1,
         notes: '',
-        deleted: false,
+        deleted: 0,
       },
     ]);
     expect(errorModal).not.toHaveBeenCalled();
