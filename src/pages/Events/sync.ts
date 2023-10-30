@@ -1,4 +1,3 @@
-import Dexie from 'dexie';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {Event, Participant, Regform, updateParticipant} from '../../db/db';
 import {
@@ -35,10 +34,6 @@ function split<T extends IndicoId, U extends IndicoId>(a: T[], b: U[]): [T[], U[
   const onlyNew = b.filter(v => !(v.indicoId in existingById));
   const common: [T, U][] = a.filter(v => v.indicoId in newById).map(v => [v, newById[v.indicoId]]);
   return [onlyExisting, onlyNew, common];
-}
-
-async function bulkUpdate(table: Dexie.Table, ids: number[], data: object[]) {
-  return Promise.all(ids.map((id, i) => table.update(id, data[i])));
 }
 
 export async function syncEvents(
@@ -94,15 +89,12 @@ export async function syncRegforms(
       );
       const [onlyExisting, , common] = split(existingRegforms, newRegforms);
 
-      // no bulkUpdate yet..
       // regforms that don't exist in Indico anymore, mark them as deleted
-      const existingIds = onlyExisting.map(r => r.id);
-      const deleted = onlyExisting.map(() => ({deleted: true}));
-      await bulkUpdate(db.regforms, existingIds, deleted);
+      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: true}}));
+      await db.regforms.bulkUpdate(deleted);
       // regforms that we have both locally and in Indico, just update them
-      const commonIds = common.map(([r]) => r.id);
-      const commonData = common.map(([, r]) => r);
-      await bulkUpdate(db.regforms, commonIds, commonData);
+      const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
+      await db.regforms.bulkUpdate(commonData);
     });
   } else {
     handleError(response, 'Something went wrong when updating registration forms', errorModal);
@@ -188,9 +180,8 @@ export async function syncParticipants(
       const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);
 
       // participants that don't exist in Indico anymore, mark them as deleted
-      const existingIds = onlyExisting.map(r => r.id);
-      const deleted = onlyExisting.map(() => ({deleted: true}));
-      await bulkUpdate(db.participants, existingIds, deleted);
+      const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: true}}));
+      await db.participants.bulkUpdate(deleted);
       // participants that we don't have locally, add them
       const newData = onlyNew.map(p => ({
         ...p,
@@ -200,9 +191,8 @@ export async function syncParticipants(
       }));
       await db.participants.bulkAdd(newData);
       // participants that we have both locally and in Indico, just update them
-      const commonIds = common.map(([r]) => r.id);
-      const commonData = common.map(([, r]) => r);
-      await bulkUpdate(db.participants, commonIds, commonData);
+      const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
+      await db.participants.bulkUpdate(commonData);
     });
   } else {
     handleError(response, 'Something went wrong when updating participants', errorModal);
