@@ -72,7 +72,7 @@ export function PaymentWarning({
   return (
     <div
       className="rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-800
-                 dark:bg-gray-800 dark:text-yellow-300"
+                 dark:border-yellow-800 dark:bg-gray-800 dark:text-yellow-300"
       role="alert"
     >
       <div className="flex items-center gap-2">
