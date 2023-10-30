@@ -233,11 +233,9 @@ function ParticipantPageContent({
           {participant.occupiedSlots > 1 && (
             <AccompanyingPersons persons={getAccompanyingPersons(participant.registrationData)} />
           )}
-          <div className="mt-1 flex justify-center">
-            <Typography variant="body1" className="w-full">
-              <GrowingTextArea value={notes} onChange={onAddNotes} />
-            </Typography>
-          </div>
+          <Typography as="div" variant="body1" className="mt-1 flex w-full justify-center">
+            <GrowingTextArea value={notes} onChange={onAddNotes} />
+          </Typography>
         </div>
       </div>
       <div className="mt-5 flex flex-col px-4">{registrationData}</div>
