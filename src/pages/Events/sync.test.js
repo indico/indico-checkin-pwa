@@ -74,7 +74,7 @@ describe('test syncEvents()', () => {
 
     const updatedEvents = await db.events.toArray();
     expect(updatedEvents.length).toBe(1);
-    expect(updatedEvents[0]).toEqual({id: 1, serverId: 1, deleted: true});
+    expect(updatedEvents[0]).toEqual({id: 1, serverId: 1, deleted: 1});
     expect(errorModal).not.toHaveBeenCalled();
   });
 
