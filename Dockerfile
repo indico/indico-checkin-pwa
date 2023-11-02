@@ -8,6 +8,7 @@ COPY tailwind.config.js .
 COPY tsconfig.json .
 COPY public public
 COPY src src
+COPY types types
 
 RUN npm ci --ignore-scripts
 RUN npm run build
