@@ -9,7 +9,7 @@ COPY tsconfig.json .
 COPY public public
 COPY src src
 
-RUN npm ci
+RUN npm ci --ignore-scripts
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.24.0-alpine3.18
