@@ -29,7 +29,7 @@ interface IndicoEvent {
   endDt: string;
 }
 
-interface IndicoRegform {
+export interface IndicoRegform {
   id: number;
   eventId: number;
   title: string;

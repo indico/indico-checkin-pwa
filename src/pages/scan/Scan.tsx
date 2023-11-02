@@ -7,7 +7,7 @@ import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import db from '../../db/db';
+import db, {addEvent, addRegform} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
@@ -38,26 +38,21 @@ async function handleEvent(
       if (event) {
         id = event.id;
       } else {
-        id = await db.events.add({
+        id = await addEvent({
           indicoId: eventId,
           serverId: server.id,
           baseUrl: server.baseUrl,
           title,
           date,
-          deleted: 0,
         });
       }
 
       const regform = await db.regforms.where({indicoId: regformId, eventId: id}).first();
       if (!regform) {
-        await db.regforms.add({
+        await addRegform({
           indicoId: regformId,
           eventId: id!,
           title: regformTitle,
-          registrationCount: 0,
-          checkedInCount: 0,
-          deleted: 0,
-          isOpen: true,
         });
       }
     });

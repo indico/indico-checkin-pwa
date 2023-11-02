@@ -4,32 +4,54 @@ import {IndicoParticipant} from '../utils/client';
 
 export type IDBBoolean = 1 | 0; // IndexedDB doesn support indexing boolean, so we use 1/0 instead
 
-export interface Server {
-  id: number;
+interface _Server {
   baseUrl: string;
   clientId: string;
   scope: string;
   authToken: string;
 }
-
-export interface Event {
+export interface Server extends _Server {
   id: number;
+}
+
+type AddServer = _Server;
+
+export interface _Event {
   indicoId: number;
   serverId: number;
   baseUrl: string;
   title: string;
   date: string;
+}
+
+export interface Event extends _Event {
+  id: number;
   deleted: IDBBoolean;
 }
-export interface Regform {
-  id: number;
+
+interface AddEvent extends _Event {
+  deleted?: boolean;
+}
+
+export interface _Regform {
   indicoId: number;
   eventId: number;
   title: string;
+}
+
+export interface Regform extends _Regform {
+  id: number;
   isOpen: boolean;
   registrationCount: number;
   checkedInCount: number;
   deleted: IDBBoolean;
+}
+
+interface AddRegform extends _Regform {
+  isOpen?: boolean;
+  registrationCount?: number;
+  checkedInCount?: number;
+  deleted?: boolean;
 }
 
 export interface RegistrationData {
@@ -83,6 +105,23 @@ class IndicoCheckin extends Dexie {
 const db = new IndicoCheckin();
 
 export default db;
+
+export async function addServer(data: AddServer) {
+  return await db.servers.add(data);
+}
+
+export async function addEvent(data: AddEvent) {
+  const deleted = data.deleted ? 1 : 0;
+  return await db.events.add({...data, deleted});
+}
+
+export async function addRegform(data: AddRegform) {
+  const isOpen = !!data.isOpen;
+  const registrationCount = data.registrationCount || 0;
+  const checkedInCount = data.checkedInCount || 0;
+  const deleted = data.deleted ? 1 : 0;
+  return await db.regforms.add({...data, isOpen, registrationCount, checkedInCount, deleted});
+}
 
 export async function deleteEvent(id: number) {
   return db.transaction('readwrite', [db.events, db.regforms, db.participants], async () => {

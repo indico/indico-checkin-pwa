@@ -5,7 +5,7 @@ import {CheckCircleIcon} from '@heroicons/react/20/solid';
 import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
-import db from '../../db/db';
+import {addEvent, addRegform, addServer} from '../../db/db';
 import {wait} from '../../utils/wait';
 import {discoveryEndpoint, redirectUri, validateEventData} from './utils';
 
@@ -85,28 +85,23 @@ const AuthRedirectPage = () => {
 
       let eventId: number;
       try {
-        const serverId = await db.servers.add({
+        const serverId = await addServer({
           baseUrl,
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
         });
-        eventId = await db.events.add({
+        eventId = await addEvent({
           indicoId: indicoEventId,
           serverId,
           baseUrl,
           title,
           date,
-          deleted: 0,
         });
-        await db.regforms.add({
+        await addRegform({
           indicoId: indicoRegformId,
           eventId,
           title: regformTitle,
-          registrationCount: 0,
-          checkedInCount: 0,
-          deleted: 0,
-          isOpen: true,
         });
       } catch (err: any) {
         setError({title: 'OAuth authorization failed', description: err.message});
