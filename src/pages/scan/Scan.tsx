@@ -7,7 +7,7 @@ import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import db, {addEvent, addRegform} from '../../db/db';
+import db, {addEvent, addParticipant, addRegform} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
@@ -152,23 +152,9 @@ async function handleParticipant(
     });
 
     if (response.ok) {
-      const {
-        id,
-        fullName,
-        registrationDate,
-        registrationData,
-        state,
-        checkinSecret,
-        checkedIn,
-        checkedInDt,
-        occupiedSlots,
-        price,
-        currency,
-        formattedPrice,
-        isPaid,
-      } = response.data;
+      const {id, ...rest} = response.data;
 
-      if (checkinSecret !== data.checkinSecret) {
+      if (response.data.checkinSecret !== data.checkinSecret) {
         errorModal({
           title: 'QR code data is not valid',
           content: 'Please try again',
@@ -176,23 +162,9 @@ async function handleParticipant(
         return;
       }
 
-      const participantId = await db.participants.add({
+      const participantId = await addParticipant({
         indicoId: id,
-        regformId: regform.id,
-        fullName,
-        registrationDate,
-        registrationData,
-        state,
-        checkinSecret,
-        checkedIn,
-        checkedInDt,
-        occupiedSlots,
-        price,
-        currency,
-        formattedPrice,
-        isPaid,
-        deleted: 0,
-        notes: '',
+        ...rest,
       });
       const participantPage = `${regformPage}/${participantId}`;
       navigate(participantPage, {

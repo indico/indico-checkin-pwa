@@ -63,8 +63,7 @@ export interface RegistrationData {
 
 export type RegistrationState = 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
 
-export interface Participant {
-  id: number;
+interface _Participant {
   indicoId: number;
   regformId: number;
   fullName: string;
@@ -79,8 +78,17 @@ export interface Participant {
   currency: string;
   formattedPrice: string;
   isPaid: boolean;
+}
+
+export interface Participant extends _Participant {
+  id: number;
   deleted: IDBBoolean;
   notes: string;
+}
+
+interface AddParticipant extends _Participant {
+  deleted?: IDBBoolean;
+  notes?: string;
 }
 
 class IndicoCheckin extends Dexie {
@@ -121,6 +129,12 @@ export async function addRegform(data: AddRegform) {
   const checkedInCount = data.checkedInCount || 0;
   const deleted = data.deleted ? 1 : 0;
   return await db.regforms.add({...data, isOpen, registrationCount, checkedInCount, deleted});
+}
+
+export async function addParticipant(data: AddParticipant) {
+  const deleted = data.deleted ? 1 : 0;
+  const notes = data.notes || '';
+  return await db.participants.add({...data, deleted, notes});
 }
 
 export async function deleteEvent(id: number) {
