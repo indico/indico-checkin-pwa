@@ -262,7 +262,7 @@ export function getAccompanyingPersons(sections: Section[]) {
   for (const section of sections) {
     for (const field of section.fields) {
       if (field.inputType === 'accompanying_persons') {
-        persons.push(field.data);
+        persons.push(...field.data);
       }
     }
   }
