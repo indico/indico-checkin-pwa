@@ -1,4 +1,4 @@
-import {ChangeEvent, useCallback, useEffect, useState} from 'react';
+import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {
   CalendarDaysIcon,
@@ -88,6 +88,13 @@ function ParticipantPageContent({
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
+
+  const accompanyingPersons = useMemo(() => {
+    if (hasValue(participant)) {
+      return getAccompanyingPersons(participant.registrationData);
+    }
+    return [];
+  }, [participant]);
 
   const performCheckin = useCallback(
     async (event: Event, regform: Regform, participant: Participant, newCheckinState: boolean) => {
@@ -223,9 +230,7 @@ function ParticipantPageContent({
               errorModal={errorModal}
             />
           )}
-          {participant.occupiedSlots > 1 && (
-            <AccompanyingPersons persons={getAccompanyingPersons(participant.registrationData)} />
-          )}
+          {accompanyingPersons.length > 1 && <AccompanyingPersons persons={accompanyingPersons} />}
           <Typography as="div" variant="body1" className="mt-1 flex w-full justify-center">
             <GrowingTextArea value={notes} onChange={onAddNotes} />
           </Typography>
