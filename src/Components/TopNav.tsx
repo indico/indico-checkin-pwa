@@ -10,16 +10,14 @@ export default function TopNav({
   settingsItems,
 }: {
   backBtnText?: string;
-  backNavigateTo?: string;
+  backNavigateTo?: string | number;
   settingsItems?: SettingsItem[];
 }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const {pathname} = useLocation();
-  const state = location.state || {};
 
-  const btnText = state.backBtnText || backBtnText || '';
-  const page = state.backNavigateTo || backNavigateTo || -1;
+  const btnText = backBtnText || '';
+  const page = backNavigateTo || '/';
 
   if (pathname === '/') {
     return (
@@ -41,7 +39,12 @@ export default function TopNav({
                      active:bg-blue-700 dark:active:bg-blue-600"
           onClick={async () => {
             await wait(50);
-            navigate(page);
+            // Typescript...
+            if (typeof page === 'number') {
+              navigate(page);
+            } else {
+              navigate(page);
+            }
           }}
         >
           <ArrowSmallLeftIcon className="w-[2.5rem] min-w-[2.5rem] cursor-pointer text-white" />

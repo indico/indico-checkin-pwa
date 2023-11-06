@@ -4,7 +4,7 @@ import TopNav from '../Components/TopNav';
 export default function LoadingFallback() {
   return (
     <>
-      <TopNav />
+      <TopNav backBtnText="Scan" backNavigateTo={-1} />
       <LoadingBanner text="Loading.." />
     </>
   );

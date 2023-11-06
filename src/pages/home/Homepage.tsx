@@ -21,7 +21,7 @@ export default function Homepage() {
     <>
       <TopNav />
       <HomepageContent />
-      <BottomNav backBtnText="Home" />
+      <BottomNav />
     </>
   );
 }

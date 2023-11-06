@@ -65,7 +65,6 @@ export default function ParticipantPage() {
   const event = useLiveEvent(eventId, data.event);
   const regform = useLiveRegform({id: regformId, eventId}, data.regform);
   const participant = useLiveParticipant({id: participantId, regformId}, data.participant);
-  const title = participant?.fullName || '';
 
   return (
     <>
@@ -78,7 +77,7 @@ export default function ParticipantPage() {
         regform={regform}
         participant={participant}
       />
-      <BottomNav backBtnText={title} />
+      <BottomNav />
     </>
   );
 }
@@ -279,12 +278,15 @@ function ParticipantTopNav({
   }
 
   if (participant.price === 0 || !participant.isPaid) {
-    return <TopNav />;
+    return (
+      <TopNav backBtnText={regform.title} backNavigateTo={`/event/${event.id}/${regform.id}`} />
+    );
   }
 
   return (
     <TopNav
       backBtnText={regform.title}
+      backNavigateTo={`/event/${event.id}/${regform.id}`}
       settingsItems={[
         {
           text: 'Mark as unpaid',

@@ -57,7 +57,7 @@ async function handleEvent(
       }
     });
 
-    navigate(`/event/${id}`, {replace: true, state: {backBtnText: 'Home'}});
+    navigate(`/event/${id}`, {replace: true});
     return;
   }
 
@@ -141,7 +141,7 @@ async function handleParticipant(
     const participantPage = `${regformPage}/${participant.id}`;
     navigate(participantPage, {
       replace: true,
-      state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
+      state: {autoCheckin},
     });
   } else {
     const response = await getParticipant({
@@ -169,7 +169,7 @@ async function handleParticipant(
       const participantPage = `${regformPage}/${participantId}`;
       navigate(participantPage, {
         replace: true,
-        state: {autoCheckin, backBtnText: regform.title, backNavigateTo: regformPage},
+        state: {autoCheckin},
       });
     } else {
       handleError(response, 'Could not fetch participant data', errorModal);
@@ -239,7 +239,7 @@ export default function ScanPage() {
 
   return (
     <div>
-      <TopNav />
+      <TopNav backBtnText="Scan" backNavigateTo={-1} />
       {!processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />

@@ -128,7 +128,7 @@ const AuthRedirectPage = () => {
           <div className="flex flex-col items-center justify-center gap-2 rounded-xl p-6">
             <Typography variant="h3">{error.title}</Typography>
             <Typography variant="body1">{error.description}</Typography>
-            <Button className="mt-4" onClick={() => navigate('/scan', {replace: true, state})}>
+            <Button className="mt-4" onClick={() => navigate('/scan', {replace: true})}>
               Try again
             </Button>
           </div>

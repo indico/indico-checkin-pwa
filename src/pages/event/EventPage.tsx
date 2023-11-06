@@ -36,13 +36,12 @@ export default function EventPage() {
   const {eventId} = loaderData.params;
   const event = useLiveEvent(eventId, loaderData.event);
   const regforms = useLiveRegforms(eventId, loaderData.regforms);
-  const title = event?.title || '';
 
   return (
     <>
       <EventTopNav event={event} />
       <EventPageContent eventId={eventId} event={event} regforms={regforms} />
-      <BottomNav backBtnText={title} />
+      <BottomNav />
     </>
   );
 }
@@ -84,9 +83,7 @@ function EventPageContent({
   }
 
   const navigateToRegform = (idx = 0) => {
-    navigate(`/event/${eventId}/${regforms[idx].id}`, {
-      state: {backBtnText: event.title},
-    });
+    navigate(`/event/${eventId}/${regforms[idx].id}`);
   };
 
   const regformList = regforms.map((regform, idx) => (
@@ -181,7 +178,7 @@ function EventTopNav({event}: {event?: Event}) {
   const confirmModal = useConfirmModal();
 
   if (!event) {
-    return <TopNav backBtnText="Home" />;
+    return <TopNav backBtnText="Events" backNavigateTo="/" />;
   }
 
   const deleteEvent = async (id: number) => {
@@ -217,5 +214,5 @@ function EventTopNav({event}: {event?: Event}) {
     },
   ];
 
-  return <TopNav backBtnText="Home" settingsItems={settingsItems} />;
+  return <TopNav backBtnText="Events" backNavigateTo="/" settingsItems={settingsItems} />;
 }

@@ -1,9 +1,7 @@
 import {useLocation, useNavigate} from 'react-router-dom';
 import {Cog8ToothIcon, HomeIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 
-export default function BottomNav({backBtnText}: {backBtnText?: string}) {
-  backBtnText = backBtnText || '';
-
+export default function BottomNav() {
   return (
     <div
       className="fixed bottom-0 left-0 z-50 h-16 w-full border-t border-gray-50
@@ -11,8 +9,8 @@ export default function BottomNav({backBtnText}: {backBtnText?: string}) {
     >
       <div className="mx-auto grid h-full max-w-lg grid-cols-3 font-medium">
         <HomeButton />
-        <ScanButton backBtnText={backBtnText} />
-        <SettingsButton backBtnText={backBtnText} />
+        <ScanButton />
+        <SettingsButton />
       </div>
     </div>
   );
@@ -46,17 +44,17 @@ function HomeButton() {
   );
 }
 
-function ScanButton({backBtnText}: {backBtnText: string}) {
-  const {pathname, state} = useLocation();
+function ScanButton() {
+  const {pathname} = useLocation();
   const navigate = useNavigate();
 
   const goToScan = () => {
     if (pathname === '/scan') {
       return;
     } else if (pathname === '/settings') {
-      navigate('/scan', {replace: true, state});
+      navigate('/scan', {replace: true});
     } else {
-      navigate('/scan', {state: {backBtnText}});
+      navigate('/scan');
     }
   };
 
@@ -83,7 +81,7 @@ function ScanButton({backBtnText}: {backBtnText: string}) {
   );
 }
 
-function SettingsButton({backBtnText}: {backBtnText: string}) {
+function SettingsButton() {
   const {pathname} = useLocation();
   const navigate = useNavigate();
 
@@ -91,7 +89,7 @@ function SettingsButton({backBtnText}: {backBtnText: string}) {
     if (pathname === '/settings') {
       return;
     }
-    navigate('/settings', {state: {backBtnText}});
+    navigate('/settings');
   };
 
   return (

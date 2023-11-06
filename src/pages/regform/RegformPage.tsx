@@ -48,7 +48,6 @@ export default function RegformPage() {
   const event = useLiveEvent(eventId, loaderData.event);
   const regform = useLiveRegform(regformId, loaderData.regform);
   const participants = useLiveParticipants(regformId, loaderData.participants);
-  const title = regform?.title || '';
 
   return (
     <>
@@ -60,7 +59,7 @@ export default function RegformPage() {
         regform={regform}
         participants={participants}
       />
-      <BottomNav backBtnText={title} />
+      <BottomNav />
     </>
   );
 }
@@ -156,9 +155,7 @@ function RegformPageContent({
             setSearchData={setSearchData}
             onRowClick={async (p: Participant) => {
               await wait(50);
-              navigate(`/event/${event.id}/${regform.id}/${p.id}`, {
-                state: {backBtnText: regform.title},
-              });
+              navigate(`/event/${event.id}/${regform.id}/${p.id}`);
             }}
           />
         </div>
@@ -262,6 +259,7 @@ function RegformTopNav({event, regform}: {event?: Event; regform?: Regform}) {
   return (
     <TopNav
       backBtnText={event.title}
+      backNavigateTo={`/event/${event.id}`}
       settingsItems={[
         {
           text: 'Remove registration form',

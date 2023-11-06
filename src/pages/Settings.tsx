@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <TopNav />
+      <TopNav backBtnText="Settings" backNavigateTo={-1} />
       <div className="flex flex-col gap-12 p-4">
         <MainSettings />
         {isDev && <DevModeSettings />}
