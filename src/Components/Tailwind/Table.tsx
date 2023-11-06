@@ -161,7 +161,11 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
         <div className="flex items-center justify-between">
           <Typography
             variant="body1"
-            className={state === 'rejected' || state === 'withdrawn' ? 'line-through' : ''}
+            className={
+              state === 'rejected' || state === 'withdrawn'
+                ? 'select-none line-through'
+                : 'select-none'
+            }
           >
             {fullName}
           </Typography>
