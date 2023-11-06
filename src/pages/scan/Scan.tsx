@@ -177,7 +177,7 @@ async function handleParticipant(
   }
 }
 
-const ScanPage = () => {
+export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
   const {autoCheckin} = useSettings();
@@ -258,6 +258,4 @@ const ScanPage = () => {
       )}
     </div>
   );
-};
-
-export default ScanPage;
+}
