@@ -1,13 +1,9 @@
 import {ReactElement} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useRouteError} from 'react-router-dom';
+import {QuestionMarkCircleIcon} from '@heroicons/react/20/solid';
 import {Button, Typography} from '../Components/Tailwind';
 
-interface NotFoundProps {
-  text: string;
-  icon: ReactElement;
-}
-
-export const NotFound = ({text, icon}: NotFoundProps) => {
+export function NotFoundBanner({text, icon}: {text: string; icon: ReactElement}) {
   const navigate = useNavigate();
 
   return (
@@ -21,4 +17,14 @@ export const NotFound = ({text, icon}: NotFoundProps) => {
       </div>
     </div>
   );
-};
+}
+
+export function NotFoundPage() {
+  const error = useRouteError() as Error | undefined;
+  const message = error?.message || 'Not found';
+  return (
+    <div className="my-4">
+      <NotFoundBanner text={message} icon={<QuestionMarkCircleIcon />} />
+    </div>
+  );
+}
