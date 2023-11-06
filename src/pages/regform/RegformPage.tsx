@@ -128,7 +128,7 @@ function RegformPageContent({
   }
 
   return (
-    <div className="pt-1">
+    <div className="pt-4">
       <div>
         <div className="flex flex-col items-center gap-2 px-4">
           <Title title={regform.title} />

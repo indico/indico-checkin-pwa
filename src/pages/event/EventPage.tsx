@@ -139,7 +139,7 @@ function EventPageContent({
   ));
 
   return (
-    <div className="px-4 pt-1">
+    <div className="px-4 pt-4">
       <div className="flex flex-col items-center gap-2">
         <Title title={event.title} />
         <IndicoLink
