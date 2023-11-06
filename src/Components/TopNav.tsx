@@ -40,7 +40,7 @@ export default function TopNav({
           className="flex max-w-[60%] cursor-pointer items-center rounded-full transition-all
                      active:bg-blue-700 dark:active:bg-blue-600"
           onClick={async () => {
-            await wait(100);
+            await wait(50);
             navigate(page);
           }}
         >

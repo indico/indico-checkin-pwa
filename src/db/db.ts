@@ -1,4 +1,5 @@
 import Dexie, {type EntityTable} from 'dexie';
+import {useLiveQuery} from 'dexie-react-hooks';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoParticipant} from '../utils/client';
 
@@ -33,6 +34,8 @@ interface AddEvent extends _Event {
   deleted?: boolean;
 }
 
+type GetEvent = number;
+
 export interface _Regform {
   indicoId: number;
   eventId: number;
@@ -53,6 +56,13 @@ interface AddRegform extends _Regform {
   checkedInCount?: number;
   deleted?: boolean;
 }
+
+type GetRegform =
+  | number
+  | {
+      id: number;
+      eventId: number;
+    };
 
 export interface RegistrationData {
   id: number;
@@ -91,6 +101,13 @@ interface AddParticipant extends _Participant {
   notes?: string;
 }
 
+type GetParticipant =
+  | number
+  | {
+      id: number;
+      regformId: number;
+    };
+
 class IndicoCheckin extends Dexie {
   // Declare implicit table properties.
   // (just to inform Typescript. Instanciated by Dexie in stores() method)
@@ -113,6 +130,74 @@ class IndicoCheckin extends Dexie {
 const db = new IndicoCheckin();
 
 export default db;
+
+export async function getEvent(id: GetEvent) {
+  return await db.events.get(id);
+}
+
+export async function getRegform(id: GetRegform) {
+  if (typeof id === 'number') {
+    return await db.regforms.get(id);
+  }
+  return await db.regforms.get(id);
+}
+
+export async function getParticipant(id: GetParticipant) {
+  if (typeof id === 'number') {
+    return await db.participants.get(id);
+  }
+  return await db.participants.get(id);
+}
+
+export async function getServers() {
+  return await db.servers.toArray();
+}
+
+export async function getEvents() {
+  return await db.events.where({deleted: 0}).toArray();
+}
+
+export async function getRegforms(eventId?: number) {
+  if (eventId === undefined) {
+    return await db.regforms.where({deleted: 0}).toArray();
+  }
+  return await db.regforms.where({eventId, deleted: 0}).toArray();
+}
+
+export async function getParticipants(regformId: number) {
+  return await db.participants.where({regformId, deleted: 0}).toArray();
+}
+
+export function useLiveServers(defaultValue?: Server[]) {
+  return useLiveQuery(getServers, [], defaultValue || []);
+}
+
+export function useLiveEvent(eventId: number, defaultValue?: Event) {
+  return useLiveQuery(() => getEvent(eventId), [eventId], defaultValue);
+}
+
+export function useLiveEvents(defaultValue?: Event[]) {
+  return useLiveQuery(getEvents, [], defaultValue || []);
+}
+
+export function useLiveRegform(id: GetRegform, defaultValue?: Regform) {
+  const deps = typeof id === 'number' ? [id] : Object.values(id);
+  return useLiveQuery(() => getRegform(id), deps, defaultValue);
+}
+
+export function useLiveRegforms(eventId?: number, defaultValue?: Regform[]) {
+  const deps = eventId === undefined ? [] : [eventId];
+  return useLiveQuery(() => getRegforms(eventId), deps, defaultValue || []);
+}
+
+export function useLiveParticipant(id: GetParticipant, defaultValue?: Participant) {
+  const deps = typeof id === 'number' ? [id] : Object.values(id);
+  return useLiveQuery(() => getParticipant(id), deps, defaultValue);
+}
+
+export function useLiveParticipants(regformId: number, defaultValue?: Participant[]) {
+  return useLiveQuery(() => getParticipants(regformId), [regformId], defaultValue || []);
+}
 
 export async function addServer(data: AddServer) {
   return await db.servers.add(data);

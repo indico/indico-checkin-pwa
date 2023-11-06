@@ -1,5 +1,5 @@
 import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLoaderData, useLocation, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   ChevronLeftIcon,
@@ -15,14 +15,23 @@ import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import Title from '../../Components/Tailwind/PageTitle';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
-import db, {Event, Regform, Participant} from '../../db/db';
+import db, {
+  Event,
+  Regform,
+  Participant,
+  useLiveEvent,
+  useLiveRegform,
+  useLiveParticipant,
+  getEvent,
+  getRegform,
+  getParticipant,
+} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
-import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
-import {NotFound} from '../NotFound';
+import {NotFoundBanner} from '../NotFound';
 import AccompanyingPersons from './AccompanyingPersons';
 import {Field, Section, getAccompanyingPersons} from './fields';
 import {PaymentWarning, markAsUnpaid} from './payment';
@@ -38,43 +47,60 @@ const makeDebounce = (delay: number) => {
 
 const debounce = makeDebounce(300);
 
+interface Params {
+  eventId: number;
+  regformId: number;
+  participantId: number;
+}
+
 export default function ParticipantPage() {
-  const {id, regformId, participantId} = useParams();
+  const data = useLoaderData() as {
+    event?: Event;
+    regform?: Regform;
+    participant?: Participant;
+    params: Params;
+  };
 
-  const event = useQuery(() => db.events.get(Number(id)), [id]);
-  const regform = useQuery(
-    () => db.regforms.get({id: Number(regformId), eventId: Number(id)}),
-    [id, regformId]
-  );
-  const participant = useQuery(
-    () => db.participants.get({id: Number(participantId), regformId: Number(regformId)}),
-    [regformId, participantId]
-  );
-
-  const title = hasValue(participant) ? participant.fullName : '';
+  const {eventId, regformId, participantId} = data.params;
+  const event = useLiveEvent(eventId, data.event);
+  const regform = useLiveRegform({id: regformId, eventId}, data.regform);
+  const participant = useLiveParticipant({id: participantId, regformId}, data.participant);
+  const title = participant?.fullName || '';
 
   return (
     <>
       <ParticipantTopNav event={event} regform={regform} participant={participant} />
-      <ParticipantPageContent event={event} regform={regform} participant={participant} />
+      <ParticipantPageContent
+        eventId={eventId}
+        regformId={regformId}
+        participantId={participantId}
+        event={event}
+        regform={regform}
+        participant={participant}
+      />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
 function ParticipantPageContent({
+  eventId,
+  regformId,
+  participantId,
   event,
   regform,
   participant,
 }: {
-  event: DBResult<Event>;
-  regform: DBResult<Regform>;
-  participant: DBResult<Participant>;
+  eventId: number;
+  regformId: number;
+  participantId: number;
+  event?: Event;
+  regform?: Regform;
+  participant?: Participant;
 }) {
   const navigate = useNavigate();
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
-  const {id, regformId, participantId} = useParams();
   const {soundEffect} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
@@ -90,7 +116,7 @@ function ParticipantPageContent({
   }, [navigate, state]);
 
   const accompanyingPersons = useMemo(() => {
-    if (hasValue(participant)) {
+    if (participant) {
       return getAccompanyingPersons(participant.registrationData);
     }
     return [];
@@ -119,9 +145,9 @@ function ParticipantPageContent({
     const controller = new AbortController();
 
     async function sync() {
-      const event = await db.events.get(Number(id));
-      const regform = await db.regforms.get(Number(regformId));
-      const participant = await db.participants.get(Number(participantId));
+      const event = await getEvent(eventId);
+      const regform = await getRegform({id: regformId, eventId});
+      const participant = await getParticipant({id: participantId, regformId});
       if (!event || !regform || !participant) {
         return;
       }
@@ -141,24 +167,20 @@ function ParticipantPageContent({
     });
 
     return () => controller.abort();
-  }, [id, regformId, participantId, errorModal, autoCheckin, offline, performCheckin]);
+  }, [eventId, regformId, participantId, errorModal, autoCheckin, offline, performCheckin]);
 
   useEffect(() => {
-    if (hasValue(participant)) {
+    if (participant) {
       setNotes(participant.notes);
     }
   }, [participant]);
 
-  if (isLoading(event) || isLoading(regform) || isLoading(participant)) {
-    return null;
-  }
-
   if (!event) {
-    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+    return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
   } else if (!regform) {
-    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
+    return <NotFoundBanner text="Registration form not found" icon={<IconFeather />} />;
   } else if (!participant) {
-    return <NotFound text="Participant not found" icon={<UserIcon />} />;
+    return <NotFoundBanner text="Participant not found" icon={<UserIcon />} />;
   }
 
   const onAddNotes = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -169,7 +191,7 @@ function ParticipantPageContent({
   };
 
   const onCheckInToggle = async () => {
-    if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
+    if (!event || !regform || !participant) {
       return;
     }
 
@@ -246,13 +268,13 @@ function ParticipantTopNav({
   regform,
   participant,
 }: {
-  event: DBResult<Event>;
-  regform: DBResult<Regform>;
-  participant: DBResult<Participant>;
+  event?: Event;
+  regform?: Regform;
+  participant?: Participant;
 }) {
   const errorModal = useErrorModal();
 
-  if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
+  if (!event || !regform || !participant) {
     return <TopNav />;
   }
 
@@ -268,7 +290,7 @@ function ParticipantTopNav({
           text: 'Mark as unpaid',
           icon: <BanknotesIcon className="text-green-500" />,
           onClick: async () => {
-            if (!hasValue(event) || !hasValue(regform) || !hasValue(participant)) {
+            if (!event || !regform || !participant) {
               return;
             }
 

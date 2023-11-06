@@ -14,7 +14,7 @@ const EventItem = ({event, regformCount}: EventItemProps) => {
   const navigate = useNavigate();
 
   const onClick = async () => {
-    await wait(100);
+    await wait(50);
     navigate(`/event/${event.id}`);
   };
 

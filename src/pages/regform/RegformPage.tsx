@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLoaderData, useLocation, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -15,47 +15,69 @@ import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
 import Table, {SearchData} from '../../Components/Tailwind/Table';
 import TopNav from '../../Components/TopNav';
-import db, {Event, Participant, Regform, deleteRegform as _deleteRegform} from '../../db/db';
+import {
+  Event,
+  Participant,
+  Regform,
+  deleteRegform as _deleteRegform,
+  getEvent,
+  getRegform,
+  useLiveEvent,
+  useLiveParticipants,
+  useLiveRegform,
+} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
-import {isLoading, hasValue, useQuery, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {syncEvent, syncParticipants, syncRegform} from '../Events/sync';
-import {NotFound} from '../NotFound';
+import {NotFoundBanner} from '../NotFound';
+
+interface Params {
+  eventId: number;
+  regformId: number;
+}
 
 export default function RegformPage() {
-  const {id, regformId} = useParams();
+  const loaderData = useLoaderData() as {
+    event?: Event;
+    regform?: Regform;
+    participants: Participant[];
+    params: Params;
+  };
 
-  const event = useQuery(() => db.events.get(Number(id)), [id]);
-  const regform = useQuery(
-    () => db.regforms.get({id: Number(regformId), eventId: Number(id)}),
-    [id, regformId]
-  );
-  const participants = useQuery(
-    () => db.participants.where({regformId: Number(regformId), deleted: 0}).toArray(),
-    [regformId]
-  );
-
-  const title = hasValue(regform) ? regform.title : '';
+  const {eventId, regformId} = loaderData.params;
+  const event = useLiveEvent(eventId, loaderData.event);
+  const regform = useLiveRegform(regformId, loaderData.regform);
+  const participants = useLiveParticipants(regformId, loaderData.participants);
+  const title = regform?.title || '';
 
   return (
     <>
       <RegformTopNav event={event} regform={regform} />
-      <RegformPageContent event={event} regform={regform} participants={participants} />
+      <RegformPageContent
+        eventId={eventId}
+        regformId={regformId}
+        event={event}
+        regform={regform}
+        participants={participants}
+      />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
 function RegformPageContent({
+  eventId,
+  regformId,
   event,
   regform,
   participants,
 }: {
-  event: DBResult<Event>;
-  regform: DBResult<Regform>;
-  participants: DBResult<Participant[]>;
+  eventId: number;
+  regformId: number;
+  event?: Event;
+  regform?: Regform;
+  participants: Participant[];
 }) {
-  const {id, regformId} = useParams();
   const navigate = useNavigate();
   const {state} = useLocation();
   const errorModal = useErrorModal();
@@ -75,8 +97,8 @@ function RegformPageContent({
   useEffect(() => {
     async function _sync() {
       const controller = new AbortController();
-      const event = await db.events.get({id: Number(id)});
-      const regform = await db.regforms.get({id: Number(regformId)});
+      const event = await getEvent(eventId);
+      const regform = await getRegform({id: regformId, eventId});
       if (!event || !regform) {
         return;
       }
@@ -98,16 +120,12 @@ function RegformPageContent({
     }
 
     sync();
-  }, [id, regformId, errorModal]);
-
-  if (isLoading(event) || isLoading(regform) || isLoading(participants)) {
-    return null;
-  }
+  }, [eventId, regformId, errorModal]);
 
   if (!event) {
-    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+    return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
   } else if (!regform) {
-    return <NotFound text="Registration form not found" icon={<IconFeather />} />;
+    return <NotFoundBanner text="Registration form not found" icon={<IconFeather />} />;
   }
 
   return (
@@ -137,7 +155,7 @@ function RegformPageContent({
             searchData={searchData}
             setSearchData={setSearchData}
             onRowClick={async (p: Participant) => {
-              await wait(100);
+              await wait(50);
               navigate(`/event/${event.id}/${regform.id}/${p.id}`, {
                 state: {backBtnText: regform.title},
               });
@@ -221,12 +239,12 @@ function LoadingParticipantsBanner() {
   );
 }
 
-function RegformTopNav({event, regform}: {event: DBResult<Event>; regform: DBResult<Regform>}) {
+function RegformTopNav({event, regform}: {event?: Event; regform?: Regform}) {
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const confirmModal = useConfirmModal();
 
-  if (!hasValue(event) || !hasValue(regform)) {
+  if (!event || !regform) {
     return <TopNav />;
   }
 
@@ -249,7 +267,7 @@ function RegformTopNav({event, regform}: {event: DBResult<Event>; regform: DBRes
           text: 'Remove registration form',
           icon: <TrashIcon className="text-red-700 dark:text-red-500" />,
           onClick: () => {
-            if (!hasValue(event) || !hasValue(regform)) {
+            if (!event || !regform) {
               return;
             }
 

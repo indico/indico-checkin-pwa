@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useLoaderData, useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
 import BottomNav from '../../Components/BottomNav';
@@ -8,50 +8,62 @@ import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import Title from '../../Components/Tailwind/PageTitle';
 import TopNav from '../../Components/TopNav';
-import db, {Event, Regform, deleteEvent as _deleteEvent} from '../../db/db';
+import {
+  Event,
+  Regform,
+  deleteEvent as _deleteEvent,
+  getEvent,
+  useLiveEvent,
+  useLiveRegforms,
+} from '../../db/db';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
-import {useQuery, isLoading, hasValue, DBResult} from '../../utils/db';
 import {wait} from '../../utils/wait';
 import {syncEvent, syncRegforms} from '../Events/sync';
-import {NotFound} from '../NotFound';
+import {NotFoundBanner} from '../NotFound';
+
+interface Params {
+  eventId: number;
+}
 
 export default function EventPage() {
-  const {id: eventId} = useParams();
+  const loaderData = useLoaderData() as {
+    event?: Event;
+    regforms: Regform[];
+    params: Params;
+  };
 
-  const event = useQuery(() => db.events.get(Number(eventId)), [eventId]);
-  const regforms = useQuery(
-    () => db.regforms.where({eventId: Number(eventId), deleted: 0}).toArray(),
-    [eventId]
-  );
-
-  const title = hasValue(event) ? event.title : '';
+  const {eventId} = loaderData.params;
+  const event = useLiveEvent(eventId, loaderData.event);
+  const regforms = useLiveRegforms(eventId, loaderData.regforms);
+  const title = event?.title || '';
 
   return (
     <>
       <EventTopNav event={event} />
-      <EventPageContent event={event} regforms={regforms} />
+      <EventPageContent eventId={eventId} event={event} regforms={regforms} />
       <BottomNav backBtnText={title} />
     </>
   );
 }
 
 function EventPageContent({
+  eventId,
   event,
   regforms,
 }: {
-  event: DBResult<Event>;
-  regforms: DBResult<Regform[]>;
+  eventId: number;
+  event?: Event;
+  regforms: Regform[];
 }) {
   const navigate = useNavigate();
-  const {id: eventId} = useParams();
   const errorModal = useErrorModal();
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function sync() {
-      const event = await db.events.get({id: Number(eventId)});
+      const event = await getEvent(eventId);
       if (!event) {
         return;
       }
@@ -67,10 +79,8 @@ function EventPageContent({
     return () => controller.abort();
   }, [eventId, errorModal]);
 
-  if (isLoading(event) || isLoading(regforms)) {
-    return null;
-  } else if (!hasValue(event)) {
-    return <NotFound text="Event not found" icon={<CalendarDaysIcon />} />;
+  if (!event) {
+    return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
   }
 
   const navigateToRegform = (idx = 0) => {
@@ -83,7 +93,7 @@ function EventPageContent({
     <button
       key={idx}
       type="button"
-      onClick={() => wait(100).then(() => navigateToRegform(idx))}
+      onClick={() => wait(50).then(() => navigateToRegform(idx))}
       className="flex cursor-pointer items-center justify-between gap-2 rounded-xl bg-white p-6 shadow
                  transition-all active:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:active:bg-gray-700"
     >
@@ -165,12 +175,12 @@ function NoRegformsBanner() {
   );
 }
 
-function EventTopNav({event}: {event: DBResult<Event>}) {
+function EventTopNav({event}: {event?: Event}) {
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const confirmModal = useConfirmModal();
 
-  if (!hasValue(event)) {
+  if (!event) {
     return <TopNav backBtnText="Home" />;
   }
 
@@ -190,7 +200,7 @@ function EventTopNav({event}: {event: DBResult<Event>}) {
       text: 'Remove event',
       icon: <TrashIcon className="text-red-700 dark:text-red-500" />,
       onClick: () => {
-        if (!hasValue(event)) {
+        if (!event) {
           return;
         }
 

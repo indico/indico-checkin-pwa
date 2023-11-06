@@ -1,11 +1,18 @@
 import {useEffect} from 'react';
+import {useLoaderData} from 'react-router-dom';
 import {CalendarDaysIcon, ServerStackIcon} from '@heroicons/react/20/solid';
 import BottomNav from '../../Components/BottomNav';
 import {Typography} from '../../Components/Tailwind';
 import TopNav from '../../Components/TopNav';
-import db, {Event, Regform, Server} from '../../db/db';
+import db, {
+  Event,
+  Regform,
+  Server,
+  useLiveEvents,
+  useLiveRegforms,
+  useLiveServers,
+} from '../../db/db';
 import {useErrorModal} from '../../hooks/useModal';
-import {useQuery, isLoading} from '../../utils/db';
 import {syncEvents} from '../Events/sync';
 import EventItem from './EventItem';
 
@@ -21,9 +28,14 @@ export default function Homepage() {
 
 function HomepageContent() {
   const errorModal = useErrorModal();
-  const servers = useQuery(() => db.servers.toArray());
-  const events = useQuery(() => db.events.where({deleted: 0}).toArray());
-  const regforms = useQuery(() => db.regforms.where({deleted: 0}).toArray());
+  const data = useLoaderData() as {
+    servers: Server[];
+    events: Event[];
+    regforms: Regform[];
+  };
+  const servers = useLiveServers(data.servers);
+  const events = useLiveEvents(data.events);
+  const regforms = useLiveRegforms(undefined, data.regforms);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,10 +50,6 @@ function HomepageContent() {
     );
     return () => controller.abort();
   }, [errorModal]);
-
-  if (isLoading(servers) || isLoading(events) || isLoading(regforms)) {
-    return null;
-  }
 
   if (events.length === 0) {
     return <NoEventsBanner />;
