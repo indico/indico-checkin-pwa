@@ -104,8 +104,8 @@ class IndicoCheckin extends Dexie {
     this.version(1).stores({
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, deleted',
-      regforms: 'id++, indicoId, eventId, deleted',
-      participants: 'id++, indicoId, regformId, deleted',
+      regforms: 'id++, indicoId, eventId, deleted, [id+eventId], [eventId+deleted]',
+      participants: 'id++, indicoId, regformId, deleted, [id+regformId], [regformId+deleted]',
     });
   }
 }
