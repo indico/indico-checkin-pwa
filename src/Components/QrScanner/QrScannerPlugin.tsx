@@ -66,7 +66,7 @@ const QrScannerPlugin = ({
       }
     };
 
-    showQRCode();
+    showQRCode().catch(err => console.error(err));
 
     return () => {
       const stopQrScanner = async () => {
