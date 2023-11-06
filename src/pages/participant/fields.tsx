@@ -186,7 +186,7 @@ function MultiChoiceField({title, description, choices, data}: ChoiceFieldProps)
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
+      <Typography as="div" variant="body1">
         <ul className="list-inside list-disc">
           {selected.map(({id, caption, amount}) => (
             <li key={id}>
