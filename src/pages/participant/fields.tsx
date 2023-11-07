@@ -104,10 +104,11 @@ function TextAreaField({title, description, data}: FieldProps) {
 }
 
 function DateField({title, description, data}: FieldProps) {
+  const date = data ? formatDatetime(data) : '';
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <Typography variant="body1">{formatDatetime(data)}</Typography>
+      <Typography variant="body1">{date}</Typography>
     </div>
   );
 }
