@@ -62,25 +62,28 @@ function registerValidSW(swUrl: string, config?: Config) {
     .register(swUrl)
     .then(registration => {
       if (registration.waiting) {
-        registration.waiting.postMessage('SKIP_WAITING');
+        registration.waiting.postMessage({type: 'SKIP_WAITING'});
       }
 
       registration.onupdatefound = () => {
+        console.log('Update is available');
         const installingWorker = registration.installing;
         if (installingWorker == null) {
           return;
         }
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
+            console.log('Update installed');
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,
               // but the previous service worker will still serve the older
               // content until all client tabs are closed.
               // To avoid having outdated clients, we use skipWaiting() to
               // activate the new service worker immediately.
-              // This is followed by a page refresh to fetch new assets.
+              // This is followed by a page refresh (using the 'controllerchange' event)
+              // to fetch new assets.
               if (registration.waiting) {
-                registration.waiting.postMessage('SKIP_WAITING');
+                registration.waiting.postMessage({type: 'SKIP_WAITING'});
               }
 
               // Execute callback
@@ -147,13 +150,15 @@ export function unregister() {
   }
 }
 
-let refreshing = false;
 // When a new service worker is installed we forcefully reload the page
 // to ensure that all assets are loaded with the new worker.
 // https://whatwebcando.today/articles/handling-service-worker-updates/
-navigator.serviceWorker.addEventListener('controllerchange', () => {
+let refreshing = false;
+navigator.serviceWorker.oncontrollerchange = () => {
+  console.log('Service worker updated');
   if (!refreshing) {
+    console.log('Reloading pages..');
     window.location.reload();
     refreshing = true;
   }
-});
+};

@@ -11,6 +11,7 @@ import {playSound, sounds} from '../utils/sound';
 
 export default function SettingsPage() {
   const isDev = process.env.NODE_ENV === 'development';
+  const version = process.env.REACT_APP_VERSION;
 
   return (
     <>
@@ -18,6 +19,9 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-12 p-4">
         <MainSettings />
         {isDev && <DevModeSettings />}
+        <Typography as="div" variant="body3">
+          App version: {version}
+        </Typography>
       </div>
       <BottomNav />
     </>

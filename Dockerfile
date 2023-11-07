@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY tailwind.config.js .
 COPY tsconfig.json .
+COPY .env.production .
 COPY public public
 COPY src src
 COPY types types
