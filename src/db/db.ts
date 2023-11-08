@@ -224,6 +224,32 @@ export async function addParticipant(data: AddParticipant) {
   return await db.participants.add({...data, deleted, notes});
 }
 
+export async function addParticipants(data: AddParticipant[]) {
+  const participants = data.map(p => ({
+    ...p,
+    deleted: (p.deleted ? 1 : 0) as IDBBoolean,
+    notes: p.notes || '',
+  }));
+
+  // Firefox does not support compound indexes with auto-incrementing keys
+  // Essentially, when inserting an item with an auto-incrementing key, the
+  // index does not get updated so the item is not found when searching for it afterwards
+  // A workaround is to first insert the items and then use put() with the new key which
+  // forces the index to update.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1404276
+  // There was a similar issue which has been fixed:
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=701972
+  if (isFirefox()) {
+    return await db.transaction('readwrite', db.participants, async () => {
+      const ids = await db.participants.bulkAdd(participants, {allKeys: true});
+      const participantsWithIds = participants.map((p, i) => ({...p, id: ids[i]}));
+      await db.participants.bulkPut(participantsWithIds);
+    });
+  } else {
+    return await db.participants.bulkAdd(participants);
+  }
+}
+
 export async function deleteEvent(id: number) {
   return db.transaction('readwrite', [db.events, db.regforms, db.participants], async () => {
     const regforms = await db.regforms.where({eventId: id}).toArray();
@@ -271,4 +297,8 @@ export async function updateParticipant(id: number, data: IndicoParticipant) {
     formattedPrice,
     isPaid,
   });
+}
+
+function isFirefox() {
+  return navigator.userAgent.toLowerCase().includes('firefox');
 }

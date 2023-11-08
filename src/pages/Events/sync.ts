@@ -1,5 +1,12 @@
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import db, {Event, type IDBBoolean, Participant, Regform, updateParticipant} from '../../db/db';
+import db, {
+  Event,
+  type IDBBoolean,
+  Participant,
+  Regform,
+  updateParticipant,
+  addParticipants,
+} from '../../db/db';
 import {
   FailedResponse,
   getEvent,
@@ -183,11 +190,9 @@ export async function syncParticipants(
       // participants that we don't have locally, add them
       const newData = onlyNew.map(p => ({
         ...p,
-        notes: '',
-        deleted: 0 as IDBBoolean,
-        regformId: regform.id as number,
+        regformId: regform.id,
       }));
-      await db.participants.bulkAdd(newData);
+      await addParticipants(newData);
       // participants that we have both locally and in Indico, just update them
       const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
       await db.participants.bulkUpdate(commonData);
