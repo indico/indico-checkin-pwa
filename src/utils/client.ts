@@ -41,7 +41,7 @@ export interface IndicoRegform {
   isOpen: boolean;
 }
 
-export interface IndicoParticipant {
+interface _IndicoParticipant {
   id: number;
   regformId: number;
   eventId: number;
@@ -60,6 +60,15 @@ export interface IndicoParticipant {
   formattedPrice: string;
   isPaid: boolean;
 }
+
+export interface IndicoParticipant extends _IndicoParticipant {
+  registrationData: RegistrationData[];
+}
+
+// Returned for /forms/:regformId/registrations/
+// The registration data is not needed to display the list of participants
+// and it saves a lot of bandwith to not include it
+export type IndicoParticipantList = _IndicoParticipant[];
 
 interface EventLocator {
   serverId: number;
@@ -134,21 +143,28 @@ async function makeRequest<T>(
 }
 
 export async function getEvent({serverId, eventId}: EventLocator, options?: object) {
-  return makeRequest<IndicoEvent>(serverId, `api/checkin/event/${eventId}`, options);
+  return makeRequest<IndicoEvent>(serverId, `api/checkin/event/${eventId}/`, options);
+}
+
+export async function getRegforms({serverId, eventId}: EventLocator, options?: object) {
+  return makeRequest<IndicoRegform[]>(serverId, `api/checkin/event/${eventId}/forms/`, options);
 }
 
 export async function getRegform({serverId, eventId, regformId}: RegformLocator, options?: object) {
   return makeRequest<IndicoRegform>(
     serverId,
-    `api/checkin/event/${eventId}/registration/${regformId}`,
+    `api/checkin/event/${eventId}/forms/${regformId}/`,
     options
   );
 }
 
-export async function getRegforms({serverId, eventId}: EventLocator, options?: object) {
-  return makeRequest<IndicoRegform[]>(
+export async function getParticipants(
+  {serverId, eventId, regformId}: RegformLocator,
+  options?: object
+) {
+  return makeRequest<IndicoParticipantList>(
     serverId,
-    `api/checkin/event/${eventId}/registrations`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/`,
     options
   );
 }
@@ -159,18 +175,7 @@ export async function getParticipant(
 ) {
   return makeRequest<IndicoParticipant>(
     serverId,
-    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
-    options
-  );
-}
-
-export async function getParticipants(
-  {serverId, eventId, regformId}: RegformLocator,
-  options?: object
-) {
-  return makeRequest<IndicoParticipant[]>(
-    serverId,
-    `api/checkin/event/${eventId}/registration/${regformId}/registrations`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
     options
   );
 }
@@ -181,7 +186,7 @@ export async function checkInParticipant(
 ) {
   return makeRequest<IndicoParticipant>(
     serverId,
-    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({checked_in: checkInState}),
@@ -195,7 +200,7 @@ export async function togglePayment(
 ) {
   return makeRequest<IndicoParticipant>(
     serverId,
-    `api/checkin/event/${eventId}/registration/${regformId}/${participantId}`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({paid}),

@@ -3,7 +3,7 @@ import {useLiveQuery} from 'dexie-react-hooks';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoParticipant} from '../utils/client';
 
-export type IDBBoolean = 1 | 0; // IndexedDB doesn support indexing boolean, so we use 1/0 instead
+export type IDBBoolean = 1 | 0; // IndexedDB doesn't support indexing booleans, so we use {1,0} instead
 
 interface _Server {
   baseUrl: string;
@@ -78,7 +78,9 @@ interface _Participant {
   regformId: number;
   fullName: string;
   registrationDate: string;
-  registrationData: RegistrationData[];
+  // registrationData is not sent by Indico when listing all participants to save on bandwith.
+  // We only fetch it once we actually navigate to the participant details page.
+  registrationData?: RegistrationData[];
   state: RegistrationState;
   checkinSecret: string;
   checkedIn: boolean;

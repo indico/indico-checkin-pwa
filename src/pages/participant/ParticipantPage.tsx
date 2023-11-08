@@ -115,7 +115,7 @@ function ParticipantPageContent({
   }, [navigate, state]);
 
   const accompanyingPersons = useMemo(() => {
-    if (participant) {
+    if (participant?.registrationData) {
       return getAccompanyingPersons(participant.registrationData);
     }
     return [];
@@ -202,16 +202,22 @@ function ParticipantPageContent({
     await performCheckin(event, regform, participant, !participant.checkedIn);
   };
 
-  const registrationData = participant.registrationData.map((data: Section, i: number) => {
-    const section: SectionProps = {
-      ...data,
-      isFirst: i === 0,
-      isLast: i === participant.registrationData.length - 1,
-      isUnique: participant.registrationData.length === 1,
-    };
+  let registrationData;
+  if (!participant?.registrationData) {
+    registrationData = null;
+  } else {
+    const length = participant.registrationData.length;
+    registrationData = participant.registrationData.map((data: Section, i: number) => {
+      const section: SectionProps = {
+        ...data,
+        isFirst: i === 0,
+        isLast: i === length - 1,
+        isUnique: length === 1,
+      };
 
-    return <RegistrationSection key={section.id} {...section} />;
-  });
+      return <RegistrationSection key={section.id} {...section} />;
+    });
+  }
 
   return (
     <>
