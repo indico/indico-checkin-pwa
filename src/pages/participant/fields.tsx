@@ -220,7 +220,7 @@ function AccommodationField({title, description, choices, data}: ChoiceFieldProp
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <Typography variant="body1">
+      <Typography as="div" variant="body1">
         <ul>
           <li>Arrival: {formatDatetime(arrivalDate)}</li>
           <li>Departure: {formatDatetime(departureDate)}</li>
