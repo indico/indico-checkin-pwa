@@ -16,30 +16,31 @@ import {
   getRegforms,
 } from '../../utils/client';
 
-interface IndicoId {
-  indicoId: number;
+function byId<T, TKey extends keyof T, TKeyValue extends T[TKey] & (number | string | symbol)>(
+  arr: T[],
+  c: TKey
+): Record<TKeyValue, T> {
+  return Object.fromEntries(arr.map(v => [v[c], v]));
 }
 
-function split<T extends IndicoId, U extends IndicoId>(a: T[], b: U[]): [T[], U[], [T, U][]] {
-  const existingById = a.reduce(
-    (acc, v) => {
-      acc[v.indicoId] = v;
-      return acc;
-    },
-    {} as {[key: number]: T}
-  );
+function split<T extends {indicoId: number}, U extends {id: number}>(
+  currentRegforms: T[],
+  newRegforms: U[]
+): [T[], U[], [T, U][]] {
+  const existingById = byId(currentRegforms, 'indicoId');
+  const newById = byId(newRegforms, 'id');
 
-  const newById = b.reduce(
-    (acc, v) => {
-      acc[v.indicoId] = v;
-      return acc;
-    },
-    {} as {[key: number]: U}
-  );
-
-  const onlyExisting = a.filter(v => !(v.indicoId in newById));
-  const onlyNew = b.filter(v => !(v.indicoId in existingById));
-  const common: [T, U][] = a.filter(v => v.indicoId in newById).map(v => [v, newById[v.indicoId]]);
+  // Items that exist locally but not in Indico (aka deleted in Indico)
+  const onlyExisting = currentRegforms.filter(v => !(v.indicoId in newById));
+  // Items that exist in Indico but not locally (newly added)
+  const onlyNew = newRegforms.filter(v => !(v.id in existingById));
+  // Items that exist both locally and in Indico (will be updated)
+  const common: [T, U][] = currentRegforms
+    .filter(v => v.indicoId in newById)
+    .map(v => {
+      const u = newById[v.indicoId as keyof typeof newById];
+      return [v, u];
+    });
   return [onlyExisting, onlyNew, common];
 }
 
@@ -85,16 +86,7 @@ export async function syncRegforms(
   if (response.ok) {
     await db.transaction('readwrite', db.regforms, async () => {
       const existingRegforms = await db.regforms.where({eventId: event.id}).toArray();
-      const newRegforms = response.data.map(
-        ({id, title, isOpen, registrationCount, checkedInCount}) => ({
-          indicoId: id,
-          title,
-          isOpen,
-          registrationCount,
-          checkedInCount,
-        })
-      );
-      const [onlyExisting, , common] = split(existingRegforms, newRegforms);
+      const [onlyExisting, , common] = split(existingRegforms, response.data);
 
       // regforms that don't exist in Indico anymore, mark them as deleted
       const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
@@ -153,43 +145,15 @@ export async function syncParticipants(
   if (response.ok) {
     await db.transaction('readwrite', db.participants, async () => {
       const existingParticipants = await db.participants.where({regformId: regform.id}).toArray();
-      const newParticipants = response.data.map(
-        ({
-          id,
-          fullName,
-          registrationDate,
-          state,
-          checkinSecret,
-          checkedIn,
-          checkedInDt,
-          occupiedSlots,
-          price,
-          currency,
-          formattedPrice,
-          isPaid,
-        }) => ({
-          indicoId: id,
-          fullName,
-          registrationDate,
-          state,
-          checkinSecret,
-          checkedIn,
-          checkedInDt,
-          occupiedSlots,
-          price,
-          currency,
-          formattedPrice,
-          isPaid,
-        })
-      );
-      const [onlyExisting, onlyNew, common] = split(existingParticipants, newParticipants);
+      const [onlyExisting, onlyNew, common] = split(existingParticipants, response.data);
 
       // participants that don't exist in Indico anymore, mark them as deleted
       const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.participants.bulkUpdate(deleted);
       // participants that we don't have locally, add them
-      const newData = onlyNew.map(p => ({
+      const newData = onlyNew.map(({id, ...p}) => ({
         ...p,
+        indicoId: id,
         regformId: regform.id,
       }));
       await addParticipants(newData);
