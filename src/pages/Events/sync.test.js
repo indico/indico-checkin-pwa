@@ -323,7 +323,6 @@ describe('test syncParticipants()', () => {
         id: 10,
         fullName: 'John Doe',
         registrationDate: '2020-01-01',
-        registrationData: [],
         state: 'complete',
         checkedIn: true,
         checkedInDt: '2020-01-02',
@@ -334,7 +333,6 @@ describe('test syncParticipants()', () => {
         id: 30,
         fullName: 'Jane Doe',
         registrationDate: '2020-03-01',
-        registrationData: [],
         state: 'unpaid',
         checkedIn: true,
         checkedInDt: null,
@@ -347,8 +345,8 @@ describe('test syncParticipants()', () => {
     const storedEvent = {id: 1, serverId: 1};
     const storedRegform = {id: 3, eventId: 1};
     const storedParticipants = [
-      {id: 1, indicoId: 10, regformId: 3},
-      {id: 2, indicoId: 20, regformId: 3},
+      {id: 1, indicoId: 10, regformId: 3, registrationData: []},
+      {id: 2, indicoId: 20, regformId: 3, registrationData: []},
     ];
     await db.events.add(storedEvent);
     await db.regforms.add(storedRegform);
@@ -375,6 +373,7 @@ describe('test syncParticipants()', () => {
         id: 2,
         indicoId: 20,
         regformId: 3,
+        registrationData: [],
         deleted: 1,
       },
       {
@@ -383,7 +382,6 @@ describe('test syncParticipants()', () => {
         regformId: 3,
         fullName: 'Jane Doe',
         registrationDate: '2020-03-01',
-        registrationData: [],
         state: 'unpaid',
         checkedIn: true,
         checkedInDt: null,
