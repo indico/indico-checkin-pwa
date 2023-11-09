@@ -92,7 +92,10 @@ export async function syncRegforms(
       const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.regforms.bulkUpdate(deleted);
       // regforms that we have both locally and in Indico, just update them
-      const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
+      const commonData = common.map(([{id}, {id: _id, ...data}]) => ({
+        key: id,
+        changes: {...data, eventId: event.id},
+      }));
       await db.regforms.bulkUpdate(commonData);
     });
   } else {
@@ -158,7 +161,10 @@ export async function syncParticipants(
       }));
       await addParticipants(newData);
       // participants that we have both locally and in Indico, just update them
-      const commonData = common.map(([{id}, data]) => ({key: id, changes: data}));
+      const commonData = common.map(([{id}, {id: _id, eventId, ...data}]) => ({
+        key: id,
+        changes: {...data, regformId: regform.id},
+      }));
       await db.participants.bulkUpdate(commonData);
     });
   } else {
