@@ -1,7 +1,7 @@
 import Dexie, {type EntityTable} from 'dexie';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {FieldProps} from '../pages/participant/fields';
-import {IndicoParticipant} from '../utils/client';
+import {IndicoEvent, IndicoParticipant, IndicoRegform} from '../utils/client';
 
 export type IDBBoolean = 1 | 0; // IndexedDB doesn't support indexing booleans, so we use {1,0} instead
 
@@ -272,6 +272,11 @@ export async function deleteEvent(id: number) {
   });
 }
 
+export async function updateEvent(id: number, data: IndicoEvent) {
+  const {id: indicoId, title, startDt: date, ...rest} = data; // TODO: startDt, endDt
+  await db.events.update(id, {indicoId, date, ...rest});
+}
+
 export async function deleteRegform(id: number) {
   return db.transaction('readwrite', [db.regforms, db.participants], async () => {
     await db.participants.where({regformId: id}).delete();
@@ -279,35 +284,32 @@ export async function deleteRegform(id: number) {
   });
 }
 
+export async function updateRegform(id: number, data: IndicoRegform) {
+  const {id: indicoId, eventId, introduction, startDt, endDt, ...rest} = data;
+  await db.regforms.update(id, {indicoId, ...rest});
+}
+
+export async function updateRegforms(ids: number[], regforms: IndicoRegform[]) {
+  const updates = regforms.map(
+    ({id: indicoId, eventId, introduction, startDt, endDt, ...rest}, i) => ({
+      key: ids[i],
+      changes: {indicoId, ...rest},
+    })
+  );
+  await db.regforms.bulkUpdate(updates);
+}
+
 export async function updateParticipant(id: number, data: IndicoParticipant) {
-  const {
-    id: indicoId,
-    fullName,
-    registrationDate,
-    registrationData,
-    state,
-    checkedIn,
-    checkedInDt,
-    occupiedSlots,
-    price,
-    currency,
-    formattedPrice,
-    isPaid,
-  } = data;
-  await db.participants.update(id, {
-    indicoId,
-    fullName,
-    registrationDate,
-    registrationData,
-    state,
-    occupiedSlots,
-    checkedIn,
-    checkedInDt,
-    price,
-    currency,
-    formattedPrice,
-    isPaid,
-  });
+  const {id: indicoId, eventId, regformId, ...rest} = data;
+  await db.participants.update(id, {indicoId, ...rest});
+}
+
+export async function updateParticipants(ids: number[], participants: IndicoParticipant[]) {
+  const updates = participants.map(({id: indicoId, eventId, regformId, ...rest}, i) => ({
+    key: ids[i],
+    changes: {indicoId, ...rest},
+  }));
+  await db.participants.bulkUpdate(updates);
 }
 
 function isFirefox() {

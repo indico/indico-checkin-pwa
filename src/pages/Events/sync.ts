@@ -6,6 +6,10 @@ import db, {
   Regform,
   updateParticipant,
   addParticipants,
+  updateParticipants,
+  updateRegform,
+  updateRegforms,
+  updateEvent,
 } from '../../db/db';
 import {
   FailedResponse,
@@ -23,25 +27,22 @@ function byId<T, TKey extends keyof T, TKeyValue extends T[TKey] & (number | str
   return Object.fromEntries(arr.map(v => [v[c], v]));
 }
 
-function split<T extends {indicoId: number}, U extends {id: number}>(
-  currentRegforms: T[],
-  newRegforms: U[]
-): [T[], U[], [T, U][]] {
-  const existingById = byId(currentRegforms, 'indicoId');
-  const newById = byId(newRegforms, 'id');
+function split<T extends {id: number; indicoId: number}, U extends {id: number}>(
+  existingItems: T[],
+  newData: U[]
+): [T[], U[], [number[], U[]]] {
+  const existingById = byId(existingItems, 'indicoId');
+  const newById = byId(newData, 'id');
 
   // Items that exist locally but not in Indico (aka deleted in Indico)
-  const onlyExisting = currentRegforms.filter(v => !(v.indicoId in newById));
+  const onlyExisting = existingItems.filter(v => !(v.indicoId in newById));
   // Items that exist in Indico but not locally (newly added)
-  const onlyNew = newRegforms.filter(v => !(v.id in existingById));
+  const onlyNew = newData.filter(v => !(v.id in existingById));
   // Items that exist both locally and in Indico (will be updated)
-  const common: [T, U][] = currentRegforms
-    .filter(v => v.indicoId in newById)
-    .map(v => {
-      const u = newById[v.indicoId as keyof typeof newById];
-      return [v, u];
-    });
-  return [onlyExisting, onlyNew, common];
+  const commonItems = existingItems.filter(v => v.indicoId in newById);
+  const commonIds = commonItems.map(v => v.id);
+  const commonData = commonItems.map(v => newById[v.indicoId as keyof typeof newById]);
+  return [onlyExisting, onlyNew, [commonIds, commonData]];
 }
 
 export async function syncEvents(
@@ -57,8 +58,7 @@ export async function syncEvents(
 
   for (const [i, response] of responses.entries()) {
     if (response.ok) {
-      const {id, title, startDt: date} = response.data;
-      await db.events.update(events[i].id, {indicoId: id, title, date});
+      await updateEvent(events[i].id, response.data);
     } else if (response.status === 404) {
       await db.events.update(events[i].id, {deleted: 1});
     } else {
@@ -92,11 +92,7 @@ export async function syncRegforms(
       const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.regforms.bulkUpdate(deleted);
       // regforms that we have both locally and in Indico, just update them
-      const commonData = common.map(([{id}, {id: _id, ...data}]) => ({
-        key: id,
-        changes: {...data, eventId: event.id},
-      }));
-      await db.regforms.bulkUpdate(commonData);
+      await updateRegforms(...common);
     });
   } else {
     handleError(response, 'Something went wrong when updating registration forms', errorModal);
@@ -117,14 +113,7 @@ export async function syncRegform(
   );
 
   if (response.ok) {
-    const {id, title, isOpen, registrationCount, checkedInCount} = response.data;
-    await db.regforms.update(regform.id, {
-      indicoId: id,
-      title,
-      isOpen,
-      registrationCount,
-      checkedInCount,
-    });
+    await updateRegform(regform.id, response.data);
   } else if (response.status === 404) {
     await db.regforms.update(regform.id, {deleted: 1});
   } else {
@@ -161,11 +150,7 @@ export async function syncParticipants(
       }));
       await addParticipants(newData);
       // participants that we have both locally and in Indico, just update them
-      const commonData = common.map(([{id}, {id: _id, eventId, ...data}]) => ({
-        key: id,
-        changes: {...data, regformId: regform.id},
-      }));
-      await db.participants.bulkUpdate(commonData);
+      await updateParticipants(...common);
     });
   } else {
     handleError(response, 'Something went wrong when updating participants', errorModal);

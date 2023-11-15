@@ -21,7 +21,7 @@ export const useIsOffline = () => {
   return offline;
 };
 
-interface IndicoEvent {
+export interface IndicoEvent {
   id: number;
   title: string;
   description?: string;
