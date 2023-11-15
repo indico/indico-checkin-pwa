@@ -5,7 +5,16 @@ import App from './App';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 // import reportWebVitals from './reportWebVitals';
+import db from './db/db';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+
+async function runDBCleanup() {
+  await db.transaction('readwrite', db.participants, async () => {
+    await db.participants.where({checkedInLoading: 1}).modify({checkedInLoading: 0});
+  });
+}
+
+runDBCleanup().catch(err => console.error(err));
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

@@ -87,7 +87,7 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
                     after:border after:border-gray-300 after:bg-white after:transition-all
                     after:duration-[200ms] after:content-[''] peer-checked:bg-blue-600
                     peer-checked:after:translate-x-[200%] peer-checked:after:border-0
-                    peer-checked:after:bg-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300
+                    peer-checked:after:bg-white peer-focus:outline-none
                     dark:border-gray-600 dark:bg-gray-600 dark:after:bg-gray-300
                     dark:peer-checked:after:bg-gray-300 dark:peer-focus:ring-blue-800 ${
                       isLoading ? 'opacity-70' : ''

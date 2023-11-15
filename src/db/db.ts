@@ -94,6 +94,7 @@ interface _Participant {
 
 export interface Participant extends _Participant {
   id: number;
+  checkedInLoading: IDBBoolean; // 1 (true) while the request to check in is in progress
   deleted: IDBBoolean;
   notes: string;
 }
@@ -124,7 +125,8 @@ class IndicoCheckin extends Dexie {
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, deleted',
       regforms: 'id++, indicoId, eventId, deleted, [id+eventId], [eventId+deleted]',
-      participants: 'id++, indicoId, regformId, deleted, [id+regformId], [regformId+deleted]',
+      participants:
+        'id++, indicoId, regformId, deleted, checkedInLoading, [id+regformId], [regformId+deleted]',
     });
   }
 }
@@ -221,12 +223,13 @@ export async function addRegform(data: AddRegform) {
 export async function addParticipant(data: AddParticipant) {
   const deleted = data.deleted ? 1 : 0;
   const notes = data.notes || '';
-  return await db.participants.add({...data, deleted, notes});
+  return await db.participants.add({...data, deleted, notes, checkedInLoading: 0});
 }
 
 export async function addParticipants(data: AddParticipant[]) {
   const participants = data.map(p => ({
     ...p,
+    checkedInLoading: 0 as IDBBoolean,
     deleted: (p.deleted ? 1 : 0) as IDBBoolean,
     notes: p.notes || '',
   }));

@@ -104,7 +104,6 @@ function ParticipantPageContent({
   const {soundEffect} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
-  const [isCheckinLoading, setIsCheckinLoading] = useState(false);
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
@@ -129,13 +128,11 @@ function ParticipantPageContent({
         return;
       }
 
-      setIsCheckinLoading(true);
       try {
         await checkIn(event, regform, participant, newCheckinState, soundEffect, errorModal);
       } catch (err: any) {
         errorModal({title: 'Could not update check-in status', content: err.message});
       } finally {
-        setIsCheckinLoading(false);
       }
     },
     [offline, errorModal, soundEffect]
@@ -247,7 +244,7 @@ function ParticipantPageContent({
           <div className="mb-4 mt-4 flex justify-center">
             <CheckinToggle
               checked={participant.checkedIn}
-              isLoading={isCheckinLoading}
+              isLoading={!!participant.checkedInLoading}
               onClick={onCheckInToggle}
             />
           </div>
