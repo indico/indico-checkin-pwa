@@ -97,6 +97,7 @@ export interface Participant extends _Participant {
   checkedInLoading: IDBBoolean; // 1 (true) while the request to check in is in progress
   deleted: IDBBoolean;
   notes: string;
+  isPaidLoading: IDBBoolean; // 1 (true) while the request to mark as (un)paid is in progress
 }
 
 interface AddParticipant extends _Participant {
@@ -126,7 +127,7 @@ class IndicoCheckin extends Dexie {
       events: 'id++, indicoId, serverId, deleted',
       regforms: 'id++, indicoId, eventId, deleted, [id+eventId], [eventId+deleted]',
       participants:
-        'id++, indicoId, regformId, deleted, checkedInLoading, [id+regformId], [regformId+deleted]',
+        'id++, indicoId, regformId, deleted, checkedInLoading, isPaidLoading, [id+regformId], [regformId+deleted]',
     });
   }
 }
@@ -223,7 +224,13 @@ export async function addRegform(data: AddRegform) {
 export async function addParticipant(data: AddParticipant) {
   const deleted = data.deleted ? 1 : 0;
   const notes = data.notes || '';
-  return await db.participants.add({...data, deleted, notes, checkedInLoading: 0});
+  return await db.participants.add({
+    ...data,
+    deleted,
+    notes,
+    checkedInLoading: 0,
+    isPaidLoading: 0,
+  });
 }
 
 export async function addParticipants(data: AddParticipant[]) {
@@ -232,6 +239,7 @@ export async function addParticipants(data: AddParticipant[]) {
     checkedInLoading: 0 as IDBBoolean,
     deleted: (p.deleted ? 1 : 0) as IDBBoolean,
     notes: p.notes || '',
+    isPaidLoading: 0 as IDBBoolean,
   }));
 
   // Firefox does not support compound indexes with auto-incrementing keys

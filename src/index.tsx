@@ -11,6 +11,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 async function runDBCleanup() {
   await db.transaction('readwrite', db.participants, async () => {
     await db.participants.where({checkedInLoading: 1}).modify({checkedInLoading: 0});
+    await db.participants.where({isPaidLoading: 1}).modify({isPaidLoading: 0});
   });
 }
 
