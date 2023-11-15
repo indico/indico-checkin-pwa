@@ -82,7 +82,7 @@ export function PaymentWarning({
       <div className="mt-4 flex justify-center gap-4">
         {isLoading && <LoadingIndicator />}
         {!isLoading && (
-          <Button variant="success" onClick={onClick}>
+          <Button variant="warning" onClick={onClick}>
             <CheckIcon className="h-5 w-5" />
             Mark as paid
           </Button>
