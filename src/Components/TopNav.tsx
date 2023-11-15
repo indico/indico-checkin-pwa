@@ -32,11 +32,11 @@ export default function TopNav({
     );
   } else {
     return (
-      <div className="min-h-10 mb-4 flex items-center justify-between bg-blue-600 p-2 dark:bg-blue-700">
+      <div className="min-h-10 mb-4 flex items-center justify-between p-2">
         <button
           type="button"
           className="flex max-w-[60%] cursor-pointer items-center rounded-full transition-all
-                     active:bg-blue-700 dark:active:bg-blue-600"
+                     active:bg-blue-200/30 dark:active:bg-blue-800/30"
           onClick={async () => {
             await wait(50);
             // Typescript...
@@ -47,10 +47,10 @@ export default function TopNav({
             }
           }}
         >
-          <ArrowSmallLeftIcon className="w-[2.5rem] min-w-[2.5rem] cursor-pointer text-white" />
+          <ArrowSmallLeftIcon className="w-[2.5rem] min-w-[2.5rem] cursor-pointer text-gray-600 dark:text-gray-100" />
           <span
             className="select-none overflow-hidden text-ellipsis whitespace-nowrap
-                       pr-2 font-semibold text-gray-100"
+                       pr-2 font-semibold text-gray-600 dark:text-gray-100"
           >
             {btnText}
           </span>

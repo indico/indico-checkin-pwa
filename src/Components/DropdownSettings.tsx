@@ -29,8 +29,8 @@ export default function DropdownSettings({items}: {items: SettingsItem[]}) {
           e.stopPropagation();
           setIsVisible(v => !v);
         }}
-        className="inline-flex items-center rounded-full p-2 text-center text-sm font-medium text-gray-100
-                   transition-all focus:bg-blue-700 focus:outline-none dark:focus:bg-blue-600"
+        className="inline-flex items-center rounded-full p-2 text-center text-sm font-medium text-gray-700
+                   transition-all focus:bg-blue-200/30 focus:outline-none dark:text-gray-100 dark:focus:bg-blue-800/30"
       >
         <EllipsisVerticalIcon className="min-h-[1.5rem] min-w-[1.5rem]" />
       </button>
