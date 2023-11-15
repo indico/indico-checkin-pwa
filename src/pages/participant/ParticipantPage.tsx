@@ -12,6 +12,7 @@ import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
+import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
@@ -264,7 +265,7 @@ function ParticipantPageContent({
           </Typography>
         </div>
       </div>
-      <div className="mt-5 flex flex-col px-4">{registrationData}</div>
+      <div className="mt-5 flex flex-col px-4">{registrationData || <LoadingIndicator />}</div>
     </>
   );
 }
