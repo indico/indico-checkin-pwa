@@ -128,9 +128,10 @@ function RegformPageContent({
   }
 
   return (
-    <div className="pt-4">
+    <>
       <div>
         <div className="flex flex-col items-center gap-2 px-4">
+          <IconFeather className="w-16 text-blue-600 dark:text-blue-700" />
           <Title title={regform.title} />
           <IndicoLink
             text="Indico registration page"
@@ -160,7 +161,7 @@ function RegformPageContent({
           />
         </div>
       )}
-    </div>
+    </>
   );
 }
 
