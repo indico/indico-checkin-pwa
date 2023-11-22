@@ -14,7 +14,7 @@ COPY types types
 RUN npm ci --ignore-scripts
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.24.0-alpine3.18
+FROM nginxinc/nginx-unprivileged:stable-alpine
 
 COPY --from=builder /app/build /html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
