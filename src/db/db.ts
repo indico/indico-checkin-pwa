@@ -358,7 +358,7 @@ export async function deleteEvent(id: number) {
 
 export async function updateEvent(id: number, data: IndicoEvent) {
   const {id: indicoId, title, startDt: date, ...rest} = data; // TODO: startDt, endDt
-  await db.events.update(id, {indicoId, date, ...rest});
+  await db.events.update(id, {indicoId, title, date, ...rest});
 }
 
 export async function deleteRegform(id: number) {
