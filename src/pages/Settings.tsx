@@ -1,6 +1,5 @@
 import {ReactNode, useEffect, useState} from 'react';
 import {ChevronDownIcon, TrashIcon, WrenchScrewdriverIcon} from '@heroicons/react/20/solid';
-import BottomNav from '../Components/BottomNav';
 import {Typography} from '../Components/Tailwind';
 import {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
 import {Toggle} from '../Components/Tailwind/Toggle';
@@ -23,7 +22,6 @@ export default function SettingsPage() {
           App version: {version}
         </Typography>
       </div>
-      <BottomNav />
     </>
   );
 }

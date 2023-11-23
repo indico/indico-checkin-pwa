@@ -1,7 +1,6 @@
 import {useEffect} from 'react';
 import {useLoaderData} from 'react-router-dom';
 import {CalendarDaysIcon, ServerStackIcon} from '@heroicons/react/20/solid';
-import BottomNav from '../../Components/BottomNav';
 import {Typography} from '../../Components/Tailwind';
 import TopNav from '../../Components/TopNav';
 import db, {
@@ -21,7 +20,6 @@ export default function Homepage() {
     <>
       <TopNav />
       <HomepageContent />
-      <BottomNav />
     </>
   );
 }

@@ -2,7 +2,6 @@ import {useEffect} from 'react';
 import {useLoaderData, useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
-import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
@@ -41,7 +40,6 @@ export default function EventPage() {
     <>
       <EventTopNav event={event} />
       <EventPageContent eventId={eventId} event={event} regforms={regforms} />
-      <BottomNav />
     </>
   );
 }

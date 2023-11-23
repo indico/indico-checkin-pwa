@@ -6,7 +6,6 @@ import {
   TrashIcon,
   UserGroupIcon,
 } from '@heroicons/react/20/solid';
-import BottomNav from '../../Components/BottomNav';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {makeDefaultFilterState} from '../../Components/Tailwind/filters';
@@ -59,7 +58,6 @@ export default function RegformPage() {
         regform={regform}
         participants={participants}
       />
-      <BottomNav />
     </>
   );
 }

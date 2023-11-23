@@ -7,7 +7,6 @@ import {
   UserIcon,
   BanknotesIcon,
 } from '@heroicons/react/20/solid';
-import BottomNav from '../../Components/BottomNav';
 import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
@@ -78,7 +77,6 @@ export default function ParticipantPage() {
         regform={regform}
         participant={participant}
       />
-      <BottomNav />
     </>
   );
 }
