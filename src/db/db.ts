@@ -16,6 +16,7 @@ export interface Server extends _Server {
 }
 
 type AddServer = _Server;
+type GetServer = number | {baseUrl: string};
 
 export interface _Event {
   indicoId: number;
@@ -124,10 +125,11 @@ class IndicoCheckin extends Dexie {
     super('CheckinDatabase');
     this.version(1).stores({
       servers: 'id++, baseUrl, clientId',
-      events: 'id++, indicoId, serverId, deleted',
-      regforms: 'id++, indicoId, eventId, deleted, [id+eventId], [eventId+deleted]',
+      events: 'id++, indicoId, serverId, deleted, [indicoId+serverId]',
+      regforms:
+        'id++, indicoId, eventId, deleted, [id+eventId], [indicoId+eventId], [eventId+deleted]',
       participants:
-        'id++, indicoId, regformId, deleted, checkedInLoading, isPaidLoading, [id+regformId], [regformId+deleted]',
+        'id++, indicoId, regformId, deleted, checkedInLoading, isPaidLoading, [id+regformId], [indicoId+regformId], [regformId+deleted]',
     });
   }
 }
@@ -135,6 +137,13 @@ class IndicoCheckin extends Dexie {
 const db = new IndicoCheckin();
 
 export default db;
+
+export async function getServer(id: GetServer) {
+  if (typeof id === 'number') {
+    return await db.servers.get(id);
+  }
+  return await db.servers.get(id);
+}
 
 export async function getEvent(id: GetEvent) {
   return await db.events.get(id);
@@ -213,6 +222,22 @@ export async function addEvent(data: AddEvent): Promise<number> {
   return await db.events.add({...data, deleted});
 }
 
+export async function addEventIfNotExists(data: AddEvent): Promise<number> {
+  const {indicoId, serverId} = data;
+  let id!: number;
+
+  await db.transaction('readwrite', db.events, async () => {
+    const event = await db.events.get({indicoId, serverId});
+
+    if (event) {
+      id = event.id;
+    } else {
+      id = await addEvent(data);
+    }
+  });
+  return id;
+}
+
 export async function addRegform(regform: AddRegform): Promise<number> {
   const isOpen = !!regform.isOpen;
   const registrationCount = regform.registrationCount || 0;
@@ -239,6 +264,22 @@ export async function addRegform(regform: AddRegform): Promise<number> {
   }
 }
 
+export async function addRegformIfNotExists(data: AddRegform): Promise<number> {
+  const {indicoId, eventId} = data;
+  let id!: number;
+
+  await db.transaction('readwrite', db.regforms, async () => {
+    const regform = await db.regforms.get({indicoId, eventId});
+
+    if (regform) {
+      id = regform.id;
+    } else {
+      id = await addRegform(data);
+    }
+  });
+  return id;
+}
+
 export async function addParticipant(participant: AddParticipant): Promise<number> {
   const data = {
     ...participant,
@@ -259,6 +300,21 @@ export async function addParticipant(participant: AddParticipant): Promise<numbe
   } else {
     return await db.participants.add(data);
   }
+}
+
+export async function addParticipantIfNotExists(data: AddParticipant): Promise<number> {
+  const {indicoId, regformId} = data;
+  let id!: number;
+
+  await db.transaction('readwrite', db.participants, async () => {
+    const participant = await db.participants.get({indicoId, regformId});
+    if (participant) {
+      id = participant.id;
+    } else {
+      id = await addParticipant(data);
+    }
+  });
+  return id;
 }
 
 export async function addParticipants(data: AddParticipant[]) {
