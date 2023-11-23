@@ -204,33 +204,61 @@ export function useLiveParticipants(regformId: number, defaultValue?: Participan
   return useLiveQuery(() => getParticipants(regformId), [regformId], defaultValue || []);
 }
 
-export async function addServer(data: AddServer) {
+export async function addServer(data: AddServer): Promise<number> {
   return await db.servers.add(data);
 }
 
-export async function addEvent(data: AddEvent) {
+export async function addEvent(data: AddEvent): Promise<number> {
   const deleted = data.deleted ? 1 : 0;
   return await db.events.add({...data, deleted});
 }
 
-export async function addRegform(data: AddRegform) {
-  const isOpen = !!data.isOpen;
-  const registrationCount = data.registrationCount || 0;
-  const checkedInCount = data.checkedInCount || 0;
-  const deleted = data.deleted ? 1 : 0;
-  return await db.regforms.add({...data, isOpen, registrationCount, checkedInCount, deleted});
+export async function addRegform(regform: AddRegform): Promise<number> {
+  const isOpen = !!regform.isOpen;
+  const registrationCount = regform.registrationCount || 0;
+  const checkedInCount = regform.checkedInCount || 0;
+  const deleted = (regform.deleted ? 1 : 0) as IDBBoolean;
+  const data = {
+    ...regform,
+    isOpen,
+    registrationCount,
+    checkedInCount,
+    deleted,
+  };
+
+  // See comment in addParticipants()
+  if (isFirefox()) {
+    let id!: number;
+    await db.transaction('readwrite', db.regforms, async () => {
+      id = await db.regforms.add(data);
+      await db.regforms.put({id, ...data});
+    });
+    return id;
+  } else {
+    return await db.regforms.add(data);
+  }
 }
 
-export async function addParticipant(data: AddParticipant) {
-  const deleted = data.deleted ? 1 : 0;
-  const notes = data.notes || '';
-  return await db.participants.add({
-    ...data,
-    deleted,
-    notes,
-    checkedInLoading: 0,
-    isPaidLoading: 0,
-  });
+export async function addParticipant(participant: AddParticipant): Promise<number> {
+  const data = {
+    ...participant,
+    deleted: (participant.deleted ? 1 : 0) as IDBBoolean,
+    checkedInLoading: 0 as IDBBoolean,
+    notes: participant.notes || '',
+    isPaidLoading: 0 as IDBBoolean,
+  };
+
+  // See comment in addParticipants()
+  if (isFirefox()) {
+    let id!: number;
+    await db.transaction('readwrite', db.participants, async () => {
+      id = await db.participants.add(data);
+      await db.participants.put({id, ...data});
+    });
+    return id;
+  } else {
+    return await db.participants.add(data);
+  }
 }
 
 export async function addParticipants(data: AddParticipant[]) {
