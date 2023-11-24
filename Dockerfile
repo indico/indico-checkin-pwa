@@ -1,8 +1,11 @@
 FROM node:20-alpine AS builder
 
+RUN apk add --update git
+
 ENV NODE_ENV production
 WORKDIR /app
 
+COPY .git .git
 COPY package.json package-lock.json ./
 COPY tailwind.config.js .
 COPY tsconfig.json .
