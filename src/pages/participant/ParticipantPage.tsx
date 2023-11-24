@@ -254,7 +254,7 @@ function ParticipantPageContent({
               errorModal={errorModal}
             />
           )}
-          {accompanyingPersons.length > 1 && <AccompanyingPersons persons={accompanyingPersons} />}
+          {accompanyingPersons.length > 0 && <AccompanyingPersons persons={accompanyingPersons} />}
           <Typography as="div" variant="body1" className="mt-1 flex w-full justify-center">
             <GrowingTextArea value={notes} onChange={onAddNotes} />
           </Typography>
