@@ -40,8 +40,8 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "HTTPS=true react-scripts start",
-    "build": "react-scripts build",
+    "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts start",
+    "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
