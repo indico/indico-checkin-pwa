@@ -177,7 +177,7 @@ function RegformStatus({isOpen}: {isOpen: boolean | undefined}) {
 
   return (
     <span className={`w-fit rounded-full px-2.5 py-0.5 text-sm font-medium ${color}`}>
-      {isOpen ? 'open' : 'closed'}
+      {isOpen ? 'Open' : 'Closed'}
     </span>
   );
 }

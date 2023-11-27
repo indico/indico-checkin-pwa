@@ -102,7 +102,7 @@ function EventPageContent({
               className="w-fit rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium
                          text-green-800 dark:bg-green-900 dark:text-green-300"
             >
-              open
+              Open
             </span>
           )}
           {regform.isOpen === false && (
@@ -110,7 +110,7 @@ function EventPageContent({
               className="w-fit rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium
                          text-red-800 dark:bg-red-900 dark:text-red-300"
             >
-              closed
+              Closed
             </span>
           )}
         </div>
