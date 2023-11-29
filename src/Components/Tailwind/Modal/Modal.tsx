@@ -1,5 +1,4 @@
 import {createPortal} from 'react-dom';
-import {XMarkIcon} from '@heroicons/react/20/solid';
 import {ExclamationCircleIcon} from '@heroicons/react/24/outline';
 import {ConfirmModalData, ErrorModalData} from '../../../context/ModalContextProvider';
 import {useModalData} from '../../../hooks/useModal';
@@ -79,7 +78,7 @@ const ConfirmModal = ({
   return (
     <>
       <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-dangerDark">
-        <XMarkIcon className="w-12 min-w-[3rem] p-1 text-white" />
+        <ExclamationCircleIcon className="w-12 min-w-[3rem] p-1 text-white" />
       </div>
       <Typography variant="h3" className="text-center">
         {title}
