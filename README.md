@@ -9,5 +9,5 @@ This is a Progressive Web App (PWA) that allows organizers to check in attendees
 and `TSC_COMPILE_ON_ERROR=true`
 5. Run `npm start` to start the development server
 
-## Deployed Version
-A test app is currently deployed on [Openshift](https://indico-checkin-test.app.cern.ch/).
+## Deployed version
+The app is deployed for production usage on https://checkin.getindico.io (hosted at CERN's datacenter in Switzerland) and may be freely used by anyone.
