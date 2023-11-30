@@ -11,3 +11,7 @@ and `TSC_COMPILE_ON_ERROR=true`
 
 ## Deployed version
 The app is deployed for production usage on https://checkin.getindico.io (hosted at CERN's datacenter in Switzerland) and may be freely used by anyone.
+
+## Note
+In applying the MIT license, CERN does not waive the privileges and immunities granted to it
+by virtue of its status as an Intergovernmental Organization or submit itself to any jurisdiction.
