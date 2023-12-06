@@ -1,7 +1,9 @@
 import {ChangeEvent, useState, useMemo, useRef} from 'react';
 import {
   ArrowSmallLeftIcon,
+  BanknotesIcon,
   CheckCircleIcon,
+  ExclamationCircleIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
   XMarkIcon,
@@ -169,7 +171,11 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
           >
             {fullName}
           </Typography>
-          {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
+          <div className="flex">
+            {state === 'pending' && <ExclamationCircleIcon className="h-6 w-6 text-yellow-500" />}
+            {state === 'unpaid' && <BanknotesIcon className="h-6 w-6 text-yellow-500" />}
+            {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
+          </div>
         </div>
       </td>
     </tr>
