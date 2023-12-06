@@ -3,9 +3,9 @@
 This is a Progressive Web App (PWA) that allows organizers to check in attendees to their event. It is intended to be used by mobile devices.
 
 <p align="center">
-    <img src="images/app1.png" width="33%" />
-    <img src="images/app2.png" width="33%" />
-    <img src="images/app3.png" width="33%" />
+    <img src="images/app1.png" width="32%" />
+    <img src="images/app2.png" width="32%" />
+    <img src="images/app3.png" width="32%" />
 </p>
 
 ## Getting started with development
