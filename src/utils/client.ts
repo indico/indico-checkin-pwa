@@ -180,6 +180,13 @@ export async function getParticipant(
   );
 }
 
+export async function getParticipantByUuid(
+  {serverId, uuid}: {serverId: number; uuid: string},
+  options?: object
+) {
+  return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/${uuid}`, options);
+}
+
 export async function checkInParticipant(
   {serverId, eventId, regformId, participantId}: ParticipantLocator,
   checkInState: boolean
