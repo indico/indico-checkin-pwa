@@ -49,43 +49,75 @@ export function validateEventData(data: any): data is QRCodeEventData {
   return true;
 }
 
-interface _BaseQRCodeParticipantData {
+export interface QRCodeParticipantData {
   serverUrl: string;
-  regformId: number;
-  registrationId: number;
   checkinSecret: string;
 }
 
-// For compatibility with legacy string event ids, the API returns eventId as a string
-// TODO: Update the API to return a number instead
-interface IndicoQRCodeParticipantData extends _BaseQRCodeParticipantData {
-  eventId: string;
-}
-
-export interface QRCodeParticipantData extends _BaseQRCodeParticipantData {
-  eventId: number;
-}
-
-export function validateParticipantData(data: any): data is IndicoQRCodeParticipantData {
+/**
+ * Parses the data from a QR code.
+ *
+ * There are currently two formats:
+ * 1. The old, deprecated format
+ * 2. The new, more compact format
+ *
+ * We support the old format for now, so that QR codes generated on
+ * an older version of Indico (<3.3) can still be read.
+ */
+export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | null {
   if (typeof data !== 'object') {
-    return false;
+    return null;
   }
 
-  const {checkinSecret, eventId, registrationId, serverUrl, regformId} = data;
-  if (
-    !Number.isInteger(parseInt(eventId, 10)) ||
-    !Number.isInteger(regformId) ||
-    !Number.isInteger(registrationId)
-  ) {
-    return false;
+  let serverUrl: any;
+  let checkinSecret: any;
+  const isNewFormat = Array.isArray(data.i);
+
+  if (isNewFormat) {
+    // more compact format
+    [, serverUrl, checkinSecret] = data.i;
+  } else {
+    ({checkinSecret, serverUrl} = data);
   }
+
   if (typeof checkinSecret !== 'string') {
-    return false;
+    return null;
   }
+
+  if (isNewFormat) {
+    checkinSecret = decodeCheckinSecret(checkinSecret);
+  }
+
+  if (typeof serverUrl !== 'string') {
+    return null;
+  }
+
   try {
     new URL(serverUrl);
   } catch (err) {
-    return false;
+    serverUrl = `https://${serverUrl}`;
+    try {
+      new URL(serverUrl);
+    } catch (err) {
+      return null;
+    }
   }
-  return true;
+
+  return {checkinSecret, serverUrl};
+}
+
+function decodeCheckinSecret(base64String: string): string {
+  const bytes = atob(base64String)
+    .split('')
+    .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'));
+
+  return [
+    bytes.slice(0, 4),
+    bytes.slice(4, 6),
+    bytes.slice(6, 8),
+    bytes.slice(8, 10),
+    bytes.slice(10),
+  ]
+    .map(p => p.join(''))
+    .join('-');
 }

@@ -5,9 +5,11 @@ import db, {
   addEventIfNotExists,
   addParticipantIfNotExists,
   addRegformIfNotExists,
+  getParticipantByUuid,
+  getRegform,
   getServer,
 } from '../../db/db';
-import {getParticipant} from '../../utils/client';
+import {getParticipantByUuid as getParticipant} from '../../utils/client';
 import {discoveryEndpoint, redirectUri} from '../Auth/utils';
 import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
 import {handleError} from '../Events/sync';
@@ -90,40 +92,19 @@ export async function handleParticipant(
     return;
   }
 
-  const event = await db.events.get({indicoId: data.eventId, serverId: server.id});
-  if (!event) {
-    errorModal({
-      title: 'The event of this participant does not exist',
-      content: 'Scan an event QR code first and try again.',
-    });
-    return;
-  }
-
-  const regform = await db.regforms.get({indicoId: data.regformId, eventId: event.id});
-  if (!regform) {
-    errorModal({
-      title: 'The registration form of this participant does not exist',
-      content: 'Scan an event QR code first and try again.',
-    });
-    return;
-  }
-
-  const regformPage = `/event/${event.id}/${regform.id}`;
-  const participant = await db.participants.get({
-    indicoId: data.registrationId,
-    regformId: regform.id,
-  });
+  const participant = await getParticipantByUuid(data.checkinSecret);
 
   if (participant) {
-    if (participant.checkinSecret !== data.checkinSecret) {
+    const regform = await getRegform(participant.regformId);
+    if (!regform) {
       errorModal({
-        title: 'QR code data is not valid',
-        content: 'Please try again',
+        title: 'The registration form of this participant does not exist',
+        content: 'Scan an event QR code first and try again.',
       });
       return;
     }
 
-    const participantPage = `${regformPage}/${participant.id}`;
+    const participantPage = `/event/${regform.eventId}/${regform.id}/${participant.id}`;
     navigate(participantPage, {
       replace: true,
       state: {autoCheckin},
@@ -131,28 +112,36 @@ export async function handleParticipant(
   } else {
     const response = await getParticipant({
       serverId: server.id,
-      eventId: event.indicoId,
-      regformId: regform.indicoId,
-      participantId: data.registrationId,
+      uuid: data.checkinSecret,
     });
 
     if (response.ok) {
-      if (response.data.checkinSecret !== data.checkinSecret) {
+      const {id, eventId, regformId, ...rest} = response.data;
+      const event = await db.events.get({indicoId: eventId, serverId: server.id});
+      if (!event) {
         errorModal({
-          title: 'QR code data is not valid',
-          content: 'Please try again',
+          title: 'The event of this participant does not exist',
+          content: 'Scan an event QR code first and try again.',
         });
         return;
       }
 
-      const {id, regformId, ...rest} = response.data;
+      const regform = await db.regforms.get({indicoId: regformId, eventId: event.id});
+      if (!regform) {
+        errorModal({
+          title: 'The registration form of this participant does not exist',
+          content: 'Scan an event QR code first and try again.',
+        });
+        return;
+      }
+
       const participantId = await addParticipantIfNotExists({
-        indicoId: data.registrationId,
+        indicoId: id,
         regformId: regform.id,
         ...rest,
       });
 
-      const participantPage = `${regformPage}/${participantId}`;
+      const participantPage = `/event/${regform.eventId}/${regform.id}/${participantId}`;
       navigate(participantPage, {
         replace: true,
         state: {autoCheckin},

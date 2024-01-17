@@ -9,7 +9,7 @@ import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
-import {validateParticipantData, validateEventData} from '../Auth/utils';
+import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant} from './scan';
 
 export default function ScanPage() {
@@ -50,10 +50,13 @@ export default function ScanPage() {
       } catch (e: any) {
         errorModal({title: 'Error processing QR code', content: e.message});
       }
-    } else if (validateParticipantData(scannedData)) {
-      const participantData = {...scannedData, eventId: parseInt(scannedData.eventId, 10)};
+      return;
+    }
+
+    const parsedData = parseQRCodeParticipantData(scannedData);
+    if (parsedData) {
       try {
-        await handleParticipant(participantData, errorModal, navigate, autoCheckin);
+        await handleParticipant(parsedData, errorModal, navigate, autoCheckin);
       } catch (e: any) {
         errorModal({title: 'Error processing QR code', content: e.message});
       }

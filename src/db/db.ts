@@ -123,13 +123,13 @@ class IndicoCheckin extends Dexie {
 
   constructor() {
     super('CheckinDatabase');
-    this.version(1).stores({
+    this.version(2).stores({
       servers: 'id++, baseUrl, clientId',
       events: 'id++, indicoId, serverId, deleted, [indicoId+serverId]',
       regforms:
         'id++, indicoId, eventId, deleted, [id+eventId], [indicoId+eventId], [eventId+deleted]',
       participants:
-        'id++, indicoId, regformId, deleted, checkedInLoading, isPaidLoading, [id+regformId], [indicoId+regformId], [regformId+deleted]',
+        'id++, indicoId, regformId, deleted, checkinSecret, checkedInLoading, isPaidLoading, [id+regformId], [indicoId+regformId], [regformId+deleted]',
     });
   }
 }
@@ -161,6 +161,10 @@ export async function getParticipant(id: GetParticipant) {
     return await db.participants.get(id);
   }
   return await db.participants.get(id);
+}
+
+export async function getParticipantByUuid(uuid: string) {
+  return await db.participants.where({checkinSecret: uuid}).first();
 }
 
 export async function getServers() {

@@ -1,11 +1,11 @@
 import 'fake-indexeddb/auto';
 import db, {IDBBoolean, RegistrationState} from '../../db/db';
-import {getParticipant} from '../../utils/client';
+import {getParticipantByUuid} from '../../utils/client';
 import {handleEvent, handleParticipant} from './scan';
 
 jest.mock('../../utils/client', () => {
   return {
-    getParticipant: jest.fn(),
+    getParticipantByUuid: jest.fn(),
   };
 });
 
@@ -95,26 +95,13 @@ describe('test handleParticipant()', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  test('test missing event', async () => {
-    await createDummyServer();
-    const data = {serverUrl: dummyServer.baseUrl, eventId: 77} as any;
-    const errorModal = jest.fn();
-    const navigate = jest.fn();
-    await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
-    expect(errorModal).toHaveBeenCalledWith({
-      title: 'The event of this participant does not exist',
-      content: 'Scan an event QR code first and try again.',
-    });
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  test('test missing regform', async () => {
+  test('test existing participant with missing regform', async () => {
     await createDummyServer();
     await createDummyEvent();
+    await createDummyParticipant();
     const data = {
       serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: 77,
+      checkinSecret: dummyParticipant.checkinSecret,
     } as any;
     const errorModal = jest.fn();
     const navigate = jest.fn();
@@ -126,28 +113,6 @@ describe('test handleParticipant()', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  test('test existing participant with incorrect checkin secret', async () => {
-    await createDummyServer();
-    await createDummyEvent();
-    await createDummyRegform();
-    await createDummyParticipant();
-    const data = {
-      serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: dummyRegform.indicoId,
-      registrationId: dummyParticipant.indicoId,
-      checkinSecret: 'XXXX',
-    } as any;
-    const errorModal = jest.fn();
-    const navigate = jest.fn();
-    await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
-    expect(errorModal).toHaveBeenCalledWith({
-      title: 'QR code data is not valid',
-      content: 'Please try again',
-    });
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
   test('test existing participant', async () => {
     await createDummyServer();
     await createDummyEvent();
@@ -155,9 +120,6 @@ describe('test handleParticipant()', () => {
     await createDummyParticipant();
     const data = {
       serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: dummyRegform.indicoId,
-      registrationId: dummyParticipant.indicoId,
       checkinSecret: dummyParticipant.checkinSecret,
     } as any;
     const errorModal = jest.fn();
@@ -171,20 +133,21 @@ describe('test handleParticipant()', () => {
     });
   });
 
-  test('test missing participant with Indico error', async () => {
+  test('test new participant returning 404', async () => {
     await createDummyServer();
     await createDummyEvent();
     await createDummyRegform();
     const data = {
       serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: dummyRegform.indicoId,
-      registrationId: dummyParticipant.indicoId,
+      checkinSecret: '1234',
     } as any;
     const errorModal = jest.fn();
     const navigate = jest.fn();
 
-    (getParticipant as any).mockResolvedValue({ok: false, status: 404});
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
     await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
 
     expect(errorModal).toHaveBeenCalledWith({
@@ -194,45 +157,69 @@ describe('test handleParticipant()', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  test('test missing participant with incorrect checkin secret', async () => {
+  test('test new participant with missing event', async () => {
     await createDummyServer();
     await createDummyEvent();
     await createDummyRegform();
     const data = {
       serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: dummyRegform.indicoId,
-      registrationId: dummyParticipant.indicoId,
-      checkinSecret: 'XXXX',
-    } as any;
-    const errorModal = jest.fn();
-    const navigate = jest.fn();
-
-    (getParticipant as any).mockResolvedValue({ok: true, data: {checkinSecret: '1234'}});
-    await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
-
-    expect(errorModal).toHaveBeenCalledWith({
-      title: 'QR code data is not valid',
-      content: 'Please try again',
-    });
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  test('test missing participant', async () => {
-    await createDummyServer();
-    await createDummyEvent();
-    await createDummyRegform();
-    const data = {
-      serverUrl: dummyServer.baseUrl,
-      eventId: dummyEvent.indicoId,
-      regformId: dummyRegform.indicoId,
-      registrationId: dummyParticipant.indicoId,
       checkinSecret: '1234',
     } as any;
     const errorModal = jest.fn();
     const navigate = jest.fn();
 
-    (getParticipant as any).mockResolvedValue({ok: true, data: {id: 101, checkinSecret: '1234'}});
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 9999, regformId: 73, checkinSecret: '1234'},
+    });
+    await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
+
+    expect(errorModal).toHaveBeenCalledWith({
+      title: 'The event of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test('test new participant with missing regform', async () => {
+    await createDummyServer();
+    await createDummyEvent();
+    await createDummyRegform();
+    const data = {
+      serverUrl: dummyServer.baseUrl,
+      checkinSecret: '1234',
+    } as any;
+    const errorModal = jest.fn();
+    const navigate = jest.fn();
+
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
+    });
+    await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
+
+    expect(errorModal).toHaveBeenCalledWith({
+      title: 'The registration form of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test('test new participant', async () => {
+    await createDummyServer();
+    await createDummyEvent();
+    await createDummyRegform();
+    const data = {
+      serverUrl: dummyServer.baseUrl,
+      checkinSecret: '1234',
+    } as any;
+    const errorModal = jest.fn();
+    const navigate = jest.fn();
+
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
+    });
     await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
 
     const participant = await db.participants.get(1);
