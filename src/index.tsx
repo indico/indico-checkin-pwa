@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 // import reportWebVitals from './reportWebVitals';
@@ -22,7 +23,9 @@ root.render(
   <React.StrictMode>
     <ModalContextProvider>
       <SettingsProvider>
-        <App />
+        <LogsProvider>
+          <App />
+        </LogsProvider>
       </SettingsProvider>
     </ModalContextProvider>
   </React.StrictMode>
