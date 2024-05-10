@@ -19,6 +19,7 @@ import db, {
   getServers,
   countParticipants,
 } from './db/db';
+import {useLogError} from './hooks/useError';
 import useSettings from './hooks/useSettings';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
 import EventPage from './pages/event/EventPage';
@@ -134,10 +135,29 @@ const router = createBrowserRouter([
 
 export default function App() {
   const {darkMode} = useSettings();
+  const logError = useLogError();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
+
+  useEffect(() => {
+    function onError(event: ErrorEvent) {
+      logError(event.error);
+    }
+
+    function onUnhandledRejection(event: PromiseRejectionEvent) {
+      logError(event.reason);
+    }
+
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+    };
+  });
 
   return (
     <div className="h-full min-h-screen w-screen overflow-auto bg-gray-50 pb-32 dark:bg-gray-900">
