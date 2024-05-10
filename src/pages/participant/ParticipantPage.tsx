@@ -243,7 +243,7 @@ function ParticipantPageContent({
               text="Indico participant page"
               url={`${event.baseUrl}/event/${event.indicoId}/manage/registration/${regform.indicoId}/registrations/${participant.indicoId}`}
             />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <RegistrationState state={participant.state} />
               {participant.price > 0 && (
                 <span
