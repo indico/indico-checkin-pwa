@@ -1,26 +1,25 @@
 import {ReactNode, useEffect, useState} from 'react';
-import {ChevronDownIcon, TrashIcon, WrenchScrewdriverIcon} from '@heroicons/react/20/solid';
+import {ChevronDownIcon, DocumentDuplicateIcon, ArrowPathIcon} from '@heroicons/react/20/solid';
 import {Typography} from '../Components/Tailwind';
-import {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
+import Button, {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
 import {Toggle} from '../Components/Tailwind/Toggle';
 import TopNav from '../Components/TopNav';
+import {Log} from '../context/LogsProvider';
 import db from '../db/db';
+import {useHandleError} from '../hooks/useError';
+import {useLogs} from '../hooks/useLogs';
+import {useConfirmModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
 import {playSound, sounds} from '../utils/sound';
 
 export default function SettingsPage() {
-  const isDev = process.env.NODE_ENV === 'development';
-  const version = process.env.REACT_APP_VERSION;
-
   return (
     <>
       <TopNav backBtnText="Settings" backNavigateTo={-1} />
-      <div className="flex flex-col gap-12 p-4">
+      <div className="flex flex-col gap-6 p-4">
         <MainSettings />
-        {isDev && <DevModeSettings />}
-        <Typography as="div" variant="body3">
-          App version: {version}
-        </Typography>
+        <DebugSettings />
+        <LogSettings />
       </div>
     </>
   );
@@ -64,13 +63,13 @@ function MainSettings() {
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Check-in">
-        <SettingsToggle
+        <SettingToggle
           title="Automatic check-in"
           description="Check in when a QR code is scanned"
           checked={autoCheckin}
           onToggle={toggleAutoCheckin}
         />
-        <SettingsDropdown
+        <SettingDropdown
           title="Check-in sound effect"
           values={Object.keys(sounds)}
           selected={soundEffect}
@@ -84,31 +83,104 @@ function MainSettings() {
         />
       </SettingsSection>
       <SettingsSection title="Appearance">
-        <SettingsToggle title="Dark theme" checked={darkMode} onToggle={toggleDarkMode} />
+        <SettingToggle title="Dark theme" checked={darkMode} onToggle={toggleDarkMode} />
       </SettingsSection>
     </div>
   );
 }
 
-function DevModeSettings() {
+function DebugSettings() {
+  const version = process.env.REACT_APP_VERSION!;
+  const confirmModal = useConfirmModal();
+  const handleError = useHandleError();
+
+  async function resetDB() {
+    try {
+      await db.delete();
+      await db.open();
+    } catch (err: any) {
+      handleError(err, 'Error resetting the database');
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-6 rounded-xl bg-gray-200 p-6 dark:bg-gray-700">
-      <div className="flex items-center justify-center gap-2">
-        <Typography variant="h3">Running in development mode</Typography>
-        <WrenchScrewdriverIcon className="h-5 min-w-[1.25rem] dark:text-gray-300" />
-      </div>
-      <DangerButton
-        className="w-fit self-center"
-        onClick={async () => {
-          await db.delete();
-          await db.open();
-        }}
-      >
-        <TrashIcon className="h-5 min-w-[1.25rem]" />
-        Reset IndexedDB
-      </DangerButton>
+    <div className="flex flex-col gap-6">
+      <SettingsSection title="Debugging">
+        <Setting title="App version">
+          <Typography variant="body2">{version}</Typography>
+        </Setting>
+        <Setting title="Reset" description="Delete all application data">
+          <DangerButton
+            className="w-fit self-center"
+            onClick={() => {
+              confirmModal({
+                title: 'Are you sure?',
+                content: 'This will permanently delete all application data',
+                confirmBtnText: 'Reset',
+                onConfirm: resetDB,
+              });
+            }}
+          >
+            <ArrowPathIcon className="h-5 min-w-[1.25rem]" />
+            Reset
+          </DangerButton>
+        </Setting>
+      </SettingsSection>
     </div>
   );
+}
+
+function LogSettings() {
+  const {logs} = useLogs();
+  const version = process.env.REACT_APP_VERSION!;
+
+  function onCopy() {
+    const text = `App version: ${version}\n\nLogs:\n${formatLogs(logs)}`;
+    navigator.clipboard.writeText(text);
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SettingsSection title="Logs">
+        <Setting title="Copy">
+          <Button onClick={onCopy}>
+            <DocumentDuplicateIcon className="h-5 min-w-[1.25rem]" />
+          </Button>
+        </Setting>
+        <div className="flex items-center justify-between gap-4">
+          {logs.length === 0 && <Typography variant="body2">No logs yet</Typography>}
+          {logs.length > 0 && (
+            <code className="max-h-[40vh] overflow-y-auto">
+              {logs.map((log, idx) => (
+                <Typography key={idx} variant="body3" className="break-all">
+                  <LogEntry log={log} />
+                </Typography>
+              ))}
+            </code>
+          )}
+        </div>
+      </SettingsSection>
+    </div>
+  );
+}
+
+function LogEntry({log}: {log: Log}) {
+  return (
+    <>
+      <b>{log.timestamp.toISOString().slice(0, -5)}</b> {log.severity.toUpperCase().padStart(5)}{' '}
+      {log.message}
+    </>
+  );
+}
+
+export function formatLog(log: Log) {
+  return `${log.timestamp.toISOString().slice(0, -5)} ${log.severity.toUpperCase().padStart(5)} ${
+    log.message
+  }`;
+}
+
+export function formatLogs(logs: Log[]) {
+  return logs.map(formatLog).join('\n');
 }
 
 function SettingsSection({title, children}: {title: string; children: ReactNode}) {
@@ -124,24 +196,37 @@ function SettingsSection({title, children}: {title: string; children: ReactNode}
   );
 }
 
-interface SettingsToggleProps {
+interface SettingProps {
+  title: string;
+  description?: string;
+  onClick?: () => void;
+  children: ReactNode;
+}
+
+function Setting({title, description, onClick, children}: SettingProps) {
+  return (
+    <div className="flex items-center justify-between gap-4" onClick={onClick}>
+      <div>
+        <Typography variant="h4">{title}</Typography>
+        {description && <Typography variant="body2">{description}</Typography>}
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+interface SettingToggleProps {
   title: string;
   description?: string;
   checked: boolean;
   onToggle: () => void;
 }
 
-function SettingsToggle({title, description, checked, onToggle}: SettingsToggleProps) {
+function SettingToggle({title, description, checked, onToggle}: SettingToggleProps) {
   return (
-    <div className="flex items-center justify-between gap-4" onClick={onToggle}>
-      <div>
-        <Typography variant="h4">{title}</Typography>
-        {description && <Typography variant="body2">{description}</Typography>}
-      </div>
-      <div>
-        <Toggle size="md" checked={checked} />
-      </div>
-    </div>
+    <Setting title={title} description={description} onClick={onToggle}>
+      <Toggle size="md" checked={checked} />
+    </Setting>
   );
 }
 
@@ -153,7 +238,7 @@ interface SettingsDropdownProps {
   onChange: (v: string) => void;
 }
 
-function SettingsDropdown({title, description, values, selected, onChange}: SettingsDropdownProps) {
+function SettingDropdown({title, description, values, selected, onChange}: SettingsDropdownProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
