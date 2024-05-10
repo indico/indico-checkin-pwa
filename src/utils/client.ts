@@ -95,6 +95,10 @@ export interface FailedResponse {
   aborted?: boolean;
   network?: boolean;
   err?: any;
+  endpoint?: string;
+  options?: object;
+  data?: any;
+  description?: string;
 }
 
 type Response<T> = SuccessfulResponse<T> | FailedResponse;
@@ -106,7 +110,12 @@ async function makeRequest<T>(
 ): Promise<Response<T>> {
   const server = await db.servers.get(serverId);
   if (!server) {
-    return {ok: false};
+    return {
+      ok: false,
+      endpoint,
+      options,
+      description: `Server (id <${serverId}>) not found in IndexedDB`,
+    };
   }
 
   const url = new URL(endpoint, server.baseUrl);
@@ -125,11 +134,7 @@ async function makeRequest<T>(
       return {ok: false, aborted: true};
     }
     // Assume everything else is a network issue (impossible to distinguish from other TypeErrors)
-    return {ok: false, network: true};
-  }
-
-  if (!response.ok) {
-    return {ok: false, status: response.status};
+    return {ok: false, network: true, endpoint, options, err};
   }
 
   let data;
@@ -140,8 +145,13 @@ async function makeRequest<T>(
       // Ignore cancelled requests
       return {ok: false, aborted: true};
     }
-    return {ok: false, err};
+    return {ok: false, endpoint, options, err, description: 'response.json() failed'};
   }
+
+  if (!response.ok) {
+    return {ok: false, status: response.status, endpoint, options, data};
+  }
+
   data = camelizeKeys(data);
   return {ok: true, status: response.status, data};
 }
