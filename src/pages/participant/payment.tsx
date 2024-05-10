@@ -7,6 +7,10 @@ import db, {Event, Regform, Participant} from '../../db/db';
 import {togglePayment as _togglePayment} from '../../utils/client';
 import {handleError} from '../Events/sync';
 
+async function resetPaidLoading(participant: Participant) {
+  await db.participants.update(participant.id, {isPaidLoading: 0});
+}
+
 async function markAsPaid(
   event: Event,
   regform: Regform,
@@ -50,6 +54,7 @@ async function togglePayment(
       isPaidLoading: 0,
     });
   } else {
+    await resetPaidLoading(participant);
     handleError(response, 'Something went wrong when updating payment status', errorModal);
   }
 }
