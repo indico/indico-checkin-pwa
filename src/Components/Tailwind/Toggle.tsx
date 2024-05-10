@@ -37,7 +37,10 @@ export const Toggle = ({
   const dimensionsClassName = dimensionsClassNames[size];
 
   return (
-    <label className="relative inline-flex cursor-pointer items-center">
+    <label
+      style={{WebkitTapHighlightColor: 'transparent'}}
+      className="relative inline-flex cursor-pointer items-center"
+    >
       <input
         type="checkbox"
         className="peer sr-only"
@@ -49,8 +52,7 @@ export const Toggle = ({
       <div
         className={`peer bg-gray-200 after:absolute after:border after:border-gray-300
                     after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600
-                    peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4
-                    peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-500 dark:peer-focus:ring-blue-800
+                    peer-checked:after:border-white dark:border-gray-600 dark:bg-gray-500
                     ${roundedProps} ${className} ${dimensionsClassName} ${
                       disabled ? 'opacity-50' : ''
                     }`}
