@@ -150,13 +150,15 @@ function LogSettings() {
         <div className="flex items-center justify-between gap-4">
           {logs.length === 0 && <Typography variant="body2">No logs yet</Typography>}
           {logs.length > 0 && (
-            <code className="max-h-[40vh] overflow-y-auto">
-              {logs.map((log, idx) => (
-                <Typography key={idx} variant="body3" className="break-all">
-                  <LogEntry log={log} />
-                </Typography>
-              ))}
-            </code>
+            <div className="flex max-h-[40vh] flex-col-reverse overflow-y-auto">
+              <code className="flex flex-col gap-2">
+                {logs.map((log, idx) => (
+                  <Typography key={idx} variant="body3" className="break-all">
+                    <LogEntry log={log} />
+                  </Typography>
+                ))}
+              </code>
+            </div>
           )}
         </div>
       </SettingsSection>
