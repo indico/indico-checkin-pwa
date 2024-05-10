@@ -26,6 +26,7 @@ import db, {
   getRegform,
   getParticipant,
 } from '../../db/db';
+import {useHandleError} from '../../hooks/useError';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
@@ -100,6 +101,7 @@ function ParticipantPageContent({
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
+  const handleError = useHandleError();
 
   useEffect(() => {
     // remove autoCheckin and fromScan from location state
@@ -147,14 +149,14 @@ function ParticipantPageContent({
           newCheckinState,
           soundEffect,
           hapticFeedback,
-          errorModal
+          handleError
         );
       } catch (err: any) {
-        errorModal({title: 'Could not update check-in status', content: err.message});
+        handleError(err, 'Could not update check-in status');
       } finally {
       }
     },
-    [offline, errorModal, soundEffect, hapticFeedback]
+    [offline, errorModal, handleError, soundEffect, hapticFeedback]
   );
 
   useEffect(() => {
@@ -172,18 +174,18 @@ function ParticipantPageContent({
       if (autoCheckin && !participant.checkedIn) {
         await performCheckin(event, regform, participant, true);
       } else {
-        await syncEvent(event, controller.signal, errorModal);
-        await syncRegform(event, regform, controller.signal, errorModal);
-        await syncParticipant(event, regform, participant, controller.signal, errorModal);
+        await syncEvent(event, controller.signal, handleError);
+        await syncRegform(event, regform, controller.signal, handleError);
+        await syncParticipant(event, regform, participant, controller.signal, handleError);
       }
     }
 
     sync().catch(err => {
-      errorModal({title: 'Something went wrong when fetching updates', content: err.message});
+      handleError(err, 'Something went wrong when fetching updates');
     });
 
     return () => controller.abort();
-  }, [eventId, regformId, participantId, errorModal, autoCheckin, offline, performCheckin]);
+  }, [eventId, regformId, participantId, handleError, autoCheckin, offline, performCheckin]);
 
   if (!event) {
     return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
@@ -266,7 +268,7 @@ function ParticipantPageContent({
               event={event}
               regform={regform}
               participant={participant}
-              errorModal={errorModal}
+              handleError={handleError}
             />
           )}
           {accompanyingPersons.length > 0 && <AccompanyingPersons persons={accompanyingPersons} />}
@@ -290,7 +292,7 @@ function ParticipantTopNav({
   participant?: Participant;
 }) {
   const {state} = useLocation();
-  const errorModal = useErrorModal();
+  const handleError = useHandleError();
 
   if (!event || !regform || !participant) {
     return <TopNav />;
@@ -314,7 +316,7 @@ function ParticipantTopNav({
               return;
             }
 
-            await markAsUnpaid(event, regform, participant, errorModal);
+            await markAsUnpaid(event, regform, participant, handleError);
           },
         },
       ]}

@@ -15,6 +15,7 @@ import {
   useLiveEvent,
   useLiveRegforms,
 } from '../../db/db';
+import {useHandleError} from '../../hooks/useError';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
 import {wait} from '../../utils/wait';
@@ -54,7 +55,7 @@ function EventPageContent({
   regforms: Regform[];
 }) {
   const navigate = useNavigate();
-  const errorModal = useErrorModal();
+  const handleError = useHandleError();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -65,16 +66,16 @@ function EventPageContent({
         return;
       }
 
-      await syncEvent(event, controller.signal, errorModal);
-      await syncRegforms(event, controller.signal, errorModal);
+      await syncEvent(event, controller.signal, handleError);
+      await syncRegforms(event, controller.signal, handleError);
     }
 
     sync().catch(err => {
-      errorModal({title: 'Something went wrong when fetching updates', content: err.message});
+      handleError(err, 'Something went wrong when fetching updates');
     });
 
     return () => controller.abort();
-  }, [eventId, errorModal]);
+  }, [eventId, handleError]);
 
   if (!event) {
     return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;

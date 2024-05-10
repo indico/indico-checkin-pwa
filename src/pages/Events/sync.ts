@@ -1,4 +1,3 @@
-import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {
   Event,
   type IDBBoolean,
@@ -11,8 +10,8 @@ import db, {
   updateRegforms,
   updateEvent,
 } from '../../db/db';
+import {HandleError} from '../../hooks/useError';
 import {
-  FailedResponse,
   getEvent,
   getParticipant,
   getParticipants,
@@ -45,11 +44,7 @@ function split<T extends {id: number; indicoId: number}, U extends {id: number}>
   return [onlyExisting, onlyNew, [commonIds, commonData]];
 }
 
-export async function syncEvents(
-  events: Event[],
-  signal: AbortSignal,
-  errorModal: ErrorModalFunction
-) {
+export async function syncEvents(events: Event[], signal: AbortSignal, handleError: HandleError) {
   const responses = await Promise.all(
     events.map(event => {
       return getEvent({serverId: event.serverId, eventId: event.indicoId}, {signal});
@@ -62,20 +57,16 @@ export async function syncEvents(
     } else if (response.status === 404) {
       await db.events.update(events[i].id, {deleted: 1});
     } else {
-      handleError(response, 'Something went wrong when updating events', errorModal);
+      handleError(response, 'Something went wrong when updating events');
     }
   }
 }
 
-export async function syncEvent(event: Event, signal: AbortSignal, errorModal: ErrorModalFunction) {
-  return syncEvents([event], signal, errorModal);
+export async function syncEvent(event: Event, signal: AbortSignal, handleError: HandleError) {
+  return syncEvents([event], signal, handleError);
 }
 
-export async function syncRegforms(
-  event: Event,
-  signal: AbortSignal,
-  errorModal: ErrorModalFunction
-) {
+export async function syncRegforms(event: Event, signal: AbortSignal, handleError: HandleError) {
   const response = await getRegforms(
     {serverId: event.serverId, eventId: event.indicoId},
     {
@@ -95,7 +86,7 @@ export async function syncRegforms(
       await updateRegforms(...common);
     });
   } else {
-    handleError(response, 'Something went wrong when updating registration forms', errorModal);
+    handleError(response, 'Something went wrong when updating registration forms');
   }
 }
 
@@ -103,7 +94,7 @@ export async function syncRegform(
   event: Event,
   regform: Regform,
   signal: AbortSignal,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
   const response = await getRegform(
     {serverId: event.serverId, eventId: event.indicoId, regformId: regform.indicoId},
@@ -117,7 +108,7 @@ export async function syncRegform(
   } else if (response.status === 404) {
     await db.regforms.update(regform.id, {deleted: 1});
   } else {
-    handleError(response, 'Something went wrong when updating registration form', errorModal);
+    handleError(response, 'Something went wrong when updating registration form');
   }
 }
 
@@ -125,7 +116,7 @@ export async function syncParticipants(
   event: Event,
   regform: Regform,
   signal: AbortSignal,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
   const response = await getParticipants(
     {serverId: event.serverId, eventId: event.indicoId, regformId: regform.indicoId},
@@ -153,7 +144,7 @@ export async function syncParticipants(
       await updateParticipants(...common);
     });
   } else {
-    handleError(response, 'Something went wrong when updating participants', errorModal);
+    handleError(response, 'Something went wrong when updating participants');
   }
 }
 
@@ -162,7 +153,7 @@ export async function syncParticipant(
   regform: Regform,
   participant: Participant,
   signal: AbortSignal,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
   const response = await getParticipant(
     {
@@ -181,18 +172,6 @@ export async function syncParticipant(
   } else if (response.status === 404) {
     await db.participants.update(participant.id, {deleted: 1});
   } else {
-    handleError(response, 'Something went wrong when updating participant', errorModal);
-  }
-}
-
-export function handleError(response: FailedResponse, msg: string, errorModal: ErrorModalFunction) {
-  if (response.network || response.aborted) {
-    // Either a network error in which case we fallback to indexedDB,
-    // or aborted because the component unmounted
-    return;
-  } else if (response.err) {
-    errorModal({title: msg, content: response.err.message});
-  } else {
-    errorModal({title: msg, content: `Response status: ${response.status}`});
+    handleError(response, 'Something went wrong when updating participant');
   }
 }

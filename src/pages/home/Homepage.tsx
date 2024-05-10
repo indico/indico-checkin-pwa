@@ -11,7 +11,7 @@ import db, {
   useLiveRegforms,
   useLiveServers,
 } from '../../db/db';
-import {useErrorModal} from '../../hooks/useModal';
+import {useHandleError} from '../../hooks/useError';
 import {syncEvents} from '../Events/sync';
 import EventItem from './EventItem';
 
@@ -25,7 +25,7 @@ export default function Homepage() {
 }
 
 function HomepageContent() {
-  const errorModal = useErrorModal();
+  const handleError = useHandleError();
   const data = useLoaderData() as {
     servers: Server[];
     events: Event[];
@@ -40,14 +40,12 @@ function HomepageContent() {
 
     async function sync() {
       const events = await db.events.toArray();
-      await syncEvents(events, controller.signal, errorModal);
+      await syncEvents(events, controller.signal, handleError);
     }
 
-    sync().catch(err =>
-      errorModal({title: 'Something went wrong when updating events', content: err.message})
-    );
+    sync().catch(err => handleError(err, 'Something went wrong when updating events'));
     return () => controller.abort();
-  }, [errorModal]);
+  }, [handleError]);
 
   if (events.length === 0) {
     return <NoEventsBanner />;
