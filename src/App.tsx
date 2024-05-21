@@ -157,7 +157,7 @@ export default function App() {
       window.removeEventListener('error', onError);
       window.removeEventListener('unhandledrejection', onUnhandledRejection);
     };
-  });
+  }, [logError]);
 
   return (
     <div className="h-full min-h-screen w-screen overflow-auto bg-gray-50 pb-32 dark:bg-gray-900">
