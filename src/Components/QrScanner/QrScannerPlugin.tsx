@@ -40,7 +40,7 @@ interface QrProps {
   onPermRefused: () => void;
 }
 
-const QrScannerPlugin = ({
+export default function QrScannerPlugin({
   fps = 10,
   qrbox = 250,
   disableFlip = false,
@@ -48,7 +48,7 @@ const QrScannerPlugin = ({
   qrCodeSuccessCallback,
   qrCodeErrorCallback,
   onPermRefused,
-}: QrProps) => {
+}: QrProps) {
   const aspectRatio = calcAspectRatio();
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
 
@@ -109,9 +109,7 @@ const QrScannerPlugin = ({
       <div id={qrcodeRegionId} />
     </div>
   );
-};
-
-export default QrScannerPlugin;
+}
 
 function ShadedRegion({size}: {size: number}) {
   return <div className={classes['shaded-region']} style={{width: size, height: size}}></div>;
