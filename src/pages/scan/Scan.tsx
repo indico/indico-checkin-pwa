@@ -8,6 +8,7 @@ import QrScannerPlugin, {
 import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
+import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
@@ -22,6 +23,7 @@ export default function ScanPage() {
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const offline = useIsOffline();
+  const isDesktop = useMediaQuery('(min-width: 1280px)');
 
   async function processCode(decodedText: string) {
     if (processing) {
@@ -101,14 +103,11 @@ export default function ScanPage() {
     }
   };
 
+  const fileUploadVisible = !processing && (isDesktop || process.env.NODE_ENV === 'development');
+
   return (
     <div>
       <TopNav backBtnText="Scan" backNavigateTo={-1} />
-      {!processing && process.env.NODE_ENV === 'development' && (
-        <div className="mb-[3rem] mt-[1rem]">
-          <FileUploadScanner onFileUpload={onFileUpload} />
-        </div>
-      )}
       {!processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />
@@ -123,6 +122,11 @@ export default function ScanPage() {
               Please give permission to access the camera and refresh the page
             </Typography>
           </div>
+        </div>
+      )}
+      {fileUploadVisible && (
+        <div className="mt-6">
+          <FileUploadScanner onFileUpload={onFileUpload} />
         </div>
       )}
     </div>
