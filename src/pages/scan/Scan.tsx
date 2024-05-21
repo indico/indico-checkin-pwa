@@ -1,7 +1,10 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
-import QrScannerPlugin from '../../Components/QrScanner/QrScannerPlugin';
+import QrScannerPlugin, {
+  FileUploadScanner,
+  scanFile,
+} from '../../Components/QrScanner/QrScannerPlugin';
 import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
@@ -84,9 +87,28 @@ export default function ScanPage() {
     setHasPermission(false);
   };
 
+  const onFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const decodedText = await scanFile(file);
+      onScanResult(decodedText, null);
+    } catch (e: any) {
+      errorModal({title: 'Error processing QR code', content: e.message});
+    }
+  };
+
   return (
     <div>
       <TopNav backBtnText="Scan" backNavigateTo={-1} />
+      {!processing && process.env.NODE_ENV === 'development' && (
+        <div className="mb-[3rem] mt-[1rem]">
+          <FileUploadScanner onFileUpload={onFileUpload} />
+        </div>
+      )}
       {!processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />
