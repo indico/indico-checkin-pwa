@@ -94,7 +94,7 @@ function EventPageContent({
     >
       <div className="flex flex-1 items-center">
         <div className="flex min-w-0 flex-col gap-1">
-          <Typography variant="body1" className="overflow-hidden text-ellipsis whitespace-nowrap">
+          <Typography variant="body1" className="text-wrap text-left">
             {regform.title}
           </Typography>
           {regform.isOpen && (
