@@ -1,11 +1,13 @@
 // file = QrScannerPlugin.jsx
 import {MutableRefObject, useEffect, useRef} from 'react';
+import {ArrowUpTrayIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {checkCameraPermissions} from '../../utils/media';
 import classes from './QrScanner.module.css';
 
 // Id of the HTML element used by the Html5QrcodeScanner.
 const qrcodeRegionId = 'html5qr-code-full-region';
+const qrcodeFileRegionId = 'html5qr-code-file-region';
 
 /**
  * @returns the aspect ratio of the video feed based on the window size
@@ -18,6 +20,16 @@ export const calcAspectRatio = () => {
   return 1.777778;
 };
 
+export async function scanFile(file: File): Promise<string> {
+  const scanner = new Html5Qrcode(qrcodeFileRegionId, {
+    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+    verbose: process.env.NODE_ENV === 'development',
+  });
+
+  const result = await scanner.scanFileV2(file, false);
+  return result.decodedText;
+}
+
 interface QrProps {
   fps?: number; // Expected frame rate of qr code scanning. example { fps: 2 } means the scanning would be done every 500 ms.
   qrbox?: number;
@@ -28,7 +40,7 @@ interface QrProps {
   onPermRefused: () => void;
 }
 
-const QrScannerPlugin = ({
+export default function QrScannerPlugin({
   fps = 10,
   qrbox = 250,
   disableFlip = false,
@@ -36,7 +48,7 @@ const QrScannerPlugin = ({
   qrCodeSuccessCallback,
   qrCodeErrorCallback,
   onPermRefused,
-}: QrProps) => {
+}: QrProps) {
   const aspectRatio = calcAspectRatio();
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
 
@@ -97,10 +109,30 @@ const QrScannerPlugin = ({
       <div id={qrcodeRegionId} />
     </div>
   );
-};
-
-export default QrScannerPlugin;
+}
 
 function ShadedRegion({size}: {size: number}) {
   return <div className={classes['shaded-region']} style={{width: size, height: size}}></div>;
+}
+
+export function FileUploadScanner({
+  onFileUpload,
+}: {
+  onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="flex justify-center">
+      <input id="qr-file" type="file" accept="image/*" onChange={onFileUpload} className="hidden" />
+      <label
+        htmlFor="qr-file"
+        className="fit-content flex h-fit cursor-pointer gap-2 gap-2 justify-self-center rounded-lg
+                   bg-primary px-4 py-3 text-sm font-medium text-white focus:outline-none
+                   active:bg-blue-800 dark:bg-blue-600 dark:active:bg-blue-700"
+      >
+        <ArrowUpTrayIcon className="h-6 w-6" />
+        <span>Upload QR code image</span>
+      </label>
+      <div id={qrcodeFileRegionId}></div>
+    </div>
+  );
 }
