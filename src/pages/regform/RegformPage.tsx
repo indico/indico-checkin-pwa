@@ -154,7 +154,7 @@ function RegformPageContent({
             setSearchData={setSearchData}
             onRowClick={async (p: Participant) => {
               await wait(50);
-              navigate(`/event/${event.id}/${regform.id}/${p.id}`);
+              navigate(`/event/${event.id}/${regform.id}/${p.id}`, {state: {fromRegform: true}});
             }}
           />
         </div>

@@ -274,22 +274,22 @@ function ParticipantTopNav({
   regform?: Regform;
   participant?: Participant;
 }) {
+  const {state} = useLocation();
   const errorModal = useErrorModal();
 
   if (!event || !regform || !participant) {
     return <TopNav />;
   }
+  const backNavigateTo = state?.fromRegform ? -1 : `/event/${event.id}/${regform.id}`;
 
   if (participant.price === 0 || !participant.isPaid) {
-    return (
-      <TopNav backBtnText={regform.title} backNavigateTo={`/event/${event.id}/${regform.id}`} />
-    );
+    return <TopNav backBtnText={regform.title} backNavigateTo={backNavigateTo} />;
   }
 
   return (
     <TopNav
       backBtnText={regform.title}
-      backNavigateTo={`/event/${event.id}/${regform.id}`}
+      backNavigateTo={backNavigateTo}
       settingsItems={[
         {
           text: 'Mark as unpaid',
