@@ -92,8 +92,8 @@ function RegformPageContent({
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     async function _sync() {
-      const controller = new AbortController();
       const event = await getEvent(eventId);
       const regform = await getRegform({id: regformId, eventId});
       if (!event || !regform) {
@@ -117,6 +117,7 @@ function RegformPageContent({
     }
 
     sync();
+    return () => controller.abort();
   }, [eventId, regformId, errorModal]);
 
   if (!event) {
