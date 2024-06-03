@@ -214,8 +214,8 @@ export function useLiveParticipant(id: GetParticipant, defaultValue?: Participan
   return useLiveQuery(() => getParticipant(id), deps, defaultValue);
 }
 
-export function useLiveParticipants(regformId: number, defaultValue?: Participant[]) {
-  return useLiveQuery(() => getParticipants(regformId), [regformId], defaultValue || []);
+export function useLiveParticipants(regformId: number) {
+  return useLiveQuery(() => getParticipants(regformId), [regformId]);
 }
 
 export async function addServer(data: AddServer): Promise<number> {

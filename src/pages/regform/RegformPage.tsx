@@ -39,14 +39,16 @@ export default function RegformPage() {
   const loaderData = useLoaderData() as {
     event?: Event;
     regform?: Regform;
-    participants: Participant[];
     params: Params;
   };
 
   const {eventId, regformId} = loaderData.params;
   const event = useLiveEvent(eventId, loaderData.event);
   const regform = useLiveRegform(regformId, loaderData.regform);
-  const participants = useLiveParticipants(regformId, loaderData.participants);
+  // Participants are preloaded in case there is a lot of them (10k+) as this
+  // would make this page too slow to load w/o visual feedback. Instead,
+  // the page is loaded immediately a loading spinner is shown.
+  const participants = useLiveParticipants(regformId);
 
   return (
     <>
@@ -73,7 +75,7 @@ function RegformPageContent({
   regformId: number;
   event?: Event;
   regform?: Regform;
-  participants: Participant[];
+  participants?: Participant[];
 }) {
   const navigate = useNavigate();
   const {state} = useLocation();
@@ -112,7 +114,9 @@ function RegformPageContent({
       } catch (err: any) {
         errorModal({title: 'Something went wrong when fetching updates', content: err.message});
       } finally {
-        setIsSyncing(false);
+        if (!controller.signal.aborted) {
+          setIsSyncing(false);
+        }
       }
     }
 
@@ -145,9 +149,9 @@ function RegformPageContent({
           </div>
         </div>
       </div>
-      {participants.length === 0 && isSyncing && <LoadingParticipantsBanner />}
-      {participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
-      {participants.length > 0 && (
+      {(!participants || (participants.length === 0 && isSyncing)) && <LoadingParticipantsBanner />}
+      {participants && participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
+      {participants && participants.length > 0 && (
         <div className="mt-6">
           <Table
             participants={participants}
@@ -226,12 +230,16 @@ function NoParticipantsBanner() {
 }
 
 function LoadingParticipantsBanner() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
-    <div className="mx-4 mt-10 flex flex-col gap-2">
-      <Typography variant="h3" className="text-center">
-        Updating participants..
-      </Typography>
-      <LoadingIndicator size="md" />
+    <div className="mx-4 mt-20 flex flex-col gap-2">
+      {isVisible && <LoadingIndicator size="md" />}
     </div>
   );
 }

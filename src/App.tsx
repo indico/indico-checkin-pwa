@@ -7,7 +7,6 @@ import db, {
   getEvent,
   getEvents,
   getParticipant,
-  getParticipants,
   getRegform,
   getRegforms,
   getServers,
@@ -89,8 +88,7 @@ const router = createBrowserRouter([
           const {id: eventId, regformId} = getNumericParams(params);
           const event = await getEvent(eventId);
           const regform = await getRegform({id: regformId, eventId});
-          const participants = await getParticipants(regformId);
-          return {event, regform, participants, params: {eventId, regformId}};
+          return {event, regform, params: {eventId, regformId}};
         },
       },
       {
