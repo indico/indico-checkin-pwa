@@ -1,4 +1,4 @@
-import {ChangeEvent, useState, useMemo, useRef} from 'react';
+import {ChangeEvent, useState, useMemo, useRef, useEffect} from 'react';
 import {
   ArrowSmallLeftIcon,
   BanknotesIcon,
@@ -9,6 +9,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid';
 import {Participant} from '../../db/db';
+import {makeDebounce} from '../../utils/debounce';
 import {
   Filters,
   ParticipantFilters,
@@ -25,6 +26,8 @@ export interface SearchData {
   filters: Filters;
 }
 
+const debounce = makeDebounce(150);
+
 export default function Table({
   participants,
   searchData,
@@ -38,26 +41,63 @@ export default function Table({
 }) {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const {filters, searchValue} = searchData;
+  const defaultVisibleParticipants = 100;
+  const [numberVisibleParticipants, setNumberVisibleParticipants] = useState(
+    defaultVisibleParticipants
+  );
 
-  const setFilters = (f: Filters) => setSearchData({...searchData, filters: f});
-  const setSearchValue = (v: string) => setSearchData({...searchData, searchValue: v});
-  const resetSearchData = () => setSearchData({searchValue: '', filters: makeDefaultFilterState()});
+  const setFilters = (f: Filters) => {
+    setSearchData({...searchData, filters: f});
+    setNumberVisibleParticipants(defaultVisibleParticipants);
+  };
+  const setSearchValue = (v: string) => {
+    setSearchData({...searchData, searchValue: v});
+    setNumberVisibleParticipants(defaultVisibleParticipants);
+  };
+  const resetSearchData = () => {
+    setSearchData({searchValue: '', filters: makeDefaultFilterState()});
+    setNumberVisibleParticipants(defaultVisibleParticipants);
+  };
 
   const filteredParticipants = useMemo(
     () => filterParticipants(participants, searchData),
     [participants, searchData]
   );
 
-  const rows = filteredParticipants.map((p, i) => (
-    <Row
-      key={p.id}
-      fullName={p.fullName}
-      checkedIn={p.checkedIn}
-      state={p.state}
-      isEven={i % 2 === 0}
-      onClick={() => onRowClick(p)}
-    />
-  ));
+  const rows = filteredParticipants
+    .slice(0, numberVisibleParticipants)
+    .map((p, i) => (
+      <Row
+        key={p.id}
+        fullName={p.fullName}
+        checkedIn={p.checkedIn}
+        state={p.state}
+        isEven={i % 2 === 0}
+        onClick={() => onRowClick(p)}
+      />
+    ));
+
+  useEffect(() => {
+    function onScroll() {
+      const almostAtTheBottom =
+        window.innerHeight + document.documentElement.scrollTop >=
+        0.95 * document.documentElement.scrollHeight;
+
+      if (almostAtTheBottom) {
+        debounce(() => {
+          setNumberVisibleParticipants(v => {
+            if (v + 100 >= filteredParticipants.length) {
+              return filteredParticipants.length;
+            }
+            return v + 100;
+          });
+        });
+      }
+    }
+
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [filteredParticipants.length]);
 
   const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
 
@@ -82,7 +122,7 @@ export default function Table({
       )}
       {filtersActive && (
         <div className="mb-4 mt-2">
-          <ResultCount count={rows.length} onClick={resetSearchData} />
+          <ResultCount count={filteredParticipants.length} onClick={resetSearchData} />
         </div>
       )}
       <div className="mx-4 mt-2">
