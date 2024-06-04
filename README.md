@@ -2,6 +2,9 @@
 
 This is a Progressive Web App (PWA) that allows organizers to check in attendees to their event. It is intended to be used by mobile devices.
 
+> [!IMPORTANT]
+> The Check-In app is only compatible with Indico 3.3 and higher.
+
 <p align="center">
     <img src="images/app1.png" width="32%" />
     <img src="images/app2.png" width="32%" />
