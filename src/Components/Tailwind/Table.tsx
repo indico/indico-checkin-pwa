@@ -26,7 +26,7 @@ export interface SearchData {
   filters: Filters;
 }
 
-const debounce = makeDebounce(150);
+const debounce = makeDebounce(50);
 
 export default function Table({
   participants,
