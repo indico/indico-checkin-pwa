@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLoaderData, useLocation, useNavigate} from 'react-router-dom';
+import {useLoaderData, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -10,9 +10,8 @@ import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {makeDefaultFilterState} from '../../Components/Tailwind/filters';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
-import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
-import Table, {SearchData} from '../../Components/Tailwind/Table';
+import Table, {SearchData, TableSkeleton} from '../../Components/Tailwind/Table';
 import TopNav from '../../Components/TopNav';
 import {
   Event,
@@ -40,6 +39,7 @@ export default function RegformPage() {
     event?: Event;
     regform?: Regform;
     params: Params;
+    participantCount: number;
   };
 
   const {eventId, regformId} = loaderData.params;
@@ -47,7 +47,8 @@ export default function RegformPage() {
   const regform = useLiveRegform(regformId, loaderData.regform);
   // Participants are preloaded in case there is a lot of them (10k+) as this
   // would make this page too slow to load w/o visual feedback. Instead,
-  // the page is loaded immediately a loading spinner is shown.
+  // the page is loaded immediately and a table skeleton is shown while the
+  // participants are loading.
   const participants = useLiveParticipants(regformId);
 
   return (
@@ -59,6 +60,7 @@ export default function RegformPage() {
         event={event}
         regform={regform}
         participants={participants}
+        participantCount={loaderData.participantCount}
       />
     </>
   );
@@ -70,27 +72,29 @@ function RegformPageContent({
   event,
   regform,
   participants,
+  participantCount,
 }: {
   eventId: number;
   regformId: number;
   event?: Event;
   regform?: Regform;
   participants?: Participant[];
+  participantCount: number;
 }) {
   const navigate = useNavigate();
-  const {state} = useLocation();
   const errorModal = useErrorModal();
   const [isSyncing, setIsSyncing] = useState(false);
+  const savedFilters = JSON.parse(localStorage.getItem('regforms') || '{}')[regformId];
   const [searchData, _setSearchData] = useState({
-    searchValue: state?.searchValue || '',
-    filters: state?.filters || makeDefaultFilterState(),
+    searchValue: savedFilters?.searchValue || '',
+    filters: savedFilters?.filters || makeDefaultFilterState(),
   });
 
   const setSearchData = (data: SearchData) => {
     _setSearchData(data);
-    // Save the search criteria in the location state. This way, the user can
-    // go to a participant page and come back here w/o reseting the filters
-    navigate('.', {replace: true, state: {...(state || {}), ...data}});
+    const regforms = JSON.parse(localStorage.getItem('regforms') || '{}');
+    regforms[regformId] = data;
+    localStorage.setItem('regforms', JSON.stringify(regforms));
   };
 
   useEffect(() => {
@@ -149,7 +153,15 @@ function RegformPageContent({
           </div>
         </div>
       </div>
-      {(!participants || (participants.length === 0 && isSyncing)) && <LoadingParticipantsBanner />}
+      {(!participants || (participants.length === 0 && isSyncing)) && (
+        <div className="mt-6">
+          <TableSkeleton
+            participantCount={participantCount}
+            searchData={searchData}
+            setSearchData={setSearchData}
+          />
+        </div>
+      )}
       {participants && participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
       {participants && participants.length > 0 && (
         <div className="mt-6">
@@ -225,21 +237,6 @@ function NoParticipantsBanner() {
           There are no registered participants
         </Typography>
       </div>
-    </div>
-  );
-}
-
-function LoadingParticipantsBanner() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  return (
-    <div className="mx-4 mt-20 flex flex-col gap-2">
-      {isVisible && <LoadingIndicator size="md" />}
     </div>
   );
 }

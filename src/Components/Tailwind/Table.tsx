@@ -9,7 +9,6 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid';
 import {Participant} from '../../db/db';
-import {makeDebounce} from '../../utils/debounce';
 import {
   Filters,
   ParticipantFilters,
@@ -19,19 +18,67 @@ import {
   isDefaultFilterState,
   makeDefaultFilterState,
 } from './filters';
+import {LoadingIndicator} from './LoadingIndicator';
 import Typography from './Typography';
+
+const ROW_HEIGHT_PX = 56;
 
 export interface SearchData {
   searchValue: string;
   filters: Filters;
 }
 
-const debounce = makeDebounce(50);
+export function TableFilters({
+  searchData,
+  setSearchData,
+  resultCount,
+  showResultCount = true,
+}: {
+  searchData: SearchData;
+  setSearchData: (data: SearchData) => void;
+  resultCount: number;
+  showResultCount?: boolean;
+}) {
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const {filters, searchValue} = searchData;
+  const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
+
+  const setFilters = (f: Filters) => setSearchData({...searchData, filters: f});
+  const setSearchValue = (v: string) => setSearchData({...searchData, searchValue: v});
+  const resetSearchData = () => setSearchData({searchValue: '', filters: makeDefaultFilterState()});
+
+  return (
+    <>
+      <div className="flex gap-2 px-4 pb-2 pt-4">
+        <SearchInput searchValue={searchValue} setSearchValue={setSearchValue} />
+        <ToggleFiltersButton
+          defaultState={isDefaultFilterState(filters)}
+          filtersVisible={filtersVisible}
+          onClick={() => setFiltersVisible(v => !v)}
+        />
+      </div>
+      {filtersVisible && (
+        <div className="px-4 pb-2">
+          <ParticipantFilters
+            filters={filters}
+            setFilters={setFilters}
+            onClose={() => setFiltersVisible(false)}
+          />
+        </div>
+      )}
+      {filtersActive && showResultCount && (
+        <div className="mb-4 mt-2">
+          <ResultCount count={resultCount} onClick={resetSearchData} />
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function Table({
   participants,
   searchData,
-  setSearchData,
+  setSearchData: _setSearchData,
   onRowClick,
 }: {
   participants: Participant[];
@@ -39,23 +86,14 @@ export default function Table({
   setSearchData: (data: SearchData) => void;
   onRowClick: (p: Participant) => void;
 }) {
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const {filters, searchValue} = searchData;
   const defaultVisibleParticipants = 100;
   const [numberVisibleParticipants, setNumberVisibleParticipants] = useState(
     defaultVisibleParticipants
   );
+  const ref = useRef<HTMLTableRowElement>(null);
 
-  const setFilters = (f: Filters) => {
-    setSearchData({...searchData, filters: f});
-    setNumberVisibleParticipants(defaultVisibleParticipants);
-  };
-  const setSearchValue = (v: string) => {
-    setSearchData({...searchData, searchValue: v});
-    setNumberVisibleParticipants(defaultVisibleParticipants);
-  };
-  const resetSearchData = () => {
-    setSearchData({searchValue: '', filters: makeDefaultFilterState()});
+  const setSearchData = (data: SearchData) => {
+    _setSearchData(data);
     setNumberVisibleParticipants(defaultVisibleParticipants);
   };
 
@@ -77,21 +115,28 @@ export default function Table({
       />
     ));
 
-  useEffect(() => {
-    function onScroll() {
-      const almostAtTheBottom =
-        window.innerHeight + document.documentElement.scrollTop >=
-        0.95 * document.documentElement.scrollHeight;
+  function shouldLoadMore(): boolean {
+    if (!ref.current) {
+      return false;
+    }
+    const top = ref.current.getBoundingClientRect().top;
+    return top < 2 * window.innerHeight;
+  }
 
-      if (almostAtTheBottom) {
-        debounce(() => {
-          setNumberVisibleParticipants(v => {
-            if (v + 100 >= filteredParticipants.length) {
-              return filteredParticipants.length;
-            }
-            return v + 100;
-          });
-        });
+  function getNumberVisibleParticipants() {
+    const scroll = window.innerHeight + document.documentElement.scrollTop;
+    const padded = scroll + window.innerHeight;
+    return Math.ceil(padded / ROW_HEIGHT_PX);
+  }
+
+  useEffect(() => {
+    if (shouldLoadMore()) {
+      setNumberVisibleParticipants(getNumberVisibleParticipants());
+    }
+
+    function onScroll() {
+      if (shouldLoadMore()) {
+        setNumberVisibleParticipants(getNumberVisibleParticipants());
       }
     }
 
@@ -99,32 +144,16 @@ export default function Table({
     return () => window.removeEventListener('scroll', onScroll);
   }, [filteredParticipants.length]);
 
-  const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
+  const height =
+    Math.max(filteredParticipants.length - numberVisibleParticipants, 0) * ROW_HEIGHT_PX;
 
   return (
     <div>
-      <div className="flex gap-2 px-4 pb-2 pt-4">
-        <SearchInput searchValue={searchValue} setSearchValue={setSearchValue} />
-        <ToggleFiltersButton
-          defaultState={isDefaultFilterState(filters)}
-          filtersVisible={filtersVisible}
-          onClick={() => setFiltersVisible(v => !v)}
-        />
-      </div>
-      {filtersVisible && (
-        <div className="px-4 pb-2">
-          <ParticipantFilters
-            filters={filters}
-            setFilters={setFilters}
-            onClose={() => setFiltersVisible(false)}
-          />
-        </div>
-      )}
-      {filtersActive && (
-        <div className="mb-4 mt-2">
-          <ResultCount count={filteredParticipants.length} onClick={resetSearchData} />
-        </div>
-      )}
+      <TableFilters
+        searchData={searchData}
+        setSearchData={setSearchData}
+        resultCount={filteredParticipants.length}
+      />
       <div className="mx-4 mt-2">
         {rows.length === 0 && (
           <div className="mt-10 flex flex-col items-center justify-center rounded-xl">
@@ -134,7 +163,12 @@ export default function Table({
           </div>
         )}
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
-          <tbody>{rows}</tbody>
+          <tbody>
+            {rows}
+            <tr className="block bg-gray-200 dark:bg-gray-800" style={{height}} ref={ref}>
+              <td></td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -204,21 +238,23 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
     ? 'bg-gray-200 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
     : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
 
+  const fullNameClass = 'select-none overflow-x-hidden text-ellipsis whitespace-nowrap';
+
   return (
     <tr
       style={{WebkitTapHighlightColor: 'transparent'}}
-      className={`${background} cursor-pointer select-none active:bg-gray-300
-                  active:transition-all dark:active:bg-gray-600`}
+      className={`${background} max-h-[${ROW_HEIGHT_PX}px] cursor-pointer select-none
+                  active:bg-gray-300 active:transition-all dark:active:bg-gray-600`}
       onClick={onClick}
     >
-      <td className="p-4">
+      <td className="max-w-0 p-4">
         <div className="flex items-center justify-between">
           <Typography
             variant="body1"
             className={
               state === 'rejected' || state === 'withdrawn'
-                ? 'select-none line-through'
-                : 'select-none'
+                ? `${fullNameClass} line-through`
+                : fullNameClass
             }
           >
             {fullName}
@@ -307,6 +343,43 @@ function ClearSearchButton({onClick}: {onClick: () => void}) {
       >
         <XMarkIcon className="min-w-[1.5rem] text-gray-800 dark:text-gray-300" />
       </button>
+    </div>
+  );
+}
+
+export function TableSkeleton({
+  searchData,
+  setSearchData,
+  participantCount,
+}: {
+  participantCount: number;
+  searchData: SearchData;
+  setSearchData: (data: SearchData) => void;
+}) {
+  const height = participantCount * ROW_HEIGHT_PX;
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return (
+    <div>
+      <TableFilters searchData={searchData} setSearchData={setSearchData} resultCount={0} />
+      <div className="mx-4 mt-2">
+        <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
+          <tbody>
+            <tr className="bg-gray-200 dark:bg-gray-800" style={{height}}>
+              <td className="relative">
+                <div className="absolute left-0 right-0 top-0 mt-12 flex flex-col gap-2">
+                  {isVisible && <LoadingIndicator size="md" />}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
