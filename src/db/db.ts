@@ -187,6 +187,10 @@ export async function getParticipants(regformId: number) {
   return await db.participants.where({regformId, deleted: 0}).toArray();
 }
 
+export async function countParticipants(regformId: number) {
+  return await db.participants.where({regformId, deleted: 0}).count();
+}
+
 export function useLiveServers(defaultValue?: Server[]) {
   return useLiveQuery(getServers, [], defaultValue || []);
 }

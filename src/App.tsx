@@ -10,6 +10,7 @@ import db, {
   getRegform,
   getRegforms,
   getServers,
+  countParticipants,
 } from './db/db';
 import useSettings from './hooks/useSettings';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
@@ -88,7 +89,8 @@ const router = createBrowserRouter([
           const {id: eventId, regformId} = getNumericParams(params);
           const event = await getEvent(eventId);
           const regform = await getRegform({id: regformId, eventId});
-          return {event, regform, params: {eventId, regformId}};
+          const participantCount = await countParticipants(regformId);
+          return {event, regform, participantCount, params: {eventId, regformId}};
         },
       },
       {
