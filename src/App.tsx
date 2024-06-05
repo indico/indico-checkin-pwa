@@ -1,6 +1,13 @@
 import './App.css';
 import {useEffect, lazy, Suspense} from 'react';
-import {createBrowserRouter, RouterProvider, Params, Outlet, useLocation} from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Params,
+  Outlet,
+  useLocation,
+  ScrollRestoration,
+} from 'react-router-dom';
 import BottomNav from './Components/BottomNav';
 import Modal from './Components/Tailwind/Modal/Modal';
 import db, {
@@ -50,6 +57,7 @@ function RootPage() {
 
   return (
     <>
+      <ScrollRestoration />
       <Outlet />
       {bottomNavVisible && <BottomNav />}
     </>
