@@ -143,7 +143,7 @@ export async function syncParticipants(
       const deleted = onlyExisting.map(r => ({key: r.id, changes: {deleted: 1 as IDBBoolean}}));
       await db.participants.bulkUpdate(deleted);
       // participants that we don't have locally, add them
-      const newData = onlyNew.map(({id, ...p}) => ({
+      const newData = onlyNew.map(({id, eventId, regformId, ...p}) => ({
         ...p,
         indicoId: id,
         regformId: regform.id,
