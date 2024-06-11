@@ -18,8 +18,8 @@ import {
   isDefaultFilterState,
   makeDefaultFilterState,
 } from './filters';
-import {LoadingIndicator} from './LoadingIndicator';
 import Typography from './Typography';
+import styles from './Table.module.scss';
 
 const ROW_HEIGHT_PX = 56;
 
@@ -356,13 +356,7 @@ export function TableSkeleton({
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
 }) {
-  const height = participantCount * ROW_HEIGHT_PX;
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setIsVisible(true), 50);
-    return () => clearTimeout(timeout);
-  }, []);
+  const height = Math.max(10, participantCount) * ROW_HEIGHT_PX;
 
   return (
     <div>
@@ -370,12 +364,8 @@ export function TableSkeleton({
       <div className="mx-4 mt-2">
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
           <tbody>
-            <tr className="bg-gray-200 dark:bg-gray-800" style={{height}}>
-              <td className="relative">
-                <div className="absolute left-0 right-0 top-0 mt-12 flex flex-col gap-2">
-                  {isVisible && <LoadingIndicator size="md" />}
-                </div>
-              </td>
+            <tr className={`bg-gray-200 dark:bg-gray-800 ${styles.animated}`} style={{height}}>
+              <td></td>
             </tr>
           </tbody>
         </table>
