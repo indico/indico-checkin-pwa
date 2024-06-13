@@ -127,8 +127,9 @@ export default function Table({
   }
 
   function getNumberVisibleParticipants() {
-    const scroll = window.innerHeight + document.documentElement.scrollTop;
-    const padded = scroll + window.innerHeight;
+    const scroll = document.documentElement.scrollTop;
+    // Load 5 additional screen heights worth of participants
+    const padded = scroll + 5 * window.innerHeight;
     return Math.ceil(padded / ROW_HEIGHT_PX);
   }
 
