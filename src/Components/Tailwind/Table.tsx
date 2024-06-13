@@ -134,10 +134,6 @@ export default function Table({
   }
 
   useEffect(() => {
-    if (shouldLoadMore()) {
-      setNumberVisibleParticipants(getNumberVisibleParticipants());
-    }
-
     function onScroll() {
       if (shouldLoadMore()) {
         setNumberVisibleParticipants(getNumberVisibleParticipants());
