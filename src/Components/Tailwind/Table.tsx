@@ -1,4 +1,4 @@
-import {ChangeEvent, useState, useMemo, useRef, useEffect} from 'react';
+import {ChangeEvent, useState, useMemo, useRef, useEffect, forwardRef} from 'react';
 import {
   ArrowSmallLeftIcon,
   BanknotesIcon,
@@ -101,6 +101,8 @@ export default function Table({
     () => filterParticipants(participants, searchData),
     [participants, searchData]
   );
+  const dummyRowHeight =
+    Math.max(filteredParticipants.length - numberVisibleParticipants, 0) * ROW_HEIGHT_PX;
 
   const rows = filteredParticipants
     .slice(0, numberVisibleParticipants)
@@ -148,9 +150,6 @@ export default function Table({
     return () => window.removeEventListener('scroll', onScroll);
   }, [filteredParticipants.length]);
 
-  const dummyRowHeight =
-    Math.max(filteredParticipants.length - numberVisibleParticipants, 0) * ROW_HEIGHT_PX;
-
   return (
     <div>
       <TableFilters
@@ -169,13 +168,7 @@ export default function Table({
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
           <tbody>
             {rows}
-            <tr
-              className="block bg-gray-200 dark:bg-gray-800"
-              style={{height: dummyRowHeight}}
-              ref={dummyRowRef}
-            >
-              <td></td>
-            </tr>
+            <DummyRow height={dummyRowHeight} ref={dummyRowRef} />
           </tbody>
         </table>
       </div>
@@ -196,6 +189,21 @@ function compareDefault(a: any, b: any): number {
     return 0;
   }
 }
+/**
+ * Dummy row to artificially increase the height of the participant table.
+ * This keeps the table height constant as more participants become visible
+ * while scrolling down and keeps the scroll bar from jumping around.
+ */
+const DummyRow = forwardRef(function DummyRow(
+  {height}: {height: number},
+  ref: React.Ref<HTMLTableRowElement>
+) {
+  return (
+    <tr className="block bg-gray-200 dark:bg-gray-800" style={{height}} ref={ref}>
+      <td></td>
+    </tr>
+  );
+});
 
 function filterParticipants(participants: Participant[], data: SearchData) {
   const {searchValue, filters} = data;
