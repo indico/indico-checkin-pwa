@@ -32,12 +32,10 @@ export function TableFilters({
   searchData,
   setSearchData,
   resultCount,
-  showResultCount = true,
 }: {
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
   resultCount: number;
-  showResultCount?: boolean;
 }) {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const {filters, searchValue} = searchData;
@@ -66,7 +64,7 @@ export function TableFilters({
           />
         </div>
       )}
-      {filtersActive && showResultCount && (
+      {filtersActive && (
         <div className="mb-4 mt-2">
           <ResultCount count={resultCount} onClick={resetSearchData} />
         </div>
