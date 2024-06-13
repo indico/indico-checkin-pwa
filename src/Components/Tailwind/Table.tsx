@@ -86,7 +86,7 @@ export default function Table({
   setSearchData: (data: SearchData) => void;
   onRowClick: (p: Participant) => void;
 }) {
-  const defaultVisibleParticipants = 100;
+  const defaultVisibleParticipants = getNumberVisibleParticipants();
   const [numberVisibleParticipants, setNumberVisibleParticipants] = useState(
     defaultVisibleParticipants
   );
