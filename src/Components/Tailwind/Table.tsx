@@ -90,7 +90,7 @@ export default function Table({
   const [numberVisibleParticipants, setNumberVisibleParticipants] = useState(
     defaultVisibleParticipants
   );
-  const ref = useRef<HTMLTableRowElement>(null);
+  const dummyRowRef = useRef<HTMLTableRowElement>(null);
 
   const setSearchData = (data: SearchData) => {
     _setSearchData(data);
@@ -115,11 +115,14 @@ export default function Table({
       />
     ));
 
+  /**
+   * Check if the dummy row is within 200vh of the top of the screen
+   */
   function shouldLoadMore(): boolean {
-    if (!ref.current) {
+    if (!dummyRowRef.current) {
       return false;
     }
-    const top = ref.current.getBoundingClientRect().top;
+    const top = dummyRowRef.current.getBoundingClientRect().top;
     return top < 2 * window.innerHeight;
   }
 
@@ -144,7 +147,7 @@ export default function Table({
     return () => window.removeEventListener('scroll', onScroll);
   }, [filteredParticipants.length]);
 
-  const height =
+  const dummyRowHeight =
     Math.max(filteredParticipants.length - numberVisibleParticipants, 0) * ROW_HEIGHT_PX;
 
   return (
@@ -165,7 +168,11 @@ export default function Table({
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
           <tbody>
             {rows}
-            <tr className="block bg-gray-200 dark:bg-gray-800" style={{height}} ref={ref}>
+            <tr
+              className="block bg-gray-200 dark:bg-gray-800"
+              style={{height: dummyRowHeight}}
+              ref={dummyRowRef}
+            >
               <td></td>
             </tr>
           </tbody>
