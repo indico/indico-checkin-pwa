@@ -366,7 +366,9 @@ export function TableSkeleton({
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
 }) {
-  const height = Math.max(10, participantCount) * ROW_HEIGHT_PX;
+  const rowsPerScreen = Math.ceil(window.innerHeight / ROW_HEIGHT_PX);
+  const minRows = 2 * rowsPerScreen;
+  const height = (participantCount > 0 ? participantCount : minRows) * ROW_HEIGHT_PX;
 
   return (
     <div>
