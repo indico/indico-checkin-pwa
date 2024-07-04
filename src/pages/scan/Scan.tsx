@@ -114,7 +114,7 @@ export default function ScanPage() {
         </div>
       )}
       {processing && <LoadingBanner text="Loading.." />}
-      {!hasPermission && (
+      {!processing && !hasPermission && (
         <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
           <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
             <VideoCameraSlashIcon className="w-20 text-gray-500" />
