@@ -29,6 +29,7 @@ import db, {
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
+import {formatDatetime} from '../../utils/date';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
 import {NotFoundBanner} from '../NotFound';
@@ -111,6 +112,23 @@ function ParticipantPageContent({
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
+
+  useEffect(() => {
+    if (!participant) {
+      return;
+    }
+    if (state?.fromScan) {
+      // remove fromScan from location state
+      const {fromScan, ...rest} = state;
+      navigate('.', {replace: true, state: rest});
+      if (participant.checkedIn) {
+        errorModal({
+          title: 'Participant already checked in',
+          content: `This participant was checked in on ${formatDatetime(participant.checkedInDt!)}`,
+        });
+      }
+    }
+  }, [participant, state, errorModal, navigate]);
 
   const accompanyingPersons = useMemo(() => {
     if (participant?.registrationData) {
