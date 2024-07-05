@@ -136,6 +136,10 @@ async function makeRequest<T>(
   try {
     data = await response.json();
   } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      // Ignore cancelled requests
+      return {ok: false, aborted: true};
+    }
     return {ok: false, err};
   }
   data = camelizeKeys(data);

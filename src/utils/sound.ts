@@ -1,6 +1,7 @@
 import beep1 from '../assets/beep1.mp3';
 import beep2 from '../assets/beep2.mp3';
 import blip from '../assets/blip.mp3';
+import error from '../assets/error.mp3';
 import levelUp from '../assets/level-up.mp3';
 
 export const sounds = {
@@ -16,4 +17,8 @@ export function playSound(name: string) {
   if (sound) {
     new Audio(sound).play();
   }
+}
+
+export function playErrorSound() {
+  new Audio(error).play();
 }
