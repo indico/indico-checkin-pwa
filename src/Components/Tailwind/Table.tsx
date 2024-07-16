@@ -101,6 +101,20 @@ export default function Table({
   );
 }
 
+function compareNames(a: string, b: string): number {
+  return a.localeCompare(b);
+}
+
+function compareDefault(a: any, b: any): number {
+  if (a > b) {
+    return 1;
+  } else if (a < b) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
 function filterParticipants(participants: Participant[], data: SearchData) {
   const {searchValue, filters} = data;
 
@@ -129,12 +143,10 @@ function filterParticipants(participants: Participant[], data: SearchData) {
       if (!ascending) {
         [b, a] = [a, b];
       }
-      if (a[key] > b[key]) {
-        return 1;
-      } else if (a[key] < b[key]) {
-        return -1;
+      if (key === 'fullName') {
+        return compareNames(a.fullName, b.fullName);
       } else {
-        return 0;
+        return compareDefault(a[key], b[key]);
       }
     });
 }
