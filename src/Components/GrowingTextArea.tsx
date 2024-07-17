@@ -12,7 +12,7 @@ export default function GrowingTextArea({
   return (
     <div data-value={value} className={styles.sizer}>
       <textarea
-        placeholder="Add notes.."
+        placeholder="Add notes..."
         rows={1}
         value={value}
         onInput={onChange}
