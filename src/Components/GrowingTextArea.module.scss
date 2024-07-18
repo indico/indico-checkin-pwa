@@ -16,5 +16,6 @@
     content: attr(data-value) ' ';
     visibility: hidden;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 }
