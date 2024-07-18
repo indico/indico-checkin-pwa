@@ -104,7 +104,7 @@ function ParticipantPageContent({
   const {soundEffect} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
 
   useEffect(() => {
@@ -179,12 +179,6 @@ function ParticipantPageContent({
 
     return () => controller.abort();
   }, [eventId, regformId, participantId, errorModal, autoCheckin, offline, performCheckin]);
-
-  useEffect(() => {
-    if (participant) {
-      setNotes(participant.notes);
-    }
-  }, [participant]);
 
   if (!event) {
     return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
