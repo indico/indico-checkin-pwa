@@ -42,8 +42,9 @@ export function Field(field: FieldProps) {
     case 'number':
     case 'email':
     case 'phone':
-    case 'bool':
       return <TextField {...field} />;
+    case 'bool':
+      return <BooleanField {...field} />;
     case 'textarea':
       return <TextAreaField {...field} />;
     case 'date':
@@ -88,6 +89,15 @@ function TextField({title, description, data}: FieldProps) {
     <div>
       <FieldHeader title={title} description={description} />
       <Typography variant="body1">{data}</Typography>
+    </div>
+  );
+}
+
+function BooleanField({title, description, data}: FieldProps) {
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <Typography variant="body1">{data ? 'yes' : 'no'}</Typography>
     </div>
   );
 }
