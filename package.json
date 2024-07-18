@@ -39,6 +39,9 @@
     "workbox-strategies": "^6.6.0",
     "workbox-streams": "^6.6.0"
   },
+  "overrides": {
+    "typescript": "^5.5.3"
+  },
   "scripts": {
     "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts start",
     "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts build",
