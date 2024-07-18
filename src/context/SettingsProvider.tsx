@@ -6,6 +6,8 @@ interface SettingsContextProps {
   setDarkMode: (v: boolean) => void;
   autoCheckin: boolean;
   setAutoCheckin: (v: boolean) => void;
+  hapticFeedback: boolean;
+  setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
 }
@@ -15,6 +17,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setDarkMode: () => {},
   autoCheckin: false,
   setAutoCheckin: () => {},
+  hapticFeedback: false,
+  setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
 });
@@ -31,11 +35,23 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
   const storedCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
   const [autoCheckin, setAutoCheckin] = useState(storedCheckin);
 
+  const storedHapticFeedback = JSON.parse(localStorage.getItem('hapticFeedback') || 'false');
+  const [hapticFeedback, setHapticFeedback] = useState(storedHapticFeedback);
+
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
   return (
     <SettingsContext.Provider
-      value={{darkMode, setDarkMode, autoCheckin, setAutoCheckin, soundEffect, setSoundEffect}}
+      value={{
+        darkMode,
+        setDarkMode,
+        autoCheckin,
+        setAutoCheckin,
+        soundEffect,
+        setSoundEffect,
+        hapticFeedback,
+        setHapticFeedback,
+      }}
     >
       {children}
     </SettingsContext.Provider>

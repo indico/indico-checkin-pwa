@@ -1,6 +1,7 @@
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {Event, Regform, Participant} from '../../db/db';
 import {checkInParticipant} from '../../utils/client';
+import {playVibration} from '../../utils/haptics';
 import {playSound} from '../../utils/sound';
 import {handleError} from './sync';
 
@@ -23,6 +24,7 @@ export async function checkIn(
   participant: Participant,
   newCheckInState: boolean,
   sound: string,
+  hapticFeedback: boolean,
   errorModal: ErrorModalFunction
 ) {
   await db.participants.update(participant.id, {checkedInLoading: 1});
@@ -40,6 +42,9 @@ export async function checkIn(
     await updateCheckinState(regform, participant, newCheckInState);
     if (newCheckInState) {
       playSound(sound);
+      if (hapticFeedback) {
+        playVibration.success();
+      }
     }
   } else {
     handleError(response, 'Something went wrong when updating check-in status', errorModal);

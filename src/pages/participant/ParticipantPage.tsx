@@ -30,6 +30,7 @@ import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
+import {playVibration} from '../../utils/haptics';
 import {playErrorSound} from '../../utils/sound';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
@@ -101,7 +102,7 @@ function ParticipantPageContent({
   const navigate = useNavigate();
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
-  const {soundEffect} = useSettings();
+  const {soundEffect, hapticFeedback} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState('');
@@ -120,6 +121,9 @@ function ParticipantPageContent({
       showCheckedInWarning.current = false;
       if (participant?.checkedIn && participant?.checkedInDt) {
         playErrorSound();
+        if (hapticFeedback) {
+          playVibration.error();
+        }
         errorModal({
           title: 'Participant already checked in',
           content: `This participant was checked in on ${formatDatetime(participant.checkedInDt)}`,
@@ -143,7 +147,15 @@ function ParticipantPageContent({
       }
 
       try {
-        await checkIn(event, regform, participant, newCheckinState, soundEffect, errorModal);
+        await checkIn(
+          event,
+          regform,
+          participant,
+          newCheckinState,
+          soundEffect,
+          hapticFeedback,
+          errorModal
+        );
       } catch (err: any) {
         errorModal({title: 'Could not update check-in status', content: err.message});
       } finally {
