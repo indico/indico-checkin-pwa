@@ -37,7 +37,6 @@ function MainSettings() {
     hapticFeedback,
     setHapticFeedback,
   } = useSettings();
-  console.log('hapticFeedback', typeof hapticFeedback);
 
   const toggleDarkMode = () => {
     // Set the theme preference in localStorage and in the SettingsContext

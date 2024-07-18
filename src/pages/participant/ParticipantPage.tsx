@@ -130,7 +130,7 @@ function ParticipantPageContent({
         });
       }
     }
-  }, [participant, errorModal]);
+  }, [participant, errorModal, hapticFeedback]);
 
   const accompanyingPersons = useMemo(() => {
     if (participant?.registrationData) {
@@ -161,7 +161,7 @@ function ParticipantPageContent({
       } finally {
       }
     },
-    [offline, errorModal, soundEffect]
+    [offline, errorModal, soundEffect, hapticFeedback]
   );
 
   useEffect(() => {

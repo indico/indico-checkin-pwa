@@ -1,11 +1,11 @@
 const patterns = {
   error: [100, 50, 100],
   success: [250],
-  clear: [0],
+  clear: [],
 };
 
-export function vibrate(pattern: number[]) {
-  if (!navigator.vibrate || !navigator.userActivation.isActive) {
+function vibrate(pattern: number[]) {
+  if (!('vibrate' in navigator) || !navigator.userActivation.isActive) {
     console.warn('Haptics not supported!');
     return;
   }
