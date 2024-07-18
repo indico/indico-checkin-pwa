@@ -1,4 +1,4 @@
-import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react';
+import {ChangeEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useLoaderData, useLocation, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
@@ -29,6 +29,8 @@ import db, {
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
+import {formatDatetime} from '../../utils/date';
+import {playErrorSound} from '../../utils/sound';
 import {checkIn} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
 import {NotFoundBanner} from '../NotFound';
@@ -103,14 +105,28 @@ function ParticipantPageContent({
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState('');
+  const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
 
   useEffect(() => {
-    // remove autoCheckin from location state
-    if (state?.autoCheckin !== undefined) {
-      const {autoCheckin, ...rest} = state || {};
+    // remove autoCheckin and fromScan from location state
+    if (state?.autoCheckin !== undefined || state?.fromScan !== undefined) {
+      const {autoCheckin, fromScan, ...rest} = state || {};
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
+
+  useEffect(() => {
+    if (showCheckedInWarning.current) {
+      showCheckedInWarning.current = false;
+      if (participant?.checkedIn && participant?.checkedInDt) {
+        playErrorSound();
+        errorModal({
+          title: 'Participant already checked in',
+          content: `This participant was checked in on ${formatDatetime(participant.checkedInDt)}`,
+        });
+      }
+    }
+  }, [participant, errorModal]);
 
   const accompanyingPersons = useMemo(() => {
     if (participant?.registrationData) {

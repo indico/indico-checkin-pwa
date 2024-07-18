@@ -105,6 +105,10 @@ describe('test handleParticipant()', () => {
     } as any;
     const errorModal = jest.fn();
     const navigate = jest.fn();
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: dummyParticipant.checkinSecret},
+    });
     await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
     expect(errorModal).toHaveBeenCalledWith({
       title: 'The registration form of this participant does not exist',
@@ -124,12 +128,16 @@ describe('test handleParticipant()', () => {
     } as any;
     const errorModal = jest.fn();
     const navigate = jest.fn();
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 73, checkinSecret: dummyParticipant.checkinSecret},
+    });
     await expect(handleParticipant(data, errorModal, navigate, true)).resolves.not.toThrow();
-    expect(errorModal).not.toHaveBeenCalledWith();
+    expect(errorModal).not.toHaveBeenCalled();
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true},
+      state: {autoCheckin: true, fromScan: true},
     });
   });
 
@@ -238,7 +246,7 @@ describe('test handleParticipant()', () => {
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true},
+      state: {autoCheckin: true, fromScan: true},
     });
   });
 });
