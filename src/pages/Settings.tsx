@@ -27,8 +27,16 @@ export default function SettingsPage() {
 }
 
 function MainSettings() {
-  const {darkMode, setDarkMode, autoCheckin, setAutoCheckin, soundEffect, setSoundEffect} =
-    useSettings();
+  const {
+    darkMode,
+    setDarkMode,
+    autoCheckin,
+    setAutoCheckin,
+    soundEffect,
+    setSoundEffect,
+    hapticFeedback,
+    setHapticFeedback,
+  } = useSettings();
 
   const toggleDarkMode = () => {
     // Set the theme preference in localStorage and in the SettingsContext
@@ -40,6 +48,11 @@ function MainSettings() {
   const toggleAutoCheckin = () => {
     localStorage.setItem('autoCheckin', (!autoCheckin).toString());
     setAutoCheckin(!autoCheckin);
+  };
+
+  const toggleHapticFeedback = () => {
+    localStorage.setItem('hapticFeedback', (!hapticFeedback).toString());
+    setHapticFeedback(!hapticFeedback);
   };
 
   const onSoundEffectChange = (v: string) => {
@@ -62,6 +75,12 @@ function MainSettings() {
           values={Object.keys(sounds)}
           selected={soundEffect}
           onChange={onSoundEffectChange}
+        />
+        <SettingsToggle
+          title="Haptic feedback"
+          description="Vibrate on certain interactions (e.g. check-in, error etc.)"
+          checked={hapticFeedback}
+          onToggle={toggleHapticFeedback}
         />
       </SettingsSection>
       <SettingsSection title="Appearance">
