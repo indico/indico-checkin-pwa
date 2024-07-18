@@ -25,7 +25,7 @@ import SettingsPage from './pages/Settings';
 // Expose the db instance as a global variable for easier debugging
 (window as any).db = db;
 
-const ScanPage = lazy(() => import('./pages/scan/Scan.tsx'));
+const ScanPage = lazy(() => import('./pages/scan/Scan'));
 
 function isNumeric(v?: string) {
   return v && /^[1-9]\d*$/.test(v);
