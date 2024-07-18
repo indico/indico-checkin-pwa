@@ -43,6 +43,7 @@
     "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts start",
     "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts build",
     "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage .",
     "eject": "react-scripts eject",
     "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
     "prepare": "husky install"
@@ -72,6 +73,9 @@
     "src/**": [
       "prettier --write"
     ]
+  },
+  "jest": {
+    "coverageReporters": ["text", "html"]
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.61.0",
