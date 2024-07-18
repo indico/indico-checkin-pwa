@@ -216,33 +216,24 @@ export function ToggleFiltersButton({
   onClick: () => void;
 }) {
   const commonClasses = `self-center rounded-full p-3 text-center text-sm font-medium focus:outline-none
-                         active:bg-gray-300 dark:text-gray-400 transition-all dark:active:bg-gray-600`;
+                         active:bg-gray-300 dark:text-gray-400 dark:active:bg-gray-600`;
+  const icon = defaultState ? (
+    <FunnelIconOutline className="h-5 w-5" />
+  ) : (
+    <FunnelIcon className="h-5 w-5" />
+  );
 
-  if (!defaultState) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`${commonClasses} ${
-          filtersVisible ? 'bg-gray-300 dark:bg-gray-600' : 'bg-gray-200 dark:bg-gray-700'
-        } text-gray-600`}
-      >
-        <FunnelIcon className="h-5 w-5" />
-      </button>
-    );
-  } else {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`${commonClasses} ${
-          filtersVisible ? 'bg-gray-300 dark:bg-gray-600' : 'bg-gray-200 dark:bg-gray-700'
-        } text-gray-700`}
-      >
-        <FunnelIconOutline className="h-5 w-5" />
-      </button>
-    );
-  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${commonClasses} ${
+        filtersVisible ? 'bg-gray-300 dark:bg-gray-600' : 'bg-gray-200 dark:bg-gray-700'
+      } text-gray-600`}
+    >
+      {icon}
+    </button>
+  );
 }
 
 export function FilterButton({
