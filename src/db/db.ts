@@ -2,6 +2,7 @@ import Dexie, {type EntityTable} from 'dexie';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoEvent, IndicoParticipant, IndicoRegform} from '../utils/client';
+import {deepEqual} from '../utils/deep_equal';
 
 export type IDBBoolean = 1 | 0; // IndexedDB doesn't support indexing booleans, so we use {1,0} instead
 
@@ -393,11 +394,28 @@ export async function updateParticipant(id: number, data: IndicoParticipant) {
 }
 
 export async function updateParticipants(ids: number[], participants: IndicoParticipant[]) {
-  const updates = participants.map(({id: indicoId, eventId, regformId, ...rest}, i) => ({
-    key: ids[i],
-    changes: {indicoId, ...rest},
+  const newParticipants = participants.map(({id: indicoId, eventId, regformId, ...rest}) => ({
+    indicoId,
+    ...rest,
   }));
-  await db.participants.bulkUpdate(updates);
+
+  return db.transaction('readwrite', db.participants, async () => {
+    const storedParticipants = await db.participants.bulkGet(ids);
+    const changes = [];
+    for (const [i, p] of storedParticipants.entries()) {
+      if (!p) {
+        continue;
+      }
+      const keysToCompare = new Set(Object.keys(newParticipants[i]));
+      const pChanges = Object.fromEntries(
+        Object.entries(p).filter(([key]) => keysToCompare.has(key))
+      );
+      if (!deepEqual(pChanges, newParticipants[i])) {
+        changes.push({key: ids[i], changes: newParticipants[i]});
+      }
+    }
+    await db.participants.bulkUpdate(changes);
+  });
 }
 
 function isFirefox() {
