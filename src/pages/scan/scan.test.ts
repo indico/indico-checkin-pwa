@@ -98,6 +98,32 @@ describe('test handleParticipant()', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  test('test existing participant with missing event', async () => {
+    await createDummyServer();
+    await createDummyEvent();
+    await createDummyParticipant();
+    const data = {
+      serverUrl: dummyServer.baseUrl,
+      checkinSecret: dummyParticipant.checkinSecret,
+    } as any;
+    const errorModal = jest.fn();
+    const handleError = jest.fn();
+    const navigate = jest.fn();
+
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 9999, regformId: 9999, checkinSecret: '1234'},
+    });
+    await expect(
+      handleParticipant(data, errorModal, handleError, navigate, true)
+    ).resolves.not.toThrow();
+    expect(errorModal).toHaveBeenCalledWith({
+      title: 'The event of this participant does not exist',
+      content: 'Scan an event QR code first and try again.',
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   test('test existing participant with missing regform', async () => {
     await createDummyServer();
     await createDummyEvent();
@@ -105,13 +131,15 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-      id: 101,
-      eventId: 42,
-      regformId: 9999,
     } as any;
     const errorModal = jest.fn();
     const handleError = jest.fn();
     const navigate = jest.fn();
+
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
+    });
     await expect(
       handleParticipant(data, errorModal, handleError, navigate, true)
     ).resolves.not.toThrow();
@@ -130,13 +158,15 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-      id: 101,
-      eventId: 42,
-      regformId: 73,
     } as any;
     const errorModal = jest.fn();
     const handleError = jest.fn();
     const navigate = jest.fn();
+
+    (getParticipantByUuid as any).mockResolvedValue({
+      ok: true,
+      data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
+    });
     expect(errorModal).not.toHaveBeenCalled();
     await expect(
       handleParticipant(data, errorModal, handleError, navigate, true)

@@ -75,7 +75,7 @@ function MainSettings() {
           selected={soundEffect}
           onChange={onSoundEffectChange}
         />
-        <SettingsToggle
+        <SettingToggle
           title="Haptic feedback"
           description="Vibrate on certain interactions (e.g. check-in, error etc.)"
           checked={hapticFeedback}
