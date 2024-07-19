@@ -1,6 +1,6 @@
 // file = QrScannerPlugin.jsx
-import {MutableRefObject, useEffect, useRef} from 'react';
-import {ArrowUpTrayIcon} from '@heroicons/react/24/solid';
+import {MutableRefObject, useEffect, useRef, useState} from 'react';
+import {ArrowUpTrayIcon, BoltIcon, BoltSlashIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {checkCameraPermissions} from '../../utils/media';
 import classes from './QrScanner.module.css';
@@ -51,6 +51,8 @@ export default function QrScannerPlugin({
 }: QrProps) {
   const aspectRatio = calcAspectRatio();
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
+  const torchStateRef = useRef(false);
+  const [, setRender] = useState(false); // TODO: Find a better way to force a re-render without using the state (this causes the camera to reload)
 
   useEffect(() => {
     const showQRCode = async () => {
@@ -103,11 +105,27 @@ export default function QrScannerPlugin({
     onPermRefused,
   ]);
 
+  const toggleTorch = async () => {
+    try {
+      const track = html5CustomScanner.current?.getRunningTrackCameraCapabilities();
+      if (track && track.torchFeature().isSupported()) {
+        torchStateRef.current = !torchStateRef.current;
+        await track.torchFeature().apply(torchStateRef.current);
+        setRender(prev => !prev); // TODO: Hacky
+      }
+    } catch (error) {
+      console.warn('Error toggling torch:', error);
+    }
+  };
+
   return (
-    <div className={classes.wrapper}>
-      <ShadedRegion size={qrbox} />
-      <div id={qrcodeRegionId} />
-    </div>
+    <>
+      <div className={classes.wrapper}>
+        <ShadedRegion size={qrbox}></ShadedRegion>
+        <div id={qrcodeRegionId} />
+      </div>
+      <ToggleTorchButton onClick={toggleTorch} toggled={!torchStateRef.current} />
+    </>
   );
 }
 
@@ -133,6 +151,21 @@ export function FileUploadScanner({
         <span>Upload QR code image</span>
       </label>
       <div id={qrcodeFileRegionId}></div>
+    </div>
+  );
+}
+
+export function ToggleTorchButton({onClick, toggled}: {onClick: () => void; toggled: boolean}) {
+  // TODO: Hide away the button when the torch is not supported
+  return (
+    <div className="mt-4 flex justify-center">
+      <div onClick={onClick} className="inline-flex rounded-full bg-primary text-white">
+        {toggled ? (
+          <BoltIcon className="mx-2 my-2 h-16 w-16" />
+        ) : (
+          <BoltSlashIcon className="mx-2 my-2 h-16 w-16" />
+        )}
+      </div>
     </div>
   );
 }
