@@ -32,8 +32,8 @@ const Button = ({children, variant, className, onClick}: ButtonProps) => {
 export default Button;
 
 const defaultDangerBtnClassName: ComponentProps<'div'>['className'] = `
-  flex gap-2 text-white bg-red-700 font-medium rounded-lg text-sm px-4 h-fit py-3 justify-self-center
-  active:bg-red-800 dark:bg-red-600 dark:active:bg-red-700`;
+  flex gap-2 justify-center text-white bg-red-500 font-medium rounded-lg text-sm px-4 h-fit py-3 justify-self-center
+  active:bg-red-600 dark:bg-red-700 dark:active:bg-red-800`;
 
 export const DangerButton = ({children, className, onClick}: ButtonProps) => {
   const fullClassname = defaultDangerBtnClassName + ' ' + (className || '');
@@ -63,8 +63,8 @@ export const SimpleButton = ({children, className, onClick}: ButtonProps) => {
 const defaultOultineBtnClassName: ComponentProps<'div'>['className'] = `
   py-3 px-3 text-sm font-medium text-gray-900 bg-white rounded-lg
   border border-gray-200 active:bg-gray-100 active:text-blue-700
-  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600
-  dark:active:text-white dark:active:bg-gray-700`;
+  dark:bg-gray-800 dark:text-gray-100 dark:border-gray-500
+  dark:active:text-blue-300 dark:active:bg-gray-700`;
 
 export const OutlineButton = ({children, className, onClick}: ButtonProps) => {
   const fullClassname = `${defaultOultineBtnClassName} ${className}`;
