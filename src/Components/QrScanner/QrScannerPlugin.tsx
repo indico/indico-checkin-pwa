@@ -1,5 +1,5 @@
 // file = QrScannerPlugin.jsx
-import {MutableRefObject, useEffect, useRef} from 'react';
+import {MutableRefObject, useEffect, useRef, useState} from 'react';
 import {ArrowUpTrayIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {checkCameraPermissions} from '../../utils/media';
@@ -52,12 +52,14 @@ export default function QrScannerPlugin({
 }: QrProps) {
   const aspectRatio = calcAspectRatio();
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
+  const [canUseCamera, setCanUseCamera] = useState(true);
 
   useEffect(() => {
     const showQRCode = async () => {
       const hasCamPerm: boolean = await checkCameraPermissions();
       if (!hasCamPerm) {
         onPermRefused();
+        setCanUseCamera(false);
         return;
       }
 
@@ -110,7 +112,7 @@ export default function QrScannerPlugin({
         <ShadedRegion size={qrbox}></ShadedRegion>
         <div id={qrcodeRegionId} />
       </div>
-      <TorchButton html5CustomScanner={html5CustomScanner} />
+      <TorchButton html5CustomScanner={html5CustomScanner} canUseCamera={canUseCamera} />
     </>
   );
 }
