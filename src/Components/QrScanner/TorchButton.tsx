@@ -32,7 +32,7 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
   }, [torchOn, html5CustomScanner]);
 
   if (!canUseCamera) {
-    return null;
+    return;
   }
 
   if (torchUnavailable) {
@@ -60,9 +60,9 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
         className="inline-flex cursor-pointer rounded-full bg-primary text-white"
       >
         {torchOn ? (
-          <BoltIcon className="mx-2 my-2 h-16 w-16" />
-        ) : (
           <BoltSlashIcon className="mx-2 my-2 h-16 w-16" />
+        ) : (
+          <BoltIcon className="mx-2 my-2 h-16 w-16" />
         )}
       </div>
     </div>
