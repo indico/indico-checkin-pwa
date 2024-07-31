@@ -54,6 +54,18 @@ export default function QrScannerPlugin({
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
   const [canUseCamera, setCanUseCamera] = useState(true);
 
+  // Turn off the torch (if it is on) when navigating away from the scan page
+  async function switchOffTorch(html5CustomScanner: MutableRefObject<Html5Qrcode | null>) {
+    try {
+      const track = html5CustomScanner?.current?.getRunningTrackCameraCapabilities();
+      if (track && track.torchFeature().value()) {
+        await track.torchFeature().apply(false);
+      }
+    } catch (error) {
+      console.warn('Failed to disable torch:', error);
+    }
+  }
+
   useEffect(() => {
     const showQRCode = async () => {
       const hasCamPerm: boolean = await checkCameraPermissions();
@@ -86,6 +98,7 @@ export default function QrScannerPlugin({
     return () => {
       const stopQrScanner = async () => {
         if (html5CustomScanner.current?.isScanning) {
+          switchOffTorch(html5CustomScanner);
           await html5CustomScanner.current.stop();
         }
         html5CustomScanner.current?.clear();
