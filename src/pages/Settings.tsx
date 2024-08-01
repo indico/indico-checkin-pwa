@@ -134,6 +134,7 @@ function DebugSettings() {
 function LogSettings() {
   const {logs} = useLogs();
   const version = process.env.REACT_APP_VERSION!;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   function onCopy() {
     const text = `App version: ${version}\n\nLogs:\n${formatLogs(logs)}`;
@@ -143,25 +144,27 @@ function LogSettings() {
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Logs">
-        <Setting title="Copy">
+        <Setting title="Copy to clipboard">
           <Button onClick={onCopy}>
             <DocumentDuplicateIcon className="h-5 min-w-[1.25rem]" />
           </Button>
         </Setting>
-        <div className="flex items-center justify-between gap-4">
-          {logs.length === 0 && <Typography variant="body2">No logs yet</Typography>}
-          {logs.length > 0 && (
-            <div className="flex max-h-[40vh] flex-col-reverse overflow-y-auto">
-              <code className="flex flex-col gap-2">
-                {logs.map((log, idx) => (
-                  <Typography key={idx} variant="body3" className="break-all">
-                    <LogEntry log={log} />
-                  </Typography>
-                ))}
-              </code>
-            </div>
-          )}
-        </div>
+        {!isProduction && (
+          <div className="flex items-center justify-between gap-4">
+            {logs.length === 0 && <Typography variant="body2">No logs available</Typography>}
+            {logs.length > 0 && (
+              <div className="flex max-h-[40vh] flex-col-reverse overflow-y-auto">
+                <code className="flex flex-col gap-2">
+                  {logs.map((log, idx) => (
+                    <Typography key={idx} variant="body3" className="break-all">
+                      <LogEntry log={log} />
+                    </Typography>
+                  ))}
+                </code>
+              </div>
+            )}
+          </div>
+        )}
       </SettingsSection>
     </div>
   );
