@@ -1,16 +1,23 @@
 import './App.css';
 import {useEffect, lazy, Suspense} from 'react';
-import {createBrowserRouter, RouterProvider, Params, Outlet, useLocation} from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Params,
+  Outlet,
+  useLocation,
+  ScrollRestoration,
+} from 'react-router-dom';
 import BottomNav from './Components/BottomNav';
 import Modal from './Components/Tailwind/Modal/Modal';
 import db, {
   getEvent,
   getEvents,
   getParticipant,
-  getParticipants,
   getRegform,
   getRegforms,
   getServers,
+  countParticipants,
 } from './db/db';
 import useSettings from './hooks/useSettings';
 import AuthRedirectPage from './pages/Auth/AuthRedirectPage';
@@ -50,6 +57,7 @@ function RootPage() {
 
   return (
     <>
+      <ScrollRestoration />
       <Outlet />
       {bottomNavVisible && <BottomNav />}
     </>
@@ -89,8 +97,8 @@ const router = createBrowserRouter([
           const {id: eventId, regformId} = getNumericParams(params);
           const event = await getEvent(eventId);
           const regform = await getRegform({id: regformId, eventId});
-          const participants = await getParticipants(regformId);
-          return {event, regform, participants, params: {eventId, regformId}};
+          const participantCount = await countParticipants(regformId);
+          return {event, regform, participantCount, params: {eventId, regformId}};
         },
       },
       {

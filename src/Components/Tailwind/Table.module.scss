@@ -1,0 +1,51 @@
+.animated {
+  // Should be in sync with `ROW_HEIGHT_PX` in Table.tsx
+  --row-height-px: 56px;
+}
+
+:global(html.dark) .animated {
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(18, 24, 33, 0.5),
+      rgba(55, 65, 81, 0.5),
+      rgba(18, 24, 33, 0.5),
+      rgba(55, 65, 81, 0.5),
+      rgba(18, 24, 33, 0.5)
+    ),
+    repeating-linear-gradient(
+      rgb(31, 41, 55) 0 var(--row-height-px),
+      rgb(55, 65, 81) 0 calc(2 * var(--row-height-px))
+    );
+
+  background-repeat: repeat-x;
+  background-size: 400% 100%;
+  animation: TableLoading 1.5s linear infinite;
+}
+
+:global(html:not(.dark)) .animated {
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(200, 204, 213, 0.5),
+      rgba(243, 244, 246, 0.5),
+      rgba(200, 204, 213, 0.5),
+      rgba(243, 244, 246, 0.5),
+      rgba(200, 204, 213, 0.5)
+    ),
+    repeating-linear-gradient(
+      rgb(229, 231, 235) 0 var(--row-height-px),
+      rgb(243, 244, 246) 0 calc(2 * var(--row-height-px))
+    );
+
+  background-repeat: repeat-x;
+  background-size: 400% 100%;
+  animation: TableLoading 1.5s linear infinite;
+}
+
+@keyframes TableLoading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -33% 50%;
+  }
+}

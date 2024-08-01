@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLoaderData, useLocation, useNavigate} from 'react-router-dom';
+import {useLoaderData, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -10,9 +10,8 @@ import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import {makeDefaultFilterState} from '../../Components/Tailwind/filters';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
-import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
-import Table, {SearchData} from '../../Components/Tailwind/Table';
+import Table, {SearchData, TableSkeleton} from '../../Components/Tailwind/Table';
 import TopNav from '../../Components/TopNav';
 import {
   Event,
@@ -39,14 +38,18 @@ export default function RegformPage() {
   const loaderData = useLoaderData() as {
     event?: Event;
     regform?: Regform;
-    participants: Participant[];
     params: Params;
+    participantCount: number;
   };
 
   const {eventId, regformId} = loaderData.params;
   const event = useLiveEvent(eventId, loaderData.event);
   const regform = useLiveRegform(regformId, loaderData.regform);
-  const participants = useLiveParticipants(regformId, loaderData.participants);
+  // Participants are preloaded in case there is a lot of them (10k+) as this
+  // would make this page too slow to load w/o visual feedback. Instead,
+  // the page is loaded immediately and a table skeleton is shown while the
+  // participants are loading.
+  const participants = useLiveParticipants(regformId);
 
   return (
     <>
@@ -57,6 +60,7 @@ export default function RegformPage() {
         event={event}
         regform={regform}
         participants={participants}
+        participantCount={loaderData.participantCount}
       />
     </>
   );
@@ -68,32 +72,34 @@ function RegformPageContent({
   event,
   regform,
   participants,
+  participantCount,
 }: {
   eventId: number;
   regformId: number;
   event?: Event;
   regform?: Regform;
-  participants: Participant[];
+  participants?: Participant[];
+  participantCount: number;
 }) {
   const navigate = useNavigate();
-  const {state} = useLocation();
   const errorModal = useErrorModal();
   const [isSyncing, setIsSyncing] = useState(false);
+  const savedFilters = JSON.parse(localStorage.getItem('regforms') || '{}')[regformId];
   const [searchData, _setSearchData] = useState({
-    searchValue: state?.searchValue || '',
-    filters: state?.filters || makeDefaultFilterState(),
+    searchValue: savedFilters?.searchValue || '',
+    filters: savedFilters?.filters || makeDefaultFilterState(),
   });
 
   const setSearchData = (data: SearchData) => {
     _setSearchData(data);
-    // Save the search criteria in the location state. This way, the user can
-    // go to a participant page and come back here w/o reseting the filters
-    navigate('.', {replace: true, state: {...(state || {}), ...data}});
+    const regforms = JSON.parse(localStorage.getItem('regforms') || '{}');
+    regforms[regformId] = data;
+    localStorage.setItem('regforms', JSON.stringify(regforms));
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     async function _sync() {
-      const controller = new AbortController();
       const event = await getEvent(eventId);
       const regform = await getRegform({id: regformId, eventId});
       if (!event || !regform) {
@@ -112,11 +118,14 @@ function RegformPageContent({
       } catch (err: any) {
         errorModal({title: 'Something went wrong when fetching updates', content: err.message});
       } finally {
-        setIsSyncing(false);
+        if (!controller.signal.aborted) {
+          setIsSyncing(false);
+        }
       }
     }
 
     sync();
+    return () => controller.abort();
   }, [eventId, regformId, errorModal]);
 
   if (!event) {
@@ -144,9 +153,17 @@ function RegformPageContent({
           </div>
         </div>
       </div>
-      {participants.length === 0 && isSyncing && <LoadingParticipantsBanner />}
-      {participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
-      {participants.length > 0 && (
+      {(!participants || (participants.length === 0 && isSyncing)) && (
+        <div className="mt-6">
+          <TableSkeleton
+            participantCount={participantCount}
+            searchData={searchData}
+            setSearchData={setSearchData}
+          />
+        </div>
+      )}
+      {participants && participants.length === 0 && !isSyncing && <NoParticipantsBanner />}
+      {participants && participants.length > 0 && (
         <div className="mt-6">
           <Table
             participants={participants}
@@ -220,17 +237,6 @@ function NoParticipantsBanner() {
           There are no registered participants
         </Typography>
       </div>
-    </div>
-  );
-}
-
-function LoadingParticipantsBanner() {
-  return (
-    <div className="mx-4 mt-10 flex flex-col gap-2">
-      <Typography variant="h3" className="text-center">
-        Updating participants..
-      </Typography>
-      <LoadingIndicator size="md" />
     </div>
   );
 }

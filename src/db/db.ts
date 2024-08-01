@@ -187,6 +187,10 @@ export async function getParticipants(regformId: number) {
   return await db.participants.where({regformId, deleted: 0}).toArray();
 }
 
+export async function countParticipants(regformId: number) {
+  return await db.participants.where({regformId, deleted: 0}).count();
+}
+
 export function useLiveServers(defaultValue?: Server[]) {
   return useLiveQuery(getServers, [], defaultValue || []);
 }
@@ -214,8 +218,8 @@ export function useLiveParticipant(id: GetParticipant, defaultValue?: Participan
   return useLiveQuery(() => getParticipant(id), deps, defaultValue);
 }
 
-export function useLiveParticipants(regformId: number, defaultValue?: Participant[]) {
-  return useLiveQuery(() => getParticipants(regformId), [regformId], defaultValue || []);
+export function useLiveParticipants(regformId: number) {
+  return useLiveQuery(() => getParticipants(regformId), [regformId]);
 }
 
 export async function addServer(data: AddServer): Promise<number> {

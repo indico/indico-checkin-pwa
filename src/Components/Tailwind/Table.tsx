@@ -1,4 +1,4 @@
-import {ChangeEvent, useState, useMemo, useRef} from 'react';
+import {ChangeEvent, useState, useMemo, useRef, useEffect, forwardRef} from 'react';
 import {
   ArrowSmallLeftIcon,
   BanknotesIcon,
@@ -19,50 +19,34 @@ import {
   makeDefaultFilterState,
 } from './filters';
 import Typography from './Typography';
+import styles from './Table.module.scss';
+
+const ROW_HEIGHT_PX = 56;
 
 export interface SearchData {
   searchValue: string;
   filters: Filters;
 }
 
-export default function Table({
-  participants,
+export function TableFilters({
   searchData,
   setSearchData,
-  onRowClick,
+  resultCount,
 }: {
-  participants: Participant[];
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
-  onRowClick: (p: Participant) => void;
+  resultCount: number;
 }) {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const {filters, searchValue} = searchData;
+  const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
 
   const setFilters = (f: Filters) => setSearchData({...searchData, filters: f});
   const setSearchValue = (v: string) => setSearchData({...searchData, searchValue: v});
   const resetSearchData = () => setSearchData({searchValue: '', filters: makeDefaultFilterState()});
 
-  const filteredParticipants = useMemo(
-    () => filterParticipants(participants, searchData),
-    [participants, searchData]
-  );
-
-  const rows = filteredParticipants.map((p, i) => (
-    <Row
-      key={p.id}
-      fullName={p.fullName}
-      checkedIn={p.checkedIn}
-      state={p.state}
-      isEven={i % 2 === 0}
-      onClick={() => onRowClick(p)}
-    />
-  ));
-
-  const filtersActive = searchValue !== '' || !isDefaultFilterState(filters);
-
   return (
-    <div>
+    <>
       <div className="flex gap-2 px-4 pb-2 pt-4">
         <SearchInput searchValue={searchValue} setSearchValue={setSearchValue} />
         <ToggleFiltersButton
@@ -82,9 +66,91 @@ export default function Table({
       )}
       {filtersActive && (
         <div className="mb-4 mt-2">
-          <ResultCount count={rows.length} onClick={resetSearchData} />
+          <ResultCount count={resultCount} onClick={resetSearchData} />
         </div>
       )}
+    </>
+  );
+}
+
+export default function Table({
+  participants,
+  searchData,
+  setSearchData: _setSearchData,
+  onRowClick,
+}: {
+  participants: Participant[];
+  searchData: SearchData;
+  setSearchData: (data: SearchData) => void;
+  onRowClick: (p: Participant) => void;
+}) {
+  const defaultVisibleParticipants = getNumberVisibleParticipants();
+  const [numberVisibleParticipants, setNumberVisibleParticipants] = useState(
+    defaultVisibleParticipants
+  );
+  const dummyRowRef = useRef<HTMLTableRowElement>(null);
+
+  const setSearchData = (data: SearchData) => {
+    _setSearchData(data);
+    setNumberVisibleParticipants(defaultVisibleParticipants);
+  };
+
+  const filteredParticipants = useMemo(
+    () => filterParticipants(participants, searchData),
+    [participants, searchData]
+  );
+  const dummyRowHeight =
+    Math.max(filteredParticipants.length - numberVisibleParticipants, 0) * ROW_HEIGHT_PX;
+
+  const rows = filteredParticipants
+    .slice(0, numberVisibleParticipants)
+    .map((p, i) => (
+      <Row
+        key={p.id}
+        fullName={p.fullName}
+        checkedIn={p.checkedIn}
+        state={p.state}
+        isEven={i % 2 === 0}
+        onClick={() => onRowClick(p)}
+      />
+    ));
+
+  /**
+   * Check if the dummy row is within 200vh of the top of the screen
+   */
+  function shouldLoadMore(): boolean {
+    if (!dummyRowRef.current) {
+      return false;
+    }
+    const top = dummyRowRef.current.getBoundingClientRect().top;
+    return top < 2 * window.innerHeight;
+  }
+
+  function getNumberVisibleParticipants() {
+    const scroll = document.documentElement.scrollTop;
+    // Load 5 additional screen heights worth of participants
+    const padded = scroll + 5 * window.innerHeight;
+    return Math.ceil(padded / ROW_HEIGHT_PX);
+  }
+
+  useEffect(() => {
+    function onScroll() {
+      if (shouldLoadMore()) {
+        setNumberVisibleParticipants(getNumberVisibleParticipants());
+      }
+    }
+
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [filteredParticipants.length]);
+
+  return (
+    <div>
+      <TableFilters
+        searchData={searchData}
+        setSearchData={setSearchData}
+        resultCount={filteredParticipants.length}
+      />
       <div className="mx-4 mt-2">
         {rows.length === 0 && (
           <div className="mt-10 flex flex-col items-center justify-center rounded-xl">
@@ -94,7 +160,10 @@ export default function Table({
           </div>
         )}
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
-          <tbody>{rows}</tbody>
+          <tbody>
+            {rows}
+            <DummyRow height={dummyRowHeight} ref={dummyRowRef} />
+          </tbody>
         </table>
       </div>
     </div>
@@ -114,6 +183,21 @@ function compareDefault(a: any, b: any): number {
     return 0;
   }
 }
+/**
+ * Dummy row to artificially increase the height of the participant table.
+ * This keeps the table height constant as more participants become visible
+ * while scrolling down and keeps the scroll bar from jumping around.
+ */
+const DummyRow = forwardRef(function DummyRow(
+  {height}: {height: number},
+  ref: React.Ref<HTMLTableRowElement>
+) {
+  return (
+    <tr className="block bg-gray-200 dark:bg-gray-800" style={{height}} ref={ref}>
+      <td></td>
+    </tr>
+  );
+});
 
 function filterParticipants(participants: Participant[], data: SearchData) {
   const {searchValue, filters} = data;
@@ -164,21 +248,23 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
     ? 'bg-gray-200 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
     : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
 
+  const fullNameClass = 'select-none overflow-x-hidden text-ellipsis whitespace-nowrap';
+
   return (
     <tr
       style={{WebkitTapHighlightColor: 'transparent'}}
-      className={`${background} cursor-pointer select-none active:bg-gray-300
-                  active:transition-all dark:active:bg-gray-600`}
+      className={`${background} max-h-[${ROW_HEIGHT_PX}px] cursor-pointer select-none
+                  active:bg-gray-300 active:transition-all dark:active:bg-gray-600`}
       onClick={onClick}
     >
-      <td className="p-4">
+      <td className="max-w-0 p-4">
         <div className="flex items-center justify-between">
           <Typography
             variant="body1"
             className={
               state === 'rejected' || state === 'withdrawn'
-                ? 'select-none line-through'
-                : 'select-none'
+                ? `${fullNameClass} line-through`
+                : fullNameClass
             }
           >
             {fullName}
@@ -267,6 +353,35 @@ function ClearSearchButton({onClick}: {onClick: () => void}) {
       >
         <XMarkIcon className="min-w-[1.5rem] text-gray-800 dark:text-gray-300" />
       </button>
+    </div>
+  );
+}
+
+export function TableSkeleton({
+  searchData,
+  setSearchData,
+  participantCount,
+}: {
+  participantCount: number;
+  searchData: SearchData;
+  setSearchData: (data: SearchData) => void;
+}) {
+  const rowsPerScreen = Math.ceil(window.innerHeight / ROW_HEIGHT_PX);
+  const minRows = 2 * rowsPerScreen;
+  const height = (participantCount > 0 ? participantCount : minRows) * ROW_HEIGHT_PX;
+
+  return (
+    <div>
+      <TableFilters searchData={searchData} setSearchData={setSearchData} resultCount={0} />
+      <div className="mx-4 mt-2">
+        <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
+          <tbody>
+            <tr className={`bg-gray-200 dark:bg-gray-800 ${styles.animated}`} style={{height}}>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

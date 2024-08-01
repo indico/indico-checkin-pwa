@@ -30,6 +30,7 @@ import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
+import {makeDebounce} from '../../utils/debounce';
 import {playVibration} from '../../utils/haptics';
 import {playErrorSound} from '../../utils/sound';
 import {checkIn} from '../Events/checkin';
@@ -39,14 +40,6 @@ import AccompanyingPersons from './AccompanyingPersons';
 import {Field, Section, getAccompanyingPersons} from './fields';
 import {PaymentWarning, markAsUnpaid} from './payment';
 import {RegistrationState} from './RegistrationState';
-
-const makeDebounce = (delay: number) => {
-  let timer: number;
-  return (fn: CallableFunction) => {
-    clearTimeout(timer);
-    timer = setTimeout(fn, delay);
-  };
-};
 
 const debounce = makeDebounce(300);
 
