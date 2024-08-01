@@ -8,10 +8,10 @@ import db, {
   getServer,
   updateParticipant,
 } from '../../db/db';
+import {HandleError} from '../../hooks/useError';
 import {getParticipantByUuid as getParticipant} from '../../utils/client';
 import {discoveryEndpoint, redirectUri} from '../Auth/utils';
 import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
-import {handleError} from '../Events/sync';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
   const {
@@ -79,6 +79,7 @@ export async function handleEvent(
 export async function handleParticipant(
   data: QRCodeParticipantData,
   errorModal: ErrorModalFunction,
+  handleError: HandleError,
   navigate: NavigateFunction,
   autoCheckin: boolean
 ) {
@@ -133,6 +134,6 @@ export async function handleParticipant(
       state: {autoCheckin, fromScan: true},
     });
   } else {
-    handleError(response, 'Could not fetch participant data', errorModal);
+    handleError(response, 'Could not fetch participant data');
   }
 }

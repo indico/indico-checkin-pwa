@@ -2,27 +2,30 @@ import {ExclamationCircleIcon} from '@heroicons/react/20/solid';
 import {CheckIcon} from '@heroicons/react/24/outline';
 import {Button} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
-import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {Event, Regform, Participant} from '../../db/db';
+import {HandleError} from '../../hooks/useError';
 import {togglePayment as _togglePayment} from '../../utils/client';
-import {handleError} from '../Events/sync';
+
+async function resetPaidLoading(participant: Participant) {
+  await db.participants.update(participant.id, {isPaidLoading: 0});
+}
 
 async function markAsPaid(
   event: Event,
   regform: Regform,
   participant: Participant,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
-  return await togglePayment(event, regform, participant, true, errorModal);
+  return await togglePayment(event, regform, participant, true, handleError);
 }
 
 export async function markAsUnpaid(
   event: Event,
   regform: Regform,
   participant: Participant,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
-  return await togglePayment(event, regform, participant, false, errorModal);
+  return await togglePayment(event, regform, participant, false, handleError);
 }
 
 async function togglePayment(
@@ -30,7 +33,7 @@ async function togglePayment(
   regform: Regform,
   participant: Participant,
   paid: boolean,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
   await db.participants.update(participant.id, {isPaidLoading: 1});
   const response = await _togglePayment(
@@ -50,7 +53,8 @@ async function togglePayment(
       isPaidLoading: 0,
     });
   } else {
-    handleError(response, 'Something went wrong when updating payment status', errorModal);
+    await resetPaidLoading(participant);
+    handleError(response, 'Something went wrong when updating payment status');
   }
 }
 
@@ -58,15 +62,15 @@ export function PaymentWarning({
   event,
   regform,
   participant,
-  errorModal,
+  handleError,
 }: {
   event: Event;
   regform: Regform;
   participant: Participant;
-  errorModal: ErrorModalFunction;
+  handleError: HandleError;
 }) {
   const onClick = async () => {
-    await markAsPaid(event, regform, participant, errorModal);
+    await markAsPaid(event, regform, participant, handleError);
   };
 
   return (

@@ -1,9 +1,12 @@
-import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {Event, Regform, Participant} from '../../db/db';
+import {HandleError} from '../../hooks/useError';
 import {checkInParticipant} from '../../utils/client';
 import {playVibration} from '../../utils/haptics';
 import {playSound} from '../../utils/sound';
-import {handleError} from './sync';
+
+async function resetCheckedInLoading(participant: Participant) {
+  await db.participants.update(participant.id, {checkedInLoading: 0});
+}
 
 async function updateCheckinState(
   regform: Regform,
@@ -11,6 +14,7 @@ async function updateCheckinState(
   newCheckInState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
+    await resetCheckedInLoading(participant);
     await db.participants.update(participant.id, {checkedIn: newCheckInState, checkedInLoading: 0});
     const slots = participant.occupiedSlots;
     const checkedInCount = regform.checkedInCount + (newCheckInState ? slots : -slots);
@@ -25,7 +29,7 @@ export async function checkIn(
   newCheckInState: boolean,
   sound: string,
   hapticFeedback: boolean,
-  errorModal: ErrorModalFunction
+  handleError: HandleError
 ) {
   await db.participants.update(participant.id, {checkedInLoading: 1});
   const response = await checkInParticipant(
@@ -47,6 +51,7 @@ export async function checkIn(
       }
     }
   } else {
-    handleError(response, 'Something went wrong when updating check-in status', errorModal);
+    await resetCheckedInLoading(participant);
+    handleError(response, 'Something went wrong when updating check-in status');
   }
 }
