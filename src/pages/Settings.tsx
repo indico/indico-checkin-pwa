@@ -94,7 +94,8 @@ function DebugSettings() {
   const confirmModal = useConfirmModal();
   const handleError = useHandleError();
 
-  async function resetDB() {
+  async function resetApp() {
+    localStorage.clear();
     try {
       await db.delete();
       await db.open();
@@ -117,7 +118,7 @@ function DebugSettings() {
                 title: 'Are you sure?',
                 content: 'This will permanently delete all application data',
                 confirmBtnText: 'Reset',
-                onConfirm: resetDB,
+                onConfirm: resetApp,
               });
             }}
           >
