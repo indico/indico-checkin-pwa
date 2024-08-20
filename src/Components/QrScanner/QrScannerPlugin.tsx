@@ -1,7 +1,8 @@
 // file = QrScannerPlugin.jsx
-import {MutableRefObject, useEffect, useRef, useState} from 'react';
+import {MutableRefObject, useEffect, useRef, useState, useCallback} from 'react';
 import {ArrowUpTrayIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
+import {useLogError} from '../../hooks/useError';
 import {checkCameraPermissions} from '../../utils/media';
 import {TorchButton} from './TorchButton';
 import classes from './QrScanner.module.css';
@@ -53,18 +54,24 @@ export default function QrScannerPlugin({
   const aspectRatio = calcAspectRatio();
   const html5CustomScanner: MutableRefObject<Html5Qrcode | null> = useRef(null);
   const [canUseCamera, setCanUseCamera] = useState(true);
+  const logError = useLogError();
 
   // Turn off the torch (if it is on) when navigating away from the scan page
-  async function switchOffTorch(html5CustomScanner: MutableRefObject<Html5Qrcode | null>) {
-    try {
-      const track = html5CustomScanner?.current?.getRunningTrackCameraCapabilities();
-      if (track && track.torchFeature().value()) {
-        await track.torchFeature().apply(false);
+  const switchOffTorch = useCallback(
+    async function switchOffTorch(html5CustomScanner: MutableRefObject<Html5Qrcode | null>) {
+      try {
+        const track = html5CustomScanner?.current?.getRunningTrackCameraCapabilities();
+        if (track && track.torchFeature().value()) {
+          await track.torchFeature().apply(false);
+        }
+      } catch (error) {
+        // This raises an error about invalid tracks - we have to catch it! (blame the library)
+        console.warn('Failed to disable torch:', error);
+        logError(`Failed to disable torch: ${error}`);
       }
-    } catch (error) {
-      console.warn('Failed to disable torch:', error);
-    }
-  }
+    },
+    [logError]
+  );
 
   useEffect(() => {
     const showQRCode = async () => {
@@ -97,8 +104,8 @@ export default function QrScannerPlugin({
 
     return () => {
       const stopQrScanner = async () => {
+        await switchOffTorch(html5CustomScanner);
         if (html5CustomScanner.current?.isScanning) {
-          switchOffTorch(html5CustomScanner);
           await html5CustomScanner.current.stop();
         }
         html5CustomScanner.current?.clear();
@@ -117,6 +124,7 @@ export default function QrScannerPlugin({
     qrCodeSuccessCallback,
     qrCodeErrorCallback,
     onPermRefused,
+    switchOffTorch,
   ]);
 
   return (
