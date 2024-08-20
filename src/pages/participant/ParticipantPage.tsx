@@ -372,8 +372,8 @@ function RegistrationSection(section: SectionProps) {
         >
           <Typography variant="h4" className="flex w-full justify-between">
             {title}
-            {isOpen && <ChevronDownIcon className="h-6 w-6" />}
-            {!isOpen && <ChevronLeftIcon className="h-6 w-6" />}
+            {isOpen && <ChevronDownIcon className="h-6 w-6 min-w-6" />}
+            {!isOpen && <ChevronLeftIcon className="h-6 w-6 min-w-6" />}
           </Typography>
         </button>
       </div>
