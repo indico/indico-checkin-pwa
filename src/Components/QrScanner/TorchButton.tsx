@@ -44,27 +44,28 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
             Your device's torch is unavailable
           </span>
         </div>
-        <div className="mt-4 flex justify-center">
-          <div className="inline-flex cursor-not-allowed rounded-full bg-gray-200 text-gray-500">
-            <BoltSlashIcon className="mx-2 my-2 h-16 w-16" />
-          </div>
-        </div>
       </>
     );
   }
 
   return (
-    <div className="mt-4 flex justify-center">
-      <div
-        onClick={() => setTorchOn(prev => !prev)}
-        className="inline-flex cursor-pointer rounded-full bg-primary text-white"
-      >
+    <div
+      onClick={() => setTorchOn(prev => !prev)}
+      className="fit-content flex justify-center gap-1 bg-primary py-3 text-center text-white"
+    >
+      <span className="flex items-center">
         {torchOn ? (
-          <BoltSlashIcon className="mx-2 my-2 h-16 w-16" />
+          <>
+            <BoltSlashIcon className="mr-1 h-6 w-6" />
+            Turn torch off
+          </>
         ) : (
-          <BoltIcon className="mx-2 my-2 h-16 w-16" />
+          <>
+            <BoltIcon className="mr-1 h-6 w-6" />
+            Turn torch on
+          </>
         )}
-      </div>
+      </span>
     </div>
   );
 }
