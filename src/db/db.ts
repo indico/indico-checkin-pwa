@@ -100,6 +100,7 @@ export interface Participant extends _Participant {
   deleted: IDBBoolean;
   notes: string;
   isPaidLoading: IDBBoolean; // 1 (true) while the request to mark as (un)paid is in progress
+  personalDataPicture?: string;
 }
 
 interface AddParticipant extends _Participant {
