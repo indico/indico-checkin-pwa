@@ -7,6 +7,7 @@ export default defineConfig(({mode}) => {
   // Currently our configuration only reads ENV variables which
   // are prefixed with 'VITE_' (default, for security reasons).
   const env = loadEnv(mode, process.cwd());
+
   return {
     base: '',
     plugins: [react(), viteTsconfigPaths()],
