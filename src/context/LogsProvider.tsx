@@ -16,7 +16,7 @@ export const LogDataContext = createContext<{logs: Log[]}>({
   logs: [],
 });
 
-export const LogMessageContext = createContext((severity: Severity, message: string) => {});
+export const LogMessageContext = createContext((_severity: Severity, _message: string) => {});
 
 export const LogsProvider = ({children}: {children: ReactNode}) => {
   const [logs, setLogs] = useState<Log[]>([]);

@@ -225,8 +225,7 @@ function AccommodationField({title, description, choices, data}: ChoiceFieldProp
     );
   }
 
-  const choice = choices.find(choice => choice.id === data.choice)!;
-  const {caption} = choice;
+  const caption = choices.find(choice => choice.id === data.choice)?.caption;
   const {arrivalDate, departureDate} = data;
 
   return (

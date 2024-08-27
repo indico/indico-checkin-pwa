@@ -204,7 +204,7 @@ function filterParticipants(participants: Participant[], data: SearchData) {
 
   return participants
     .filter(p => {
-      let checkedInValues = [];
+      const checkedInValues = [];
       if (filters.checkedIn.yes) {
         checkedInValues.push(true);
       }

@@ -10,8 +10,12 @@ import db, {
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
 import {getParticipantByUuid as getParticipant} from '../../utils/client';
-import {discoveryEndpoint, redirectUri} from '../Auth/utils';
-import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
+import {
+  discoveryEndpoint,
+  redirectUri,
+  QRCodeEventData,
+  QRCodeParticipantData,
+} from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
   const {
