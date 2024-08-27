@@ -100,13 +100,12 @@ export default function ScanPage() {
     try {
       const decodedText = await scanFile(file);
       onScanResult(decodedText, null);
-    } catch (e) {
+    } catch (e: any) {
       errorModal({title: 'Error processing QR code', content: e.message});
     }
   };
 
-  const fileUploadVisible =
-    !processing && (isDesktop || import.meta.env.NODE_ENV === 'development');
+  const fileUploadVisible = !processing && (isDesktop || import.meta.env.DEV);
 
   return (
     <div>

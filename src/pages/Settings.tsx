@@ -134,7 +134,7 @@ function DebugSettings() {
 function LogSettings() {
   const {logs} = useLogs();
   const version = import.meta.env.VITE_APP_VERSION;
-  const isProduction = import.meta.env.NODE_ENV === 'production';
+  const isProduction = import.meta.env.PROD;
 
   function onCopy() {
     const text = `App version: ${version}\n\nLogs:\n${formatLogs(logs)}`;

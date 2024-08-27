@@ -25,7 +25,7 @@ export const calcAspectRatio = () => {
 export async function scanFile(file: File): Promise<string> {
   const scanner = new Html5Qrcode(qrcodeFileRegionId, {
     formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-    verbose: import.meta.env.NODE_ENV === 'development',
+    verbose: import.meta.env.DEV,
   });
 
   const result = await scanner.scanFileV2(file, false);
