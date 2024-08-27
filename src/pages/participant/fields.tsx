@@ -63,6 +63,8 @@ export function Field(field: FieldProps) {
       return <AccommodationField {...(field as ChoiceFieldProps)} />;
     case 'accompanying_persons':
       return <AccompanyingPersonsField {...field} />;
+    case 'picture':
+      return <PictureField {...field} />;
     default:
       console.warn('Unhandled field', field);
       return null;
@@ -278,4 +280,16 @@ export function getAccompanyingPersons(sections: Section[]) {
     }
   }
   return persons;
+}
+
+function PictureField({title, description, data}: FieldProps) {
+  if (!data) {
+    return;
+  }
+  return (
+    <div>
+      <FieldHeader title={title} description={description} />
+      <img src={data} alt={title} />
+    </div>
+  );
 }
