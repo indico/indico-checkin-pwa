@@ -284,8 +284,20 @@ export function getAccompanyingPersons(sections: Section[]) {
 
 function PictureField({title, description, data}: FieldProps) {
   if (!data) {
-    return;
+    return null;
   }
+
+  // fallback to showing the filename only if it's not a valid URL
+  const isValidUrl = data.startsWith('http://') || data.startsWith('https://');
+  if (!isValidUrl) {
+    return (
+      <div>
+        <FieldHeader title={title} description={description} />
+        <Typography variant="body1">{data}</Typography>
+      </div>
+    );
+  }
+
   return (
     <div>
       <FieldHeader title={title} description={description} />
