@@ -1,4 +1,3 @@
-import {vi} from 'vitest';
 import {handleError, logError} from './useError';
 
 describe('test error handling', () => {

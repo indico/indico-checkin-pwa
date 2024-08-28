@@ -1,5 +1,4 @@
 import 'fake-indexeddb/auto';
-import {vi} from 'vitest';
 import db from '../../db/db';
 import {
   getEvent,

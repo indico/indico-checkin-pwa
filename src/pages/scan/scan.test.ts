@@ -1,5 +1,4 @@
 import 'fake-indexeddb/auto';
-import {vi} from 'vitest';
 import db, {IDBBoolean, RegistrationState} from '../../db/db';
 import {getParticipantByUuid} from '../../utils/client';
 import {handleEvent, handleParticipant} from './scan';
