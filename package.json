@@ -11,7 +11,6 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@vitejs/plugin-react": "^4.3.1",
@@ -47,15 +46,9 @@
     "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && vite",
     "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && vite build",
     "test": "vitest",
-    "test:coverage": "vitest --coverage .",
+    "test:coverage": "vitest --coverage",
     "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
     "prepare": "husky install"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -77,12 +70,6 @@
       "prettier --write"
     ]
   },
-  "jest": {
-    "coverageReporters": [
-      "text",
-      "html"
-    ]
-  },
   "devDependencies": {
     "@types/node": "^22.5.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -97,6 +84,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "fake-indexeddb": "^4.0.2",
     "husky": "^8.0.3",
+    "jsdom": "^25.0.0",
     "lint-staged": "^14.0.1",
     "postcss": "^8.4.41",
     "prettier": "^3.0.0",

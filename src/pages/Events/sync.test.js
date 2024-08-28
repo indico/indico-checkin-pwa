@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import {vi} from 'vitest';
 import db from '../../db/db';
 import {
   getEvent,
@@ -16,13 +17,13 @@ import {
   syncParticipants,
 } from './sync';
 
-jest.mock('../../utils/client', () => {
+vi.mock('../../utils/client', () => {
   return {
-    getEvent: jest.fn(),
-    getRegforms: jest.fn(),
-    getRegform: jest.fn(),
-    getParticipants: jest.fn(),
-    getParticipant: jest.fn(),
+    getEvent: vi.fn(),
+    getRegforms: vi.fn(),
+    getRegform: vi.fn(),
+    getParticipants: vi.fn(),
+    getParticipant: vi.fn(),
   };
 });
 
@@ -40,7 +41,7 @@ beforeEach(createDummyServer);
 
 describe('test syncEvents()', () => {
   test('test a successful response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     const events = [
       {id: 42, title: 'Mock event 1', startDt: '2020-01-01'},
       {id: 43, title: 'Mock event 2', startDt: '2020-01-02'},
@@ -65,7 +66,7 @@ describe('test syncEvents()', () => {
   });
 
   test('test a 404 response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getEvent.mockResolvedValue({ok: false, status: 404});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -79,7 +80,7 @@ describe('test syncEvents()', () => {
   });
 
   test('test a failed response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getEvent.mockResolvedValue({ok: false});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -95,7 +96,7 @@ describe('test syncEvents()', () => {
 
 describe('test syncRegform()', () => {
   test('test a successful response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     const regform = {
       id: 42,
       title: 'Mock regform',
@@ -126,7 +127,7 @@ describe('test syncRegform()', () => {
   });
 
   test('test a 404 response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getRegform.mockResolvedValue({ok: false, status: 404});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -146,7 +147,7 @@ describe('test syncRegform()', () => {
   });
 
   test('test a failed response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getRegform.mockResolvedValue({ok: false});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -164,7 +165,7 @@ describe('test syncRegform()', () => {
 
 describe('test syncRegforms()', () => {
   test('test a successful response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     const regforms = [
       {
         id: 10,
@@ -215,7 +216,7 @@ describe('test syncRegforms()', () => {
   });
 
   test('test a failed response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getRegforms.mockResolvedValue({ok: false});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -236,7 +237,7 @@ describe('test syncRegforms()', () => {
 
 describe('test syncParticipant()', () => {
   test('test a successful response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     const participant = {
       id: 42,
       fullName: 'John Doe',
@@ -275,7 +276,7 @@ describe('test syncParticipant()', () => {
   });
 
   test('test a 404 response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getParticipant.mockResolvedValue({ok: false, status: 404});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -297,7 +298,7 @@ describe('test syncParticipant()', () => {
   });
 
   test('test a failed response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getParticipant.mockResolvedValue({ok: false});
 
     const storedEvent = {id: 1, serverId: 1};
@@ -317,7 +318,7 @@ describe('test syncParticipant()', () => {
 
 describe('test syncParticipants()', () => {
   test('test a successful response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     const participants = [
       {
         id: 10,
@@ -452,7 +453,7 @@ describe('test syncParticipants()', () => {
   });
 
   test('test a failed response', async () => {
-    const errorModal = jest.fn();
+    const errorModal = vi.fn();
     getParticipants.mockResolvedValue({ok: false});
 
     const storedEvent = {id: 1, serverId: 1};

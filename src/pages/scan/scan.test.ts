@@ -1,11 +1,12 @@
 import 'fake-indexeddb/auto';
+import {vi} from 'vitest';
 import db, {IDBBoolean, RegistrationState} from '../../db/db';
 import {getParticipantByUuid} from '../../utils/client';
 import {handleEvent, handleParticipant} from './scan';
 
-jest.mock('../../utils/client', () => {
+vi.mock('../../utils/client', () => {
   return {
-    getParticipantByUuid: jest.fn(),
+    getParticipantByUuid: vi.fn(),
   };
 });
 
@@ -84,9 +85,9 @@ beforeEach(resetDB);
 describe('test handleParticipant()', () => {
   test('test missing server', async () => {
     const data = {serverUrl: ''} as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     await expect(
       handleParticipant(data, errorModal, handleError, navigate, true)
@@ -106,9 +107,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -132,9 +133,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -159,9 +160,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -187,9 +188,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: false,
@@ -217,9 +218,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -244,9 +245,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -271,9 +272,9 @@ describe('test handleParticipant()', () => {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
     } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     (getParticipantByUuid as any).mockResolvedValue({
       ok: true,
@@ -315,8 +316,8 @@ describe('test handleEvent()', () => {
       date: '2020-01-01',
       regformTitle: 'Dummy regform',
     } as any;
-    const errorModal = jest.fn();
-    const navigate = jest.fn();
+    const errorModal = vi.fn();
+    const navigate = vi.fn();
 
     await expect(handleEvent(data, errorModal, navigate)).resolves.not.toThrow();
 
