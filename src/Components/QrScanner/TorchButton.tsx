@@ -24,7 +24,7 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
           setTorchUnavailable(true);
           console.warn('Torch feature is not supported on this device.');
         }
-      } catch (error) {
+      } catch (e) {
         setTorchUnavailable(true);
         console.warn('Failed to toggle torch:', error);
         logError(`Failed to toggle torch: ${error}`);

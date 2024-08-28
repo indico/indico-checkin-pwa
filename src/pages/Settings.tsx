@@ -99,7 +99,7 @@ function DebugSettings() {
     try {
       await db.delete();
       await db.open();
-    } catch (err) {
+    } catch (e) {
       handleError(err, 'Error resetting the database');
     }
   }

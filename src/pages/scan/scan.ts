@@ -45,8 +45,8 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
       codeVerifier,
       scope: [scope],
     });
-  } catch (err: any) {
-    errorModal({title: 'OAuth authorization failed', content: err.message});
+  } catch (e) {
+    errorModal({title: 'OAuth authorization failed', content: e instanceof Error ? e.message : ''});
   }
 }
 
@@ -98,7 +98,7 @@ export async function handleParticipant(
 
   const response = await getParticipant({
     serverId: server.id,
-    uuid: data.checkinSecret,
+    uuid: data.checkinSecret ?? '',
   });
 
   if (response.ok) {

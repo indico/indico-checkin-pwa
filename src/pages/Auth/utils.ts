@@ -16,7 +16,7 @@ export interface QRCodeEventData {
   server: QRCodeServerData;
 }
 
-export function validateEventData(data: any): data is QRCodeEventData {
+export function validateEventData(data: QRCodeEventData): data is QRCodeEventData {
   if (typeof data !== 'object') {
     return false;
   }
@@ -32,7 +32,7 @@ export function validateEventData(data: any): data is QRCodeEventData {
     return false;
   }
 
-  const {server = {}} = data;
+  const server: QRCodeServerData = data?.server ?? {};
   if (typeof server !== 'object') {
     return false;
   }
@@ -40,7 +40,7 @@ export function validateEventData(data: any): data is QRCodeEventData {
   const {baseUrl, clientId, scope} = server;
   try {
     new URL(baseUrl);
-  } catch (err) {
+  } catch (e) {
     return false;
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
@@ -51,7 +51,7 @@ export function validateEventData(data: any): data is QRCodeEventData {
 
 export interface QRCodeParticipantData {
   serverUrl: string;
-  checkinSecret: string;
+  checkinSecret?: string;
 }
 
 /**
@@ -64,13 +64,15 @@ export interface QRCodeParticipantData {
  * We support the old format for now, so that QR codes generated on
  * an older version of Indico (<3.3) can still be read.
  */
-export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | null {
+export function parseQRCodeParticipantData(
+  data: QRCodeParticipantData
+): QRCodeParticipantData | null {
   if (typeof data !== 'object') {
     return null;
   }
 
-  let serverUrl: any;
-  let checkinSecret: any;
+  let serverUrl;
+  let checkinSecret;
   const isNewFormat = Array.isArray(data.i);
 
   if (isNewFormat) {
@@ -94,11 +96,11 @@ export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | n
 
   try {
     new URL(serverUrl);
-  } catch (err) {
+  } catch (e) {
     serverUrl = `https://${serverUrl}`;
     try {
       new URL(serverUrl);
-    } catch (err) {
+    } catch (e) {
       return null;
     }
   }

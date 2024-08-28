@@ -1,4 +1,4 @@
-import {ChangeEvent, useState, useMemo, useRef, useEffect, forwardRef} from 'react';
+import {ChangeEvent, KeyboardEvent, useState, useMemo, useRef, useEffect, forwardRef} from 'react';
 import {
   ArrowSmallLeftIcon,
   BanknotesIcon,
@@ -174,7 +174,7 @@ function compareNames(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-function compareDefault(a: any, b: any): number {
+function compareDefault(a: string | number, b: string | number): number {
   if (a > b) {
     return 1;
   } else if (a < b) {
@@ -294,9 +294,9 @@ function SearchInput({
     setSearchValue(e.target.value.toLowerCase());
   };
 
-  const onKeyUp = (e: any) => {
+  const onKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.target.blur();
+      (e.target as HTMLInputElement).blur();
     }
   };
 

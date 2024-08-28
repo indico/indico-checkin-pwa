@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import db, {IDBBoolean, RegistrationState} from '../../db/db';
 import {getParticipantByUuid} from '../../utils/client';
+import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant} from './scan';
 
 vi.mock('../../utils/client', () => {
@@ -83,7 +84,7 @@ beforeEach(resetDB);
 
 describe('test handleParticipant()', () => {
   test('test missing server', async () => {
-    const data = {serverUrl: ''} as any;
+    const data: QRCodeParticipantData = {serverUrl: ''};
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
@@ -105,12 +106,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 9999, regformId: 9999, checkinSecret: '1234'},
     });
@@ -131,12 +132,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
@@ -158,12 +159,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
     });
@@ -186,12 +187,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
       status: 404,
     });
@@ -216,12 +217,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 9999, regformId: 73, checkinSecret: '1234'},
     });
@@ -243,12 +244,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
@@ -270,12 +271,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
+    } as QRCodeParticipantData;
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
     });
@@ -314,7 +315,7 @@ describe('test handleEvent()', () => {
       title: 'Dummy event',
       date: '2020-01-01',
       regformTitle: 'Dummy regform',
-    } as any;
+    } as QRCodeEventData;
     const errorModal = vi.fn();
     const navigate = vi.fn();
 

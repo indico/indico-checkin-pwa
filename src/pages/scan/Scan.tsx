@@ -13,7 +13,7 @@ import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
-import {useIsOffline} from '../../utils/client';
+import {FailedResponse, useIsOffline} from '../../utils/client';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant} from './scan';
 
@@ -38,7 +38,7 @@ export default function ScanPage() {
     try {
       scannedData = JSON.parse(decodedText);
     } catch (e) {
-      handleError(e, 'Error parsing the QRCode data');
+      handleError(e as FailedResponse, 'Error parsing the QRCode data');
       return;
     }
 
@@ -55,7 +55,7 @@ export default function ScanPage() {
       try {
         await handleEvent(scannedData, errorModal, navigate);
       } catch (e) {
-        handleError(e, 'Error processing QR code');
+        handleError(e as FailedResponse, 'Error processing QR code');
       }
       return;
     }
@@ -65,7 +65,7 @@ export default function ScanPage() {
       try {
         await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
       } catch (e) {
-        handleError(e, 'Error processing QR code');
+        handleError(e as FailedResponse, 'Error processing QR code');
       }
     } else {
       errorModal({
@@ -79,7 +79,7 @@ export default function ScanPage() {
     try {
       await processCode(decodedText);
     } catch (e) {
-      handleError(e, 'Error processing QR code');
+      handleError(e as FailedResponse, 'Error processing QR code');
     } finally {
       setProcessing(false);
     }
@@ -100,8 +100,8 @@ export default function ScanPage() {
     try {
       const decodedText = await scanFile(file);
       onScanResult(decodedText, null);
-    } catch (e: any) {
-      errorModal({title: 'Error processing QR code', content: e.message});
+    } catch (e) {
+      errorModal({title: 'Error processing QR code', content: e instanceof Error ? e.message : ''});
     }
   };
 

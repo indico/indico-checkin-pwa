@@ -26,6 +26,7 @@ import {
 } from '../../db/db';
 import {useHandleError} from '../../hooks/useError';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
+import {FailedResponse} from '../../utils/client';
 import {wait} from '../../utils/wait';
 import {syncEvent, syncParticipants, syncRegform} from '../Events/sync';
 import {NotFoundBanner} from '../NotFound';
@@ -116,8 +117,8 @@ function RegformPageContent({
       setIsSyncing(true);
       try {
         await _sync();
-      } catch (err: any) {
-        handleError(err, 'Something went wrong when fetching updates');
+      } catch (e) {
+        handleError(e as FailedResponse, 'Something went wrong when fetching updates');
       } finally {
         if (!controller.signal.aborted) {
           setIsSyncing(false);
@@ -254,10 +255,10 @@ function RegformTopNav({event, regform}: {event?: Event; regform?: Regform}) {
   const deleteRegform = async (id: number) => {
     try {
       await _deleteRegform(id);
-    } catch (err: any) {
+    } catch (e) {
       errorModal({
         title: 'Something went wrong when deleting a registration form',
-        content: err.message,
+        content: e instanceof Error ? e.message : '',
       });
     }
   };

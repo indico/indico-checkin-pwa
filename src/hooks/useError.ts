@@ -17,7 +17,7 @@ function displayFetchError(response: FailedResponse, msg: string, errorModal: Er
   }
 }
 
-function displayGenericError(err: any, msg: string, errorModal: ErrorModalFunction) {
+function displayGenericError(err: unknown, msg: string, errorModal: ErrorModalFunction) {
   errorModal({title: msg, content: String(err)});
 }
 
@@ -42,11 +42,11 @@ function logFetchError(response: FailedResponse, logMessage: LogMessage) {
   logMessage('error', msg);
 }
 
-function logGenericError(obj: any, logMessage: LogMessage) {
+function logGenericError(obj: unknown, logMessage: LogMessage) {
   logMessage('error', String(obj));
 }
 
-function isResponse(obj: FailedResponse | any): obj is FailedResponse {
+function isResponse(obj: FailedResponse): obj is FailedResponse {
   return obj.ok !== undefined;
 }
 
@@ -55,8 +55,8 @@ function isResponse(obj: FailedResponse | any): obj is FailedResponse {
  * @param obj A FailedResponse object or some other value, typically an Error object
  * @param logMessage The function returned from 'useLogMessage'
  */
-export function logError(obj: FailedResponse | any, logMessage: LogMessage) {
-  if (isResponse(obj)) {
+export function logError(obj: FailedResponse | string, logMessage: LogMessage) {
+  if (typeof obj !== 'string' && isResponse(obj)) {
     logFetchError(obj, logMessage);
   } else {
     logGenericError(obj, logMessage);
@@ -72,7 +72,7 @@ export function logError(obj: FailedResponse | any, logMessage: LogMessage) {
  * @param logMessage The function returned from 'useLogMessage'
  */
 export function handleError(
-  obj: FailedResponse | any,
+  obj: FailedResponse,
   msg: string,
   errorModal: ErrorModalFunction,
   logMessage: LogMessage
@@ -90,7 +90,7 @@ export function handleError(
  */
 export const useLogError = () => {
   const logMessage = useLogMessage();
-  return useCallback((obj: FailedResponse | any) => logError(obj, logMessage), [logMessage]);
+  return useCallback((obj: FailedResponse | string) => logError(obj, logMessage), [logMessage]);
 };
 
 /**
@@ -100,7 +100,7 @@ export const useHandleError = () => {
   const errorModal = useErrorModal();
   const logMessage = useLogMessage();
   return useCallback(
-    (obj: FailedResponse | any, msg: string) => handleError(obj, msg, errorModal, logMessage),
+    (obj: FailedResponse, msg: string) => handleError(obj, msg, errorModal, logMessage),
     [errorModal, logMessage]
   );
 };
@@ -108,4 +108,4 @@ export const useHandleError = () => {
 /**
  * The type of the function returned by 'useHandleError()'
  */
-export type HandleError = (obj: FailedResponse | any, msg: string) => void;
+export type HandleError = (obj: FailedResponse, msg: string) => void;

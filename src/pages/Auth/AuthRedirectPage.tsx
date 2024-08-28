@@ -7,7 +7,7 @@ import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
 import {wait} from '../../utils/wait';
-import {discoveryEndpoint, redirectUri, validateEventData} from './utils';
+import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
 
 async function getToken(baseUrl: string, clientId: string, codeVerifier: string) {
   const client = new OAuth2Client({
@@ -39,7 +39,7 @@ const AuthRedirectPage = () => {
 
   useEffect(() => {
     const onLoad = async () => {
-      let eventData = sessionStorage.getItem('eventData');
+      let eventData: QRCodeEventData | string | null = sessionStorage.getItem('eventData');
       const codeVerifier = sessionStorage.getItem('codeVerifier');
       sessionStorage.removeItem('eventData');
       sessionStorage.removeItem('codeVerifier');
@@ -49,8 +49,8 @@ const AuthRedirectPage = () => {
       }
 
       try {
-        eventData = JSON.parse(eventData);
-      } catch (err) {
+        eventData = JSON.parse(eventData) as QRCodeEventData;
+      } catch (e) {
         setError({title: 'Error parsing QR code data'});
         return;
       }
@@ -73,8 +73,11 @@ const AuthRedirectPage = () => {
       let oauth2Token;
       try {
         oauth2Token = await getToken(baseUrl, clientId, codeVerifier);
-      } catch (err: any) {
-        setError({title: 'OAuth authorization failed', description: err.message});
+      } catch (e) {
+        setError({
+          title: 'OAuth authorization failed',
+          description: e instanceof Error ? e.message : '',
+        });
         return;
       }
 
@@ -103,8 +106,11 @@ const AuthRedirectPage = () => {
           eventId,
           title: regformTitle,
         });
-      } catch (err: any) {
-        setError({title: 'OAuth authorization failed', description: err.message});
+      } catch (e) {
+        setError({
+          title: 'OAuth authorization failed',
+          description: e instanceof Error ? e.message : '',
+        });
         return;
       }
 

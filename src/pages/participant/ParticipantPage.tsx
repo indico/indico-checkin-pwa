@@ -29,7 +29,7 @@ import db, {
 import {useHandleError} from '../../hooks/useError';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
-import {useIsOffline} from '../../utils/client';
+import {FailedResponse, useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
 import {makeDebounce} from '../../utils/debounce';
 import {playVibration} from '../../utils/haptics';
@@ -151,8 +151,8 @@ function ParticipantPageContent({
           hapticFeedback,
           handleError
         );
-      } catch (err: any) {
-        handleError(err, 'Could not update check-in status');
+      } catch (e) {
+        handleError(e as FailedResponse, 'Could not update check-in status');
       } finally {
       }
     },
