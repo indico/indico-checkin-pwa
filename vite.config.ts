@@ -22,6 +22,7 @@ export default defineConfig(({mode}) => {
     },
     build: {
       cssCodeSplit: false,
+      outDir: 'build',
     },
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV),
