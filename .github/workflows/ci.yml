@@ -43,7 +43,7 @@ jobs:
         # https://stackoverflow.com/questions/76590642/how-to-configure-vite-with-index-html-in-public-folder
         run: |
           npm install -g @lhci/cli@0.14.x
-          cp index.html public/index.html
+          ln -s $(pwd)/index.html $(pwd)/public/index.html
           lhci_output=$(lhci autorun)
           echo "$lhci_output"
           url=$(echo "$lhci_output" | grep -o "https://.\+")
