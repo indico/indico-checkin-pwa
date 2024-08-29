@@ -39,7 +39,7 @@ jobs:
         # Unfortunately vite requires the index.html to be at the root.
         # This means that the public and index.html are separated, which
         # affects the building process. Lighthouse also only allows for
-        # one staticDir. Therefore we need to copy the index.html.
+        # one staticDir. Therefore we need to create a sym link for it.
         # https://stackoverflow.com/questions/76590642/how-to-configure-vite-with-index-html-in-public-folder
         run: |
           npm install -g @lhci/cli@0.14.x
