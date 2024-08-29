@@ -36,14 +36,19 @@ jobs:
 
       - name: Run Lighthouse CI
         id: lhci
+        # Unfortunately vite requires the index.html to be at the root.
+        # This means that the public and index.html are separated, which
+        # affects the building process. Lighthouse also only allows for
+        # one staticDir. Therefore we need to copy the index.html.
+        # https://stackoverflow.com/questions/76590642/how-to-configure-vite-with-index-html-in-public-folder
         run: |
-          npm install -g @lhci/cli@0.12.x
+          npm install -g @lhci/cli@0.14.x
+          cp index.html public/index.html
           lhci_output=$(lhci autorun)
           echo "$lhci_output"
           url=$(echo "$lhci_output" | grep -o "https://.\+")
           echo "Found storage url: <$url>"
           echo "report_url=$url" >> $GITHUB_OUTPUT
-
       - name: Save data needed by the Lighthouse workflow
         if: github.event_name == 'pull_request'
         run: |
