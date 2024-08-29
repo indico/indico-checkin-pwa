@@ -4,7 +4,7 @@ module.exports = {
       target: 'temporary',
     },
     collect: {
-      staticDistDir: './',
+      staticDistDir: './build',
       staticDirFileDiscoveryDepth: 1,
     },
   },
