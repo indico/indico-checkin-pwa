@@ -25,9 +25,6 @@
     "vite-tsconfig-paths": "^5.0.1",
     "workbox-core": "^7.1.0"
   },
-  "overrides": {
-    "typescript": "^5.5.3"
-  },
   "scripts": {
     "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && vite",
     "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && vite build",
