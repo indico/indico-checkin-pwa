@@ -52,6 +52,7 @@ export function validateEventData(data: QRCodeEventData): data is QRCodeEventDat
 export interface QRCodeParticipantData {
   serverUrl: string;
   checkinSecret?: string;
+  i?: [string, string, string]; // new format only
 }
 
 /**
@@ -77,7 +78,7 @@ export function parseQRCodeParticipantData(
 
   if (isNewFormat) {
     // more compact format
-    [, serverUrl, checkinSecret] = data.i;
+    [, serverUrl, checkinSecret] = data.i!;
   } else {
     ({checkinSecret, serverUrl} = data);
   }
