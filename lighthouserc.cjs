@@ -4,7 +4,7 @@ module.exports = {
       target: 'temporary-public-storage',
     },
     collect: {
-      staticDistDir: './build',
+      staticDistDir: './dist',
       staticDirFileDiscoveryDepth: 1,
     },
   },
