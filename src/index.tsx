@@ -5,7 +5,6 @@ import App from './App';
 import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
-// import reportWebVitals from './reportWebVitals';
 import db from './db/db';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
@@ -35,8 +34,3 @@ root.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
 serviceWorkerRegistration.register();
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-// reportWebVitals();
