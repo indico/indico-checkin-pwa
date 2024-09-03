@@ -11,7 +11,27 @@ export default defineConfig(({mode}) => {
 
   return {
     base: '',
-    plugins: [react(), viteTsconfigPaths(), VitePWA({registerType: 'autoUpdate'})],
+    plugins: [
+      react(),
+      viteTsconfigPaths(),
+      VitePWA({
+        // Generate service worker
+        strategies: 'generateSW',
+        injectRegister: 'auto',
+        registerType: 'autoUpdate',
+        workbox: {
+          // Besides code, we have some other assets:
+          // .png - logo.png
+          // .mp3 - sound effects
+          // .ttf - custom fonts
+          globPatterns: ['**/*.{js,css,html,png,mp3,ttf}'],
+          // Generate service worker source map
+          sourcemap: true,
+        },
+        // Use manifest in public/manifest.json
+        manifest: false,
+      }),
+    ],
     test: {
       globals: true,
       environment: 'jsdom',
