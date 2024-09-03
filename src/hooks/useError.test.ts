@@ -46,7 +46,7 @@ describe('test error handling', () => {
     const logMessage = vi.fn();
 
     for (const [err, , msg] of inputs) {
-      handleError(err as FailedResponse, 'Something went wrong', errorModal, logMessage);
+      handleError(err, 'Something went wrong', errorModal, logMessage);
       expect(logMessage).toHaveBeenCalled();
       expect(errorModal).toHaveBeenCalledWith({title: 'Something went wrong', content: msg});
     }

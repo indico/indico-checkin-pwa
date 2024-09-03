@@ -26,7 +26,6 @@ import {
 } from '../../db/db';
 import {useHandleError} from '../../hooks/useError';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
-import {FailedResponse} from '../../utils/client';
 import {wait} from '../../utils/wait';
 import {syncEvent, syncParticipants, syncRegform} from '../Events/sync';
 import {NotFoundBanner} from '../NotFound';
@@ -118,7 +117,7 @@ function RegformPageContent({
       try {
         await _sync();
       } catch (e) {
-        handleError(e as FailedResponse, 'Something went wrong when fetching updates');
+        handleError(e, 'Something went wrong when fetching updates');
       } finally {
         if (!controller.signal.aborted) {
           setIsSyncing(false);

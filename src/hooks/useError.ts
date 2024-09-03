@@ -46,8 +46,8 @@ function logGenericError(obj: unknown, logMessage: LogMessage) {
   logMessage('error', String(obj));
 }
 
-function isResponse(obj: FailedResponse): obj is FailedResponse {
-  return obj.ok !== undefined;
+function isResponse(obj: FailedResponse | unknown): obj is FailedResponse {
+  return (obj as FailedResponse)?.ok !== undefined;
 }
 
 /**
@@ -55,8 +55,8 @@ function isResponse(obj: FailedResponse): obj is FailedResponse {
  * @param obj A FailedResponse object or some other value, typically an Error object
  * @param logMessage The function returned from 'useLogMessage'
  */
-export function logError(obj: FailedResponse | string, logMessage: LogMessage) {
-  if (typeof obj !== 'string' && isResponse(obj)) {
+export function logError(obj: FailedResponse | unknown, logMessage: LogMessage) {
+  if (isResponse(obj)) {
     logFetchError(obj, logMessage);
   } else {
     logGenericError(obj, logMessage);
@@ -72,7 +72,7 @@ export function logError(obj: FailedResponse | string, logMessage: LogMessage) {
  * @param logMessage The function returned from 'useLogMessage'
  */
 export function handleError(
-  obj: FailedResponse,
+  obj: FailedResponse | unknown,
   msg: string,
   errorModal: ErrorModalFunction,
   logMessage: LogMessage
@@ -90,7 +90,7 @@ export function handleError(
  */
 export const useLogError = () => {
   const logMessage = useLogMessage();
-  return useCallback((obj: FailedResponse | string) => logError(obj, logMessage), [logMessage]);
+  return useCallback((obj: FailedResponse | unknown) => logError(obj, logMessage), [logMessage]);
 };
 
 /**
@@ -100,7 +100,7 @@ export const useHandleError = () => {
   const errorModal = useErrorModal();
   const logMessage = useLogMessage();
   return useCallback(
-    (obj: FailedResponse, msg: string) => handleError(obj, msg, errorModal, logMessage),
+    (obj: FailedResponse | unknown, msg: string) => handleError(obj, msg, errorModal, logMessage),
     [errorModal, logMessage]
   );
 };
@@ -108,4 +108,4 @@ export const useHandleError = () => {
 /**
  * The type of the function returned by 'useHandleError()'
  */
-export type HandleError = (obj: FailedResponse, msg: string) => void;
+export type HandleError = (obj: FailedResponse | unknown, msg: string) => void;

@@ -29,7 +29,7 @@ import db, {
 import {useHandleError} from '../../hooks/useError';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
-import {FailedResponse, useIsOffline} from '../../utils/client';
+import {useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
 import {makeDebounce} from '../../utils/debounce';
 import {playVibration} from '../../utils/haptics';
@@ -152,7 +152,7 @@ function ParticipantPageContent({
           handleError
         );
       } catch (e) {
-        handleError(e as FailedResponse, 'Could not update check-in status');
+        handleError(e, 'Could not update check-in status');
       } finally {
       }
     },
