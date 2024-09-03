@@ -6,7 +6,6 @@ import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 import db from './db/db';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 async function runDBCleanup() {
   await db.transaction('readwrite', db.participants, async () => {
@@ -29,8 +28,3 @@ root.render(
     </ModalContextProvider>
   </React.StrictMode>
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
