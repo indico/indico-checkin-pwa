@@ -13,7 +13,7 @@ export async function checkCameraPermissions(): Promise<boolean> {
       video: {facingMode: 'environment'}, // Prefer the back camera
     });
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

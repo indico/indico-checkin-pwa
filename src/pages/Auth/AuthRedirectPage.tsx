@@ -50,7 +50,7 @@ const AuthRedirectPage = () => {
 
       try {
         eventData = JSON.parse(eventData) as QRCodeEventData;
-      } catch (e) {
+      } catch {
         setError({title: 'Error parsing QR code data'});
         return;
       }

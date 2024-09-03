@@ -40,7 +40,7 @@ export function validateEventData(data: QRCodeEventData): data is QRCodeEventDat
   const {baseUrl, clientId, scope} = server;
   try {
     new URL(baseUrl);
-  } catch (e) {
+  } catch {
     return false;
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
@@ -96,11 +96,11 @@ export function parseQRCodeParticipantData(
 
   try {
     new URL(serverUrl);
-  } catch (e) {
+  } catch {
     serverUrl = `https://${serverUrl}`;
     try {
       new URL(serverUrl);
-    } catch (e) {
+    } catch {
       return null;
     }
   }
