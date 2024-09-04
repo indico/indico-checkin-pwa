@@ -1,18 +1,16 @@
+import {isRecord} from './typeguards';
+
 export function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
     return true;
-  }
-
-  if (a === null || b === null) {
-    return false;
   }
 
   if (Array.isArray(a) && Array.isArray(b)) {
     return deepEqualArray(a, b);
   }
 
-  if (typeof a === 'object' && typeof b === 'object') {
-    return deepEqualObject(a as Record<string, unknown>, b as Record<string, unknown>);
+  if (isRecord(a) && isRecord(b)) {
+    return deepEqualObject(a, b);
   }
 
   return false;
