@@ -1,5 +1,4 @@
 import {ReactNode, createContext, useCallback, useState} from 'react';
-import PropTypes from 'prop-types';
 
 const MAX_LOG_COUNT = 500;
 
@@ -41,8 +40,4 @@ export const LogsProvider = ({children}: {children: ReactNode}) => {
       <LogDataContext.Provider value={{logs}}>{children}</LogDataContext.Provider>
     </LogMessageContext.Provider>
   );
-};
-
-LogsProvider.propTypes = {
-  children: PropTypes.node.isRequired,
 };
