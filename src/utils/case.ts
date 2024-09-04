@@ -7,17 +7,20 @@ function camelizeKey(key: string) {
   return start + rest.map(titleCase).join('');
 }
 
-export function camelizeKeys<T>(obj: T): T {
-  if (Array.isArray(obj)) {
-    return obj.map(camelizeKeys) as unknown as T;
-  } else if (obj === null) {
+export function camelizeKeys<T>(obj: T[]): T[];
+export function camelizeKeys<T>(obj: T): T;
+export function camelizeKeys<T>(obj: T | T[]): T | T[] {
+  if (obj === null) {
     return obj;
+  } else if (Array.isArray(obj)) {
+    return obj.map(t => camelizeKeys(t));
   } else if (typeof obj === 'object') {
     const camelized: {[key: string]: unknown} = {};
     for (const key in obj) {
-      camelized[camelizeKey(key)] = camelizeKeys(obj[key]);
+      const value = obj[key];
+      camelized[camelizeKey(key)] = camelizeKeys(value);
     }
-    return camelized as unknown as T;
+    return camelized as T;
   }
   return obj;
 }
