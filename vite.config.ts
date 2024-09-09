@@ -19,6 +19,7 @@ export default defineConfig(({mode}) => {
         strategies: 'generateSW',
         injectRegister: 'auto',
         registerType: 'autoUpdate',
+        filename: 'service-worker.js',
         workbox: {
           // Besides code, we have some other assets:
           // .png - logo.png
