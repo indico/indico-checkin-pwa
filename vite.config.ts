@@ -16,10 +16,10 @@ export default defineConfig(({mode}) => {
       viteTsconfigPaths(),
       VitePWA({
         // Generate service worker
+        filename: 'service-worker.js',
         strategies: 'generateSW',
         injectRegister: 'auto',
         registerType: 'autoUpdate',
-        filename: 'service-worker.js',
         workbox: {
           // Besides code, we have some other assets:
           // .png - logo.png
