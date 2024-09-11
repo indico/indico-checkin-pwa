@@ -26,6 +26,8 @@ export default defineConfig(({mode}) => {
           // .mp3 - sound effects
           // .ttf - custom fonts
           globPatterns: ['**/*.{js,css,html,png,mp3,ttf}'],
+          clientsClaim: true,
+          skipWaiting: true,
           // Generate service worker source map
           sourcemap: true,
         },
