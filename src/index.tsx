@@ -4,13 +4,16 @@ import './index.css';
 // TODO: fix the unresolved import warning
 // https://github.com/vite-pwa/vite-plugin-pwa/issues/40
 // https://github.com/vite-pwa/vite-plugin-pwa/issues/38
-// x@ts-expect-error Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
-// import {registerSW} from 'virtual:pwa-register'; // eslint-disable-line import/no-unresolved
+// @ts-expect-error Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
+import {registerSW} from 'virtual:pwa-register'; // eslint-disable-line import/no-unresolved
 import App from './App';
 import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 import db from './db/db';
+
+// Service Worker
+registerSW({immediate: true});
 
 // DB
 async function runDBCleanup() {

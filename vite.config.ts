@@ -17,7 +17,7 @@ export default defineConfig(({mode}) => {
       VitePWA({
         // Generate service worker
         strategies: 'generateSW',
-        injectRegister: 'inline',
+        injectRegister: null,
         registerType: 'autoUpdate',
         filename: 'service-worker.js',
         workbox: {
