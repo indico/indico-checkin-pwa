@@ -12,8 +12,37 @@ import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 import db from './db/db';
 
+// Service worker
 registerSW({immediate: true});
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/service-worker.js')
+    .then(registration => {
+      console.log('Service worker registered:', registration);
+
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+          console.log('New content available, refreshing...');
+          window.location.reload();
+        }
+      });
+
+      if (registration.waiting) {
+        registration.waiting.postMessage({type: 'SKIP_WAITING'});
+      }
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('Service worker controlling the page, reloading...');
+        window.location.reload();
+      });
+    })
+    .catch(error => {
+      console.error('Service worker registration failed:', error);
+    });
+}
+
+// DB
 async function runDBCleanup() {
   await db.transaction('readwrite', db.participants, async () => {
     await db.participants.where({checkedInLoading: 1}).modify({checkedInLoading: 0});
