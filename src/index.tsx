@@ -4,7 +4,6 @@ import './index.css';
 // TODO: fix the unresolved import warning
 // https://github.com/vite-pwa/vite-plugin-pwa/issues/40
 // https://github.com/vite-pwa/vite-plugin-pwa/issues/38
-// @ts-expect-error Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
 import {registerSW} from 'virtual:pwa-register'; // eslint-disable-line import/no-unresolved
 import App from './App';
 import {LogsProvider} from './context/LogsProvider';
