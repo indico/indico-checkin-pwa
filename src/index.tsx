@@ -12,7 +12,18 @@ import {SettingsProvider} from './context/SettingsProvider';
 import db from './db/db';
 
 // Service Worker
-registerSW({immediate: true});
+registerSW({
+  immediate: true,
+  onRegisteredSW: registration => {
+    console.log(`Service Worker Registered: ${registration}`);
+  },
+  onOfflineReady: () => {
+    console.log('App is offline-ready');
+  },
+  onNeedRefresh: () => {
+    console.log('App needs to be refreshed');
+  },
+});
 
 // DB
 async function runDBCleanup() {
