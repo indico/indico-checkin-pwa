@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-// TODO: fix the unresolved import warning
-// https://github.com/vite-pwa/vite-plugin-pwa/issues/40
-// https://github.com/vite-pwa/vite-plugin-pwa/issues/38
 import App from './App';
 import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
 import db from './db/db';
+// TODO: Replace CRA SW with VitePWA SW
+// https://github.com/indico/indico-checkin-pwa/issues/72
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 // DB
