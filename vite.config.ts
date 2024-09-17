@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
 import tailwindcss from 'tailwindcss';
 import {defineConfig, loadEnv} from 'vite';
-import {VitePWA} from 'vite-plugin-pwa';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig(({mode}) => {
@@ -13,27 +12,7 @@ export default defineConfig(({mode}) => {
     base: '/',
     plugins: [
       react(),
-      viteTsconfigPaths(),
-      VitePWA({
-        // Generate service worker
-        strategies: 'generateSW',
-        injectRegister: null,
-        registerType: 'autoUpdate',
-        filename: 'service-worker.js',
-        workbox: {
-          clientsClaim: true,
-          skipWaiting: true,
-          // Besides code, we have some other assets:
-          // .png - logo.png
-          // .mp3 - sound effects
-          // .ttf - custom fonts
-          globPatterns: ['**/*.{js,css,html,png,mp3,ttf}'],
-          // Generate service worker source map
-          sourcemap: true,
-        },
-        // Use manifest in public/manifest.json
-        manifest: false,
-      }),
+      viteTsconfigPaths()
     ],
     test: {
       globals: true,
@@ -48,7 +27,7 @@ export default defineConfig(({mode}) => {
       cssCodeSplit: false,
     },
     define: {
-      __APP_ENV__: JSON.stringify(env.APP_ENV),
+      __APP_ENV__: JSON.stringify(env.APP_ENV)
     },
     css: {
       postcss: {

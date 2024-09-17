@@ -6,7 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
-    "types": ["vite/client", "vitest", "vitest/globals", "vitest/config", "vite-plugin-pwa/client"],
+    "types": ["vite/client", "vitest", "vitest/globals", "vitest/config"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
