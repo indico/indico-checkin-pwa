@@ -24,14 +24,14 @@ type Config = {
 };
 
 export function register(config?: Config) {
-  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-    const publicUrl = new URL(process.env.VITE_PUBLIC_URL || '', window.location.href);
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    const publicUrl = new URL(window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       return;
     }
 
     window.addEventListener('load', () => {
-      const swUrl = `${process.env.VITE_PUBLIC_URL}/service-worker.js`;
+      const swUrl = `${publicUrl}/service-worker.js`;
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
