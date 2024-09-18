@@ -15,12 +15,8 @@ export default defineConfig(({mode}) => {
       react(),
       viteTsconfigPaths(),
       VitePWA({
-        strategies: 'injectManifest',
         srcDir: 'src',
-        filename: 'service-worker.ts',
-        injectManifest: {
-          globPatterns: ['**/*.{js,css,html,png,svg}'],
-        }
+        filename: 'service-worker.ts'
       })
     ],
     test: {
