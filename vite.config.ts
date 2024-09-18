@@ -16,10 +16,10 @@ export default defineConfig(({mode}) => {
       viteTsconfigPaths(),
       VitePWA({
         strategies: 'injectManifest',
-        srcDir: 'src', // Your service worker directory
-        filename: 'service-worker.ts', // Your service worker filename
+        srcDir: 'src',
+        filename: 'service-worker.ts',
         injectManifest: {
-          globPatterns: ['**/*.{js,css,html,png,svg}'], // Adjust patterns as needed
+          globPatterns: ['**/*.{js,css,html,png,svg}'],
         }
       })
     ],
