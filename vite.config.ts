@@ -18,7 +18,10 @@ export default defineConfig(({mode}) => {
         srcDir: 'src',
         filename: 'service-worker.ts',
         manifest: false, // We generate our own manifest from the public folder
-        injectRegister: null
+        injectRegister: null,
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,png,mp3,ttf}'],
+        }
       })
     ],
     test: {
