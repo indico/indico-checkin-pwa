@@ -1,4 +1,3 @@
-import {FailedResponse} from '../utils/client';
 import {handleError, logError} from './useError';
 
 describe('test error handling', () => {
@@ -36,7 +35,7 @@ describe('test error handling', () => {
     const logMessage = vi.fn();
 
     for (const [err, msg] of inputs) {
-      logError(err as FailedResponse, logMessage);
+      logError(err, logMessage);
       expect(logMessage).toHaveBeenCalledWith('error', msg);
     }
   });

@@ -56,7 +56,7 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
 
 export interface QRCodeParticipantData {
   serverUrl: string;
-  checkinSecret?: string;
+  checkinSecret: string;
 }
 
 function isNewFormat(data: Record<string, unknown>): data is {i: [string, string, string]} {
