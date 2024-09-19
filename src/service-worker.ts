@@ -9,10 +9,8 @@
 // service worker, and the Workbox build step will be skipped.
 
 import {clientsClaim} from 'workbox-core';
-import {ExpirationPlugin} from 'workbox-expiration';
 import {precacheAndRoute, createHandlerBoundToURL} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
-import {StaleWhileRevalidate} from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -51,19 +49,6 @@ registerRoute(
     return true;
   },
   createHandlerBoundToURL(`${self.location.origin}/index.html`)
-);
-
-// Caches manifest as this is not done by default
-registerRoute(
-  ({url}) => url.origin === self.location.origin && url.pathname.endsWith('/manifest.json'),
-  new StaleWhileRevalidate({
-    cacheName: 'manifest-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 1,
-      }),
-    ],
-  })
 );
 
 // This allows the web app to trigger skipWaiting via
