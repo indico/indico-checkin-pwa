@@ -25,8 +25,9 @@ type Config = {
 
 export function register(config?: Config) {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    const baseUrl = import.meta.env.BASE_URL;
+    const swUrl = `${baseUrl}service-worker.js`;
     window.addEventListener('load', () => {
-      const swUrl = './service-worker.js';
       console.log(`Registering service worker: ${swUrl}`);
 
       if (isLocalhost) {
