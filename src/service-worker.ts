@@ -57,8 +57,12 @@ registerRoute(
 registerRoute(
   ({url}) => url.origin === self.location.origin && url.pathname.endsWith('/manifest.json'),
   new StaleWhileRevalidate({
-    cacheName: 'images',
-    plugins: [new ExpirationPlugin({maxEntries: 50})],
+    cacheName: 'manifest-cache',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 1,
+      }),
+    ],
   })
 );
 
