@@ -20,7 +20,7 @@ export default defineConfig(({mode}) => {
         manifest: false, // We generate our own manifest from the public folder
         injectRegister: null,
         workbox: {
-          globPatterns: ['**/*.{js,css,html,png,mp3,ttf}'],
+          globPatterns: ['**/*.{js,css,html,json,png,mp3,ttf}'],
         },
       }),
     ],
