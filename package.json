@@ -37,7 +37,7 @@
     "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && vite build",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
+    "lint": "eslint --ext js,jsx,ts,tsx src/ *.js *.ts *.cjs && prettier --check src/ *.js *.ts *.cjs",
     "typecheck": "tsc --noEmit",
     "prepare": "husky install"
   },
