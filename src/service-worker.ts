@@ -55,9 +55,9 @@ registerRoute(
 
 // Caches manifest as this is not done by default
 registerRoute(
-  ({url}) => url.pathname.endsWith('/manifest.json'),
+  ({url}) => url.origin === self.location.origin && url.pathname.endsWith('/manifest.json'),
   new StaleWhileRevalidate({
-    cacheName: 'manifest',
+    cacheName: 'images',
     plugins: [new ExpirationPlugin({maxEntries: 50})],
   })
 );
