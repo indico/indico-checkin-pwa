@@ -84,7 +84,7 @@ beforeEach(resetDB);
 
 describe('test handleParticipant()', () => {
   test('test missing server', async () => {
-    const data: QRCodeParticipantData = {serverUrl: ''};
+    const data: QRCodeParticipantData = {serverUrl: '', checkinSecret: ''};
     const errorModal = vi.fn();
     const handleError = vi.fn();
     const navigate = vi.fn();
