@@ -16,7 +16,9 @@ export default defineConfig(({mode}) => {
       viteTsconfigPaths(),
       VitePWA({
         srcDir: 'src',
-        filename: 'service-worker.ts'
+        filename: 'service-worker.ts',
+        manifest: false, // We generate our own manifest.json from the public folder
+        injectRegister: null
       })
     ],
     test: {
@@ -29,8 +31,12 @@ export default defineConfig(({mode}) => {
       port: parseInt(env.VITE_PORT || '3000', 10),
     },
     build: {
-      cssCodeSplit: false
+      cssCodeSplit: false,
+      minify: true
     },
+    devOptions: {
+      enabled: false
+    },  
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV)
     },
