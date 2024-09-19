@@ -37,17 +37,10 @@ export default defineConfig(({mode}) => {
       cssCodeSplit: false,
       minify: true,
     },
-    devOptions: {
-      enabled: false,
-    },
-    define: {
-      __APP_ENV__: JSON.stringify(env.APP_ENV),
-    },
     css: {
       postcss: {
         plugins: [tailwindcss()],
       },
-    },
-    envDir: '.',
+    }
   };
 });
