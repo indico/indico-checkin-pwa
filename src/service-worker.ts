@@ -58,22 +58,3 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
 });
-
-// Cache manifest.json manually as this is not automatic
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open('manifest-cache').then(cache => {
-      return cache.addAll(['/manifest.json']);
-    })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.url.includes('manifest.json')) {
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || fetch(event.request);
-      })
-    );
-  }
-});
