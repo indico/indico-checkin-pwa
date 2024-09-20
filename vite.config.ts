@@ -17,7 +17,8 @@ export default defineConfig(({mode}) => {
       VitePWA({
         srcDir: 'src',
         filename: 'service-worker.ts',
-        manifest: false, // We generate our own manifest.json from the public folder
+        // We generate our own manifest.json from the public folder
+        manifest: false,
         injectRegister: null,
         workbox: {
           globPatterns: ['**/*.{js,css,html,json,png,mp3,ttf}'],
