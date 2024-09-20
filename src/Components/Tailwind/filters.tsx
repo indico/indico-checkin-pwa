@@ -1,7 +1,6 @@
 import {ReactNode} from 'react';
 import {FunnelIcon as FunnelIconOutline} from '@heroicons/react/24/outline';
-import {FunnelIcon, XMarkIcon} from '@heroicons/react/24/solid';
-import {ArrowUpIcon, CheckIcon} from '@heroicons/react/24/solid';
+import {FunnelIcon, XMarkIcon, ArrowUpIcon, CheckIcon} from '@heroicons/react/24/solid';
 import {titleCase} from '../../utils/case';
 import Button from './Button';
 import Typography from './Typography';

@@ -151,8 +151,8 @@ function ParticipantPageContent({
           hapticFeedback,
           handleError
         );
-      } catch (err: any) {
-        handleError(err, 'Could not update check-in status');
+      } catch (e) {
+        handleError(e, 'Could not update check-in status');
       } finally {
       }
     },

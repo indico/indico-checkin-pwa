@@ -2,60 +2,44 @@
   "name": "indico-check-in",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@badgateway/oauth2-client": "^2.2.4",
-    "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^17.0.45",
+    "@testing-library/jest-dom": "^6.5.0",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "dexie": "^4.0.1-beta.1",
     "dexie-react-hooks": "^1.1.6",
     "html5-qrcode": "^2.3.8",
-    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.0",
-    "react-scripts": "5.0.1",
-    "sass": "^1.64.1",
     "tailwind-merge": "^1.14.0",
     "typescript": "^5.5.3",
-    "web-vitals": "^2.1.4",
-    "workbox-background-sync": "^6.6.0",
-    "workbox-broadcast-update": "^6.6.0",
-    "workbox-cacheable-response": "^6.6.0",
-    "workbox-core": "^6.6.0",
-    "workbox-expiration": "^6.6.0",
-    "workbox-google-analytics": "^6.6.0",
-    "workbox-navigation-preload": "^6.6.0",
-    "workbox-precaching": "^6.6.0",
-    "workbox-range-requests": "^6.6.0",
-    "workbox-routing": "^6.6.0",
-    "workbox-strategies": "^6.6.0",
-    "workbox-streams": "^6.6.0"
-  },
-  "overrides": {
-    "typescript": "^5.5.3"
+    "vite": "^5.4.2",
+    "vite-tsconfig-paths": "^5.0.1",
+    "workbox-background-sync": "^7.1.0",
+    "workbox-broadcast-update": "^7.1.0",
+    "workbox-cacheable-response": "^7.1.0",
+    "workbox-core": "^7.1.0",
+    "workbox-expiration": "^7.1.0",
+    "workbox-google-analytics": "^7.1.0",
+    "workbox-navigation-preload": "^7.1.0",
+    "workbox-precaching": "^7.1.0",
+    "workbox-range-requests": "^7.1.0",
+    "workbox-routing": "^7.1.0",
+    "workbox-strategies": "^7.1.0",
+    "workbox-streams": "^7.1.0"
   },
   "scripts": {
-    "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts start",
-    "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && react-scripts build",
-    "test": "react-scripts test",
-    "test:coverage": "react-scripts test --coverage .",
-    "eject": "react-scripts eject",
-    "lint": "eslint --ext js,jsx,ts,tsx src/ && prettier --check src/",
+    "start": "export HTTPS=true && export COMMIT_SHA=$(git rev-parse --short HEAD) && vite",
+    "build": "export COMMIT_SHA=$(git rev-parse --short HEAD) && vite build",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint --ext js,jsx,ts,tsx src/ *.js *.ts *.cjs && prettier --check src/ *.js *.ts *.cjs",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky install"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -77,21 +61,29 @@
       "prettier --write"
     ]
   },
-  "jest": {
-    "coverageReporters": ["text", "html"]
-  },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.61.0",
-    "@typescript-eslint/parser": "^5.61.0",
+    "@babel/eslint-parser": "^7.25.1",
+    "@types/node": "^22.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.4.0",
+    "@typescript-eslint/parser": "^8.4.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "fake-indexeddb": "^4.0.2",
     "husky": "^8.0.3",
+    "jsdom": "^25.0.0",
     "lint-staged": "^14.0.1",
+    "postcss": "^8.4.41",
     "prettier": "^3.0.0",
     "prettier-plugin-tailwindcss": "^0.5.4",
-    "tailwindcss": "^3.4.10"
+    "sass": "^1.77.8",
+    "tailwindcss": "^3.4.10",
+    "vite-plugin-pwa": "^0.20.5",
+    "vitest": "^2.0.5"
   }
 }

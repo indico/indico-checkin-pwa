@@ -1,5 +1,4 @@
 import {ReactNode, createContext, useState} from 'react';
-import PropTypes from 'prop-types';
 
 interface SettingsContextProps {
   darkMode: boolean;
@@ -56,8 +55,4 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
       {children}
     </SettingsContext.Provider>
   );
-};
-
-SettingsProvider.propTypes = {
-  children: PropTypes.node.isRequired,
 };

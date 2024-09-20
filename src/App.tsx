@@ -31,7 +31,7 @@ import RegformPage from './pages/regform/RegformPage';
 import SettingsPage from './pages/Settings';
 
 // Expose the db instance as a global variable for easier debugging
-(window as any).db = db;
+(window as typeof window & {db: typeof db}).db = db;
 
 const ScanPage = lazy(() => import('./pages/scan/Scan'));
 

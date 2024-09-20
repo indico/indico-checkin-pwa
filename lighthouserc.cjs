@@ -3,5 +3,9 @@ module.exports = {
     upload: {
       target: 'temporary-public-storage',
     },
+    collect: {
+      staticDistDir: './dist',
+      staticDirFileDiscoveryDepth: 1,
+    },
   },
 };

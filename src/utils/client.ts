@@ -94,10 +94,10 @@ export interface FailedResponse {
   status?: number;
   aborted?: boolean;
   network?: boolean;
-  err?: any;
+  err?: unknown;
   endpoint?: string;
   options?: object;
-  data?: any;
+  data?: unknown;
   description?: string;
 }
 
@@ -128,24 +128,24 @@ async function makeRequest<T>(
         'Content-Type': 'application/json',
       },
     });
-  } catch (err: any) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
       // Ignore cancelled requests
       return {ok: false, aborted: true};
     }
     // Assume everything else is a network issue (impossible to distinguish from other TypeErrors)
-    return {ok: false, network: true, endpoint, options, err};
+    return {ok: false, network: true, endpoint, options, err: e};
   }
 
   let data;
   try {
     data = await response.json();
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
       // Ignore cancelled requests
       return {ok: false, aborted: true};
     }
-    return {ok: false, endpoint, options, err, description: 'response.json() failed'};
+    return {ok: false, endpoint, options, err: e, description: 'response.json() failed'};
   }
 
   if (!response.ok) {

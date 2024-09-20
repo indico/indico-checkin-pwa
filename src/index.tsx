@@ -5,10 +5,12 @@ import App from './App';
 import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
-// import reportWebVitals from './reportWebVitals';
 import db from './db/db';
+// TODO: Replace CRA SW with VitePWA SW
+// https://github.com/indico/indico-checkin-pwa/issues/72
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
+// DB
 async function runDBCleanup() {
   await db.transaction('readwrite', db.participants, async () => {
     await db.participants.where({checkedInLoading: 1}).modify({checkedInLoading: 0});
@@ -31,12 +33,4 @@ root.render(
   </React.StrictMode>
 );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
 serviceWorkerRegistration.register();
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-// reportWebVitals();

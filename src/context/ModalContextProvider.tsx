@@ -53,8 +53,8 @@ export const ModalDataContext = createContext<ModalContextProps>({
   closeModal: () => {},
 });
 
-export const ErrorModalContext = createContext((data: ErrorModalParams) => {});
-export const ConfirmModalContext = createContext((data: ConfirmModalParams) => {});
+export const ErrorModalContext = createContext((_data: ErrorModalParams) => {});
+export const ConfirmModalContext = createContext((_data: ConfirmModalParams) => {});
 
 export const ModalContextProvider = ({children}: {children: ReactNode}) => {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,6 +1,5 @@
 import {createPortal} from 'react-dom';
-import {ExclamationCircleIcon} from '@heroicons/react/24/outline';
-import {TrashIcon} from '@heroicons/react/24/outline';
+import {ExclamationCircleIcon, TrashIcon} from '@heroicons/react/24/outline';
 import {ConfirmModalData, ErrorModalData} from '../../../context/ModalContextProvider';
 import {useModalData} from '../../../hooks/useModal';
 import {DangerButton, OutlineButton} from '../Button';
