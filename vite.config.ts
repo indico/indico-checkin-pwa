@@ -41,6 +41,6 @@ export default defineConfig(({mode}) => {
       postcss: {
         plugins: [tailwindcss()],
       },
-    }
+    },
   };
 });
