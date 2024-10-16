@@ -1,6 +1,30 @@
 {
-  "extends": ["plugin:react/recommended", "react-app", "prettier"],
-  "plugins": ["prettier"],
+  "extends": [
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended", 
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "prettier"
+  ],
+  "plugins": [
+    "prettier",
+    "@typescript-eslint",
+    "import"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
   "rules": {
     "prettier/prettier": "error",
     "react/no-unescaped-entities": ["error", {"forbid": [">", "<"]}],
@@ -28,6 +52,11 @@
       }
     ],
     /* Rules to make it not necessary to include React as it is done automatically since React 17 */
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {"argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "ignoreRestSiblings": true}
+    ],
+    "@typescript-eslint/no-empty-function": "off"
   }
 }

@@ -6,7 +6,9 @@ export interface FieldProps {
   title: string;
   description: string;
   inputType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue: any;
   price?: number;
 }
@@ -225,8 +227,7 @@ function AccommodationField({title, description, choices, data}: ChoiceFieldProp
     );
   }
 
-  const choice = choices.find(choice => choice.id === data.choice)!;
-  const {caption} = choice;
+  const caption = choices.find(choice => choice.id === data.choice)?.caption;
   const {arrivalDate, departureDate} = data;
 
   return (

@@ -1,7 +1,6 @@
 import {MutableRefObject, useState, useEffect} from 'react';
 import {BoltIcon, BoltSlashIcon, ExclamationCircleIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode} from 'html5-qrcode';
-import PropTypes from 'prop-types';
 import {useLogError} from '../../hooks/useError';
 
 interface TorchButtonProps {
@@ -24,10 +23,10 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
           setTorchUnavailable(true);
           console.warn('Torch feature is not supported on this device.');
         }
-      } catch (error) {
+      } catch (e) {
         setTorchUnavailable(true);
-        console.warn('Failed to toggle torch:', error);
-        logError(`Failed to toggle torch: ${error}`);
+        console.warn('Failed to toggle torch:', e);
+        logError(`Failed to toggle torch: ${e}`);
       }
     };
 
@@ -70,8 +69,3 @@ export function TorchButton({html5CustomScanner, canUseCamera}: TorchButtonProps
     </div>
   );
 }
-
-TorchButton.propTypes = {
-  html5CustomScanner: PropTypes.object.isRequired,
-  canUseCamera: PropTypes.bool.isRequired,
-};

@@ -184,10 +184,10 @@ function EventTopNav({event}: {event?: Event}) {
   const deleteEvent = async (id: number) => {
     try {
       await _deleteEvent(id);
-    } catch (err: any) {
+    } catch (e) {
       errorModal({
         title: 'Something went wrong when deleting a registration form',
-        content: err.message,
+        content: e instanceof Error ? e.message : '',
       });
     }
   };

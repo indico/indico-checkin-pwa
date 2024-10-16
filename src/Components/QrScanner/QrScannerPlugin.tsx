@@ -25,7 +25,7 @@ export const calcAspectRatio = () => {
 export async function scanFile(file: File): Promise<string> {
   const scanner = new Html5Qrcode(qrcodeFileRegionId, {
     formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-    verbose: process.env.NODE_ENV === 'development',
+    verbose: import.meta.env.DEV,
   });
 
   const result = await scanner.scanFileV2(file, false);
@@ -36,8 +36,8 @@ interface QrProps {
   fps?: number; // Expected frame rate of qr code scanning. example { fps: 2 } means the scanning would be done every 500 ms.
   qrbox?: number;
   disableFlip?: boolean;
-  qrCodeSuccessCallback: (decodedText: string, decodedResult: any) => void;
-  qrCodeErrorCallback?: (errorMessage: string, error: any) => void;
+  qrCodeSuccessCallback: (decodedText: string, decodedResult: unknown) => void;
+  qrCodeErrorCallback?: (errorMessage: string, error: unknown) => void;
   formatsToSupport?: Html5QrcodeSupportedFormats[];
   onPermRefused: () => void;
 }
@@ -64,10 +64,10 @@ export default function QrScannerPlugin({
         if (track && track.torchFeature().value()) {
           await track.torchFeature().apply(false);
         }
-      } catch (error) {
+      } catch (e) {
         // This raises an error about invalid tracks - we have to catch it! (blame the library)
-        console.warn('Failed to disable torch:', error);
-        logError(`Failed to disable torch: ${error}`);
+        console.warn('Failed to disable torch:', e);
+        logError(`Failed to disable torch: ${e}`);
       }
     },
     [logError]

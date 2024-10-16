@@ -90,7 +90,7 @@ function MainSettings() {
 }
 
 function DebugSettings() {
-  const version = process.env.REACT_APP_VERSION!;
+  const version = import.meta.env.VITE_APP_VERSION;
   const confirmModal = useConfirmModal();
   const handleError = useHandleError();
 
@@ -99,8 +99,8 @@ function DebugSettings() {
     try {
       await db.delete();
       await db.open();
-    } catch (err: any) {
-      handleError(err, 'Error resetting the database');
+    } catch (e) {
+      handleError(e, 'Error resetting the database');
     }
   }
 
@@ -133,8 +133,8 @@ function DebugSettings() {
 
 function LogSettings() {
   const {logs} = useLogs();
-  const version = process.env.REACT_APP_VERSION!;
-  const isProduction = process.env.NODE_ENV === 'production';
+  const version = import.meta.env.VITE_APP_VERSION;
+  const isProduction = import.meta.env.PROD;
 
   function onCopy() {
     const text = `App version: ${version}\n\nLogs:\n${formatLogs(logs)}`;

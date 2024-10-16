@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES6",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+    "types": ["vite/client", "vitest", "vitest/globals", "vitest/config"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -22,6 +23,7 @@
   },
   "include": [
     "src",
-    "types"
+    "types",
+    "vite.config.ts"
   ]
 }

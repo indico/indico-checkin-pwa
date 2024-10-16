@@ -37,7 +37,7 @@ export default function ScanPage() {
     let scannedData;
     try {
       scannedData = JSON.parse(decodedText);
-    } catch (e: any) {
+    } catch (e) {
       handleError(e, 'Error parsing the QRCode data');
       return;
     }
@@ -54,7 +54,7 @@ export default function ScanPage() {
 
       try {
         await handleEvent(scannedData, errorModal, navigate);
-      } catch (e: any) {
+      } catch (e) {
         handleError(e, 'Error processing QR code');
       }
       return;
@@ -64,7 +64,7 @@ export default function ScanPage() {
     if (parsedData) {
       try {
         await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
-      } catch (e: any) {
+      } catch (e) {
         handleError(e, 'Error processing QR code');
       }
     } else {
@@ -75,10 +75,10 @@ export default function ScanPage() {
     }
   }
 
-  const onScanResult = async (decodedText: string, _decodedResult: any) => {
+  const onScanResult = async (decodedText: string, _: unknown) => {
     try {
       await processCode(decodedText);
-    } catch (e: any) {
+    } catch (e) {
       handleError(e, 'Error processing QR code');
     } finally {
       setProcessing(false);
@@ -100,12 +100,12 @@ export default function ScanPage() {
     try {
       const decodedText = await scanFile(file);
       onScanResult(decodedText, null);
-    } catch (e: any) {
-      errorModal({title: 'Error processing QR code', content: e.message});
+    } catch (e) {
+      errorModal({title: 'Error processing QR code', content: e instanceof Error ? e.message : ''});
     }
   };
 
-  const fileUploadVisible = !processing && (isDesktop || process.env.NODE_ENV === 'development');
+  const fileUploadVisible = !processing && (isDesktop || import.meta.env.DEV);
 
   return (
     <div>

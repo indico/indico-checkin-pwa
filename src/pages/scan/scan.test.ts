@@ -1,11 +1,12 @@
 import 'fake-indexeddb/auto';
 import db, {IDBBoolean, RegistrationState} from '../../db/db';
 import {getParticipantByUuid} from '../../utils/client';
+import {QRCodeEventData, QRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant} from './scan';
 
-jest.mock('../../utils/client', () => {
+vi.mock('../../utils/client', () => {
   return {
-    getParticipantByUuid: jest.fn(),
+    getParticipantByUuid: vi.fn(),
   };
 });
 
@@ -83,10 +84,10 @@ beforeEach(resetDB);
 
 describe('test handleParticipant()', () => {
   test('test missing server', async () => {
-    const data = {serverUrl: ''} as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    const data: QRCodeParticipantData = {serverUrl: '', checkinSecret: ''};
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
     await expect(
       handleParticipant(data, errorModal, handleError, navigate, true)
@@ -105,12 +106,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 9999, regformId: 9999, checkinSecret: '1234'},
     });
@@ -131,12 +132,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
@@ -158,12 +159,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: dummyParticipant.checkinSecret,
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
     });
@@ -186,12 +187,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
       status: 404,
     });
@@ -216,12 +217,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 9999, regformId: 73, checkinSecret: '1234'},
     });
@@ -243,12 +244,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
@@ -270,12 +271,12 @@ describe('test handleParticipant()', () => {
     const data = {
       serverUrl: dummyServer.baseUrl,
       checkinSecret: '1234',
-    } as any;
-    const errorModal = jest.fn();
-    const handleError = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeParticipantData;
+    const errorModal = vi.fn();
+    const handleError = vi.fn();
+    const navigate = vi.fn();
 
-    (getParticipantByUuid as any).mockResolvedValue({
+    (getParticipantByUuid as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
     });
@@ -314,9 +315,9 @@ describe('test handleEvent()', () => {
       title: 'Dummy event',
       date: '2020-01-01',
       regformTitle: 'Dummy regform',
-    } as any;
-    const errorModal = jest.fn();
-    const navigate = jest.fn();
+    } as QRCodeEventData;
+    const errorModal = vi.fn();
+    const navigate = vi.fn();
 
     await expect(handleEvent(data, errorModal, navigate)).resolves.not.toThrow();
 

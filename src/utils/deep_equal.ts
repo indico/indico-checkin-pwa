@@ -1,24 +1,22 @@
-export function deepEqual(a: any, b: any): boolean {
+import {isRecord} from './typeguards';
+
+export function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
     return true;
-  }
-
-  if (a === null || b === null) {
-    return false;
   }
 
   if (Array.isArray(a) && Array.isArray(b)) {
     return deepEqualArray(a, b);
   }
 
-  if (typeof a === 'object' && typeof b === 'object') {
+  if (isRecord(a) && isRecord(b)) {
     return deepEqualObject(a, b);
   }
 
   return false;
 }
 
-function deepEqualArray(a: any[], b: any[]): boolean {
+function deepEqualArray(a: unknown[], b: unknown[]): boolean {
   if (a.length !== b.length) {
     return false;
   }
@@ -31,7 +29,7 @@ function deepEqualArray(a: any[], b: any[]): boolean {
   return true;
 }
 
-function deepEqualObject(a: {[key: string]: any}, b: {[key: string]: any}): boolean {
+function deepEqualObject(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
   const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) {
     return false;

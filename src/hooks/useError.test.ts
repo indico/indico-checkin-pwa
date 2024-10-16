@@ -32,7 +32,7 @@ describe('test error handling', () => {
   ];
 
   test('test logError()', async () => {
-    const logMessage = jest.fn();
+    const logMessage = vi.fn();
 
     for (const [err, msg] of inputs) {
       logError(err, logMessage);
@@ -41,8 +41,8 @@ describe('test error handling', () => {
   });
 
   test('test handleError()', async () => {
-    const errorModal = jest.fn();
-    const logMessage = jest.fn();
+    const errorModal = vi.fn();
+    const logMessage = vi.fn();
 
     for (const [err, , msg] of inputs) {
       handleError(err, 'Something went wrong', errorModal, logMessage);

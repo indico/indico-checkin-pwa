@@ -1,3 +1,5 @@
+import {isRecord} from '../../utils/typeguards';
+
 export const redirectUri = `${window.location.origin}/auth/redirect`;
 export const discoveryEndpoint = '.well-known/oauth-authorization-server';
 
@@ -16,8 +18,8 @@ export interface QRCodeEventData {
   server: QRCodeServerData;
 }
 
-export function validateEventData(data: any): data is QRCodeEventData {
-  if (typeof data !== 'object') {
+export function validateEventData(data: unknown): data is QRCodeEventData {
+  if (!isRecord(data)) {
     return false;
   }
 
@@ -28,19 +30,22 @@ export function validateEventData(data: any): data is QRCodeEventData {
   if (typeof title !== 'string' || typeof regformTitle !== 'string') {
     return false;
   }
-  if (new Date(date).toString() === 'Invalid Date') {
+  if (typeof date !== 'string' || new Date(date).toString() === 'Invalid Date') {
     return false;
   }
 
-  const {server = {}} = data;
-  if (typeof server !== 'object') {
+  const server = data?.server ?? {};
+  if (!isRecord(server)) {
     return false;
   }
 
   const {baseUrl, clientId, scope} = server;
+  if (typeof baseUrl !== 'string') {
+    return false;
+  }
   try {
     new URL(baseUrl);
-  } catch (err) {
+  } catch {
     return false;
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
@@ -54,6 +59,10 @@ export interface QRCodeParticipantData {
   checkinSecret: string;
 }
 
+function isNewFormat(data: Record<string, unknown>): data is {i: [string, string, string]} {
+  return !!data.i && Array.isArray(data.i);
+}
+
 /**
  * Parses the data from a QR code.
  *
@@ -64,16 +73,16 @@ export interface QRCodeParticipantData {
  * We support the old format for now, so that QR codes generated on
  * an older version of Indico (<3.3) can still be read.
  */
-export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | null {
-  if (typeof data !== 'object') {
+export function parseQRCodeParticipantData(data: unknown): QRCodeParticipantData | null {
+  if (!isRecord(data)) {
     return null;
   }
 
-  let serverUrl: any;
-  let checkinSecret: any;
-  const isNewFormat = Array.isArray(data.i);
+  let serverUrl;
+  let checkinSecret;
+  const newFormat = isNewFormat(data);
 
-  if (isNewFormat) {
+  if (newFormat) {
     // more compact format
     [, serverUrl, checkinSecret] = data.i;
   } else {
@@ -84,7 +93,7 @@ export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | n
     return null;
   }
 
-  if (isNewFormat) {
+  if (newFormat) {
     checkinSecret = decodeCheckinSecret(checkinSecret);
   }
 
@@ -94,11 +103,11 @@ export function parseQRCodeParticipantData(data: any): QRCodeParticipantData | n
 
   try {
     new URL(serverUrl);
-  } catch (err) {
+  } catch {
     serverUrl = `https://${serverUrl}`;
     try {
       new URL(serverUrl);
-    } catch (err) {
+    } catch {
       return null;
     }
   }
