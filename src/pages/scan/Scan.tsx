@@ -11,16 +11,18 @@ import TopNav from '../../Components/TopNav';
 import {useHandleError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
-import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant} from './scan';
 
-export default function ScanPage() {
+interface ScanProps {
+  autoCheckin?: boolean;
+}
+
+export default function Scan({autoCheckin = false}: ScanProps) {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
@@ -38,7 +40,7 @@ export default function ScanPage() {
     try {
       scannedData = JSON.parse(decodedText);
     } catch (e) {
-      handleError(e, 'Error parsing the QRCode data');
+      handleError(e, 'Error parsing the QRCode data', autoCheckin);
       return;
     }
 
@@ -48,6 +50,7 @@ export default function ScanPage() {
         errorModal({
           title: 'You are offline',
           content: 'Internet connection is required to add a registration form',
+          autoClose: autoCheckin,
         });
         return;
       }
@@ -55,7 +58,7 @@ export default function ScanPage() {
       try {
         await handleEvent(scannedData, errorModal, navigate);
       } catch (e) {
-        handleError(e, 'Error processing QR code');
+        handleError(e, 'Error processing QR code', autoCheckin);
       }
       return;
     }
@@ -65,12 +68,13 @@ export default function ScanPage() {
       try {
         await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
       } catch (e) {
-        handleError(e, 'Error processing QR code');
+        handleError(e, 'Error processing QR code', autoCheckin);
       }
     } else {
       errorModal({
         title: 'QR code data is not valid',
         content: 'Some fields are missing. Please try again',
+        autoClose: autoCheckin,
       });
     }
   }
@@ -79,7 +83,7 @@ export default function ScanPage() {
     try {
       await processCode(decodedText);
     } catch (e) {
-      handleError(e, 'Error processing QR code');
+      handleError(e, 'Error processing QR code', autoCheckin);
     } finally {
       setProcessing(false);
     }
@@ -109,7 +113,7 @@ export default function ScanPage() {
 
   return (
     <div>
-      <TopNav backBtnText="Scan" backNavigateTo={-1} />
+      <TopNav backBtnText={autoCheckin ? 'Self Check-in' : 'Scan'} backNavigateTo={-1} />
       {!processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />

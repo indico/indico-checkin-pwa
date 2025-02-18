@@ -13,7 +13,13 @@ interface ErrorModalParams {
   closeBtnText?: string;
 }
 
-export type ErrorModalFunction = (data: ErrorModalParams) => void;
+interface ErrorModalOptions {
+  title: string;
+  content: string;
+  autoClose?: boolean;
+}
+
+export type ErrorModalFunction = (options: ErrorModalOptions) => void;
 
 export interface ConfirmModalData {
   type: 'confirm';
@@ -60,15 +66,21 @@ export const ModalContextProvider = ({children}: {children: ReactNode}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<ModalData>(defaultModalData);
 
-  const errorModal = useCallback(
-    ({title, content = '', closeBtnText = 'Close'}: ErrorModalParams) => {
+  const showErrorModal = useCallback(
+    ({title, content, autoClose}: ErrorModalOptions) => {
       setData({
         type: 'error',
         title,
         content,
-        closeBtnText,
+        closeBtnText: 'Close',
       });
       setIsOpen(true);
+
+      if (autoClose) {
+        setTimeout(() => {
+          setIsOpen(false);
+        }, 2000);
+      }
     },
     [setData, setIsOpen]
   );
@@ -98,7 +110,7 @@ export const ModalContextProvider = ({children}: {children: ReactNode}) => {
 
   return (
     <ModalDataContext.Provider value={{isOpen, data, closeModal}}>
-      <ErrorModalContext.Provider value={errorModal}>
+      <ErrorModalContext.Provider value={showErrorModal}>
         <ConfirmModalContext.Provider value={confirmModal}>{children}</ConfirmModalContext.Provider>
       </ErrorModalContext.Provider>
     </ModalDataContext.Provider>

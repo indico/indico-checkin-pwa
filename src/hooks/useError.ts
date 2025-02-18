@@ -5,20 +5,30 @@ import {FailedResponse} from '../utils/client';
 import {useLogMessage} from './useLogs';
 import {useErrorModal} from './useModal';
 
-function displayFetchError(response: FailedResponse, msg: string, errorModal: ErrorModalFunction) {
+function displayFetchError(
+  response: FailedResponse,
+  msg: string,
+  errorModal: ErrorModalFunction,
+  autoClose?: boolean
+) {
   if (response.network || response.aborted) {
     // Either a network error in which case we fallback to indexedDB,
     // or aborted because the component unmounted
     return;
   } else if (response.err) {
-    errorModal({title: msg, content: String(response.err)});
+    errorModal({title: msg, content: String(response.err), autoClose});
   } else {
-    errorModal({title: msg, content: `Response status: ${response.status}`});
+    errorModal({title: msg, content: `Response status: ${response.status}`, autoClose});
   }
 }
 
-function displayGenericError(err: unknown, msg: string, errorModal: ErrorModalFunction) {
-  errorModal({title: msg, content: String(err)});
+function displayGenericError(
+  err: unknown,
+  msg: string,
+  errorModal: ErrorModalFunction,
+  autoClose?: boolean
+) {
+  errorModal({title: msg, content: String(err), autoClose});
 }
 
 function logFetchError(response: FailedResponse, logMessage: LogMessage) {
@@ -75,13 +85,14 @@ export function handleError(
   obj: FailedResponse | unknown,
   msg: string,
   errorModal: ErrorModalFunction,
-  logMessage: LogMessage
+  logMessage: LogMessage,
+  autoClose?: boolean
 ) {
   logError(obj, logMessage);
   if (isResponse(obj)) {
-    displayFetchError(obj, msg, errorModal);
+    displayFetchError(obj, msg, errorModal, autoClose);
   } else {
-    displayGenericError(obj, msg, errorModal);
+    displayGenericError(obj, msg, errorModal, autoClose);
   }
 }
 
@@ -100,7 +111,8 @@ export const useHandleError = () => {
   const errorModal = useErrorModal();
   const logMessage = useLogMessage();
   return useCallback(
-    (obj: FailedResponse | unknown, msg: string) => handleError(obj, msg, errorModal, logMessage),
+    (obj: FailedResponse | unknown, msg: string, autoClose?: boolean) =>
+      handleError(obj, msg, errorModal, logMessage, autoClose),
     [errorModal, logMessage]
   );
 };
@@ -108,4 +120,4 @@ export const useHandleError = () => {
 /**
  * The type of the function returned by 'useHandleError()'
  */
-export type HandleError = (obj: FailedResponse | unknown, msg: string) => void;
+export type HandleError = (obj: FailedResponse | unknown, msg: string, autoClose?: boolean) => void;

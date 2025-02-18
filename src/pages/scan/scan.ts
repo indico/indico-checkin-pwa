@@ -9,7 +9,9 @@ import db, {
   updateParticipant,
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
-import {getParticipantByUuid as getParticipant} from '../../utils/client';
+import {checkInParticipant, getParticipantByUuid as getParticipant} from '../../utils/client';
+import {playVibration} from '../../utils/haptics';
+import {playSound} from '../../utils/sound';
 import {
   discoveryEndpoint,
   redirectUri,
@@ -92,6 +94,7 @@ export async function handleParticipant(
     errorModal({
       title: 'The server of this participant does not exist',
       content: 'Scan an event QR code first and try again.',
+      autoClose: autoCheckin,
     });
     return;
   }
@@ -132,12 +135,63 @@ export async function handleParticipant(
       }
     });
 
-    const participantPage = `/event/${regform.eventId}/${regform.id}/${participantId}`;
-    navigate(participantPage, {
-      replace: true,
-      state: {autoCheckin, fromScan: true},
-    });
+    if (autoCheckin && participantId !== undefined) {
+      const participant = await db.participants.get(participantId);
+      if (participant) {
+        // Set loading state
+        await db.participants.update(participant.id, {checkedInLoading: 1});
+
+        try {
+          // Make API call to check in
+          const response = await checkInParticipant(
+            {
+              serverId: event.serverId,
+              eventId: event.indicoId,
+              regformId: regform.indicoId,
+              participantId: participant.indicoId,
+            },
+            true
+          );
+
+          if (response.ok) {
+            // Update local state
+            await db.participants.update(participant.id, {
+              checkedIn: true,
+              checkedInDt: new Date().toISOString(),
+              checkedInLoading: 0,
+            });
+
+            // Play success feedback
+            playSound('success');
+            playVibration.success();
+
+            // Navigate to confirmation
+            navigate(`/checkin-confirmation/${event.id}/${regform.id}/${participantId}`, {
+              replace: true,
+            });
+          } else {
+            // Reset loading state on error
+            await db.participants.update(participant.id, {checkedInLoading: 0});
+            handleError(
+              response,
+              'Something went wrong when updating check-in status',
+              autoCheckin
+            );
+          }
+        } catch (error) {
+          // Reset loading state on error
+          await db.participants.update(participant.id, {checkedInLoading: 0});
+          handleError(error, 'Error during check-in', autoCheckin);
+        }
+      }
+    } else {
+      const participantPage = `/event/${regform.eventId}/${regform.id}/${participantId}`;
+      navigate(participantPage, {
+        replace: true,
+        state: {autoCheckin, fromScan: true},
+      });
+    }
   } else {
-    handleError(response, 'Could not fetch participant data');
+    handleError(response, 'Could not fetch participant data', autoCheckin);
   }
 }

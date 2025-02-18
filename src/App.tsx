@@ -28,12 +28,14 @@ import LoadingFallback from './pages/LoadingFallback';
 import {NotFoundPage} from './pages/NotFound';
 import ParticipantPage from './pages/participant/ParticipantPage';
 import RegformPage from './pages/regform/RegformPage';
+import CheckinConfirmation from './pages/scan/CheckinConfirmation';
 import SettingsPage from './pages/Settings';
 
 // Expose the db instance as a global variable for easier debugging
 (window as typeof window & {db: typeof db}).db = db;
 
 const ScanPage = lazy(() => import('./pages/scan/Scan'));
+const SelfScan = lazy(() => import('./pages/scan/SelfScan'));
 
 function isNumeric(v?: string) {
   return v && /^[1-9]\d*$/.test(v);
@@ -54,7 +56,11 @@ const getNumericParams = (params: Params) => {
 
 function RootPage() {
   const {pathname} = useLocation();
-  const bottomNavVisible = pathname !== '/scan' && pathname !== '/auth/redirect';
+  const bottomNavVisible =
+    pathname !== '/scan' &&
+    pathname !== '/selfscan' &&
+    pathname !== '/auth/redirect' &&
+    !pathname.startsWith('/checkin-confirmation/');
 
   return (
     <>
@@ -126,8 +132,27 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/selfscan',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <SelfScan />
+          </Suspense>
+        ),
+      },
+      {
         path: '/auth/redirect',
         element: <AuthRedirectPage />,
+      },
+      {
+        path: '/checkin-confirmation/:eventId/:regformId/:participantId',
+        element: <CheckinConfirmation />,
+        loader: async ({params}) => {
+          const {eventId, regformId, participantId} = getNumericParams(params);
+          const event = await getEvent(eventId);
+          const regform = await getRegform({id: regformId, eventId});
+          const participant = await getParticipant({id: participantId, regformId});
+          return {event, regform, participant};
+        },
       },
     ],
   },
