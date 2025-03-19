@@ -1,5 +1,6 @@
 import Dexie, {type EntityTable} from 'dexie';
 import {useLiveQuery} from 'dexie-react-hooks';
+import {CheckType} from '../Components/CheckTypeDropdown';
 import {FieldProps} from '../pages/participant/fields';
 import {IndicoEvent, IndicoParticipant, IndicoRegform} from '../utils/client';
 import {deepEqual} from '../utils/deep_equal';
@@ -25,6 +26,8 @@ export interface _Event {
   baseUrl: string;
   title: string;
   date: string;
+  defaultCheckType: CheckType;
+  checkTypes: CheckType[];
 }
 
 export interface Event extends _Event {
@@ -87,6 +90,8 @@ interface _Participant {
   checkinSecret: string;
   checkedIn: boolean;
   checkedInDt?: string;
+  checkedOut: boolean;
+  checkedOutDt?: string;
   occupiedSlots: number;
   price: number;
   currency: string;
@@ -96,7 +101,7 @@ interface _Participant {
 
 export interface Participant extends _Participant {
   id: number;
-  checkedInLoading: IDBBoolean; // 1 (true) while the request to check in is in progress
+  checkedStateLoading: IDBBoolean; // 1 (true) while the request to check in is in progress
   deleted: IDBBoolean;
   notes: string;
   isPaidLoading: IDBBoolean; // 1 (true) while the request to mark as (un)paid is in progress
@@ -133,6 +138,24 @@ class IndicoCheckin extends Dexie {
       participants:
         'id++, indicoId, regformId, deleted, checkinSecret, checkedInLoading, isPaidLoading, [id+regformId], [indicoId+regformId], [regformId+deleted]',
     });
+    this.version(3)
+      .stores({
+        servers: 'id++, baseUrl, clientId',
+        events: 'id++, indicoId, serverId, deleted, [indicoId+serverId]',
+        regforms:
+          'id++, indicoId, eventId, deleted, [id+eventId], [indicoId+eventId], [eventId+deleted]',
+        participants:
+          'id++, indicoId, regformId, deleted, checkinSecret, checkedStateLoading, isPaidLoading, [id+regformId], [indicoId+regformId], [regformId+deleted]',
+      })
+      .upgrade(trans => {
+        return trans
+          .table('participants')
+          .toCollection()
+          .modify(participant => {
+            participant.checkedStateLoading = participant.checkedInLoading;
+            delete participant.checkedInLoading;
+          });
+      });
   }
 }
 
@@ -294,7 +317,7 @@ export async function addParticipant(participant: AddParticipant): Promise<numbe
   const data = {
     ...participant,
     deleted: (participant.deleted ? 1 : 0) as IDBBoolean,
-    checkedInLoading: 0 as IDBBoolean,
+    checkedStateLoading: 0 as IDBBoolean,
     notes: participant.notes || '',
     isPaidLoading: 0 as IDBBoolean,
   };
@@ -330,7 +353,7 @@ export async function addParticipantIfNotExists(data: AddParticipant): Promise<n
 export async function addParticipants(data: AddParticipant[]) {
   const participants = data.map(p => ({
     ...p,
-    checkedInLoading: 0 as IDBBoolean,
+    checkedStateLoading: 0 as IDBBoolean,
     deleted: (p.deleted ? 1 : 0) as IDBBoolean,
     notes: p.notes || '',
     isPaidLoading: 0 as IDBBoolean,
