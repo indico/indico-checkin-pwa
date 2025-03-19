@@ -8,6 +8,7 @@ import QrScannerPlugin, {
 import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
+import useCheckTypes from '../../hooks/useCheckTypes';
 import {useHandleError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
@@ -26,6 +27,7 @@ export default function ScanPage() {
   const handleError = useHandleError();
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
+  const {checkTypes} = useCheckTypes();
 
   async function processCode(decodedText: string) {
     if (processing) {
@@ -63,7 +65,14 @@ export default function ScanPage() {
     const parsedData = parseQRCodeParticipantData(scannedData);
     if (parsedData) {
       try {
-        await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
+        await handleParticipant(
+          parsedData,
+          errorModal,
+          handleError,
+          navigate,
+          autoCheckin,
+          checkTypes
+        );
       } catch (e) {
         handleError(e, 'Error processing QR code');
       }
