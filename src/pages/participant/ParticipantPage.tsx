@@ -99,15 +99,15 @@ function ParticipantPageContent({
   const navigate = useNavigate();
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
-  const {soundEffect, hapticFeedback, strictCheckin, checkoutEnabled} = useSettings();
+  const {soundEffect, hapticFeedback, strictCheckIn, checkOutEnabled} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(
-    !!state?.fromScan && !!participant?.checkedIn && !checkoutEnabled
+    !!state?.fromScan && !!participant?.checkedIn && !checkOutEnabled
   );
   const showCheckedOutWarning = useRef<boolean>(
-    !!state?.fromScan && !!participant?.checkedOut && checkoutEnabled
+    !!state?.fromScan && !!participant?.checkedOut && checkOutEnabled
   );
   const handleError = useHandleError();
   const {checkTypes} = useCheckTypes();
@@ -208,10 +208,10 @@ function ParticipantPageContent({
       setAutoCheckin(false);
       if (
         autoCheckin &&
-        ((!participant.checkedIn && !checkoutEnabled) ||
-          (!participant.checkedOut && checkoutEnabled))
+        ((!participant.checkedIn && !checkOutEnabled) ||
+          (!participant.checkedOut && checkOutEnabled))
       ) {
-        if (strictCheckin && participant.state !== 'complete') {
+        if (strictCheckIn && participant.state !== 'complete') {
           errorModal({
             title: 'Registration incomplete',
             content:
@@ -219,7 +219,7 @@ function ParticipantPageContent({
           });
           return;
         }
-        await performCheckInOrOut(event, regform, participant, true, checkoutEnabled, checktype);
+        await performCheckInOrOut(event, regform, participant, true, checkOutEnabled, checktype);
       } else {
         await syncEvent(event, controller.signal, handleError);
         await syncRegform(event, regform, controller.signal, handleError, checktype.id);
@@ -247,8 +247,8 @@ function ParticipantPageContent({
     autoCheckin,
     offline,
     ownCheckType,
-    strictCheckin,
-    checkoutEnabled,
+    strictCheckIn,
+    checkOutEnabled,
     performCheckInOrOut,
   ]);
 
@@ -272,7 +272,7 @@ function ParticipantPageContent({
       return;
     }
 
-    if (strictCheckin && participant.state !== 'complete') {
+    if (strictCheckIn && participant.state !== 'complete') {
       errorModal({
         title: 'Registration incomplete',
         content:
@@ -356,7 +356,7 @@ function ParticipantPageContent({
             <span className={`w-fit text-sm font-medium text-gray-500 dark:text-gray-400`}>
               Check: {ownCheckType ? ownCheckType.title : event.defaultCheckType.title}
             </span>
-            {checkoutEnabled ? (
+            {checkOutEnabled ? (
               <CheckStateToggle
                 checked={participant.checkedOut}
                 isLoading={!!participant.checkedStateLoading}

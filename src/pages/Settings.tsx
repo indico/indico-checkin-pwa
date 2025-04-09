@@ -35,10 +35,10 @@ function MainSettings() {
     setSoundEffect,
     hapticFeedback,
     setHapticFeedback,
-    strictCheckin,
-    setStrictCheckin,
-    checkoutEnabled,
-    setCheckoutEnabled,
+    strictCheckIn,
+    setstrictCheckIn,
+    checkOutEnabled,
+    setcheckOutEnabled,
   } = useSettings();
 
   const toggleDarkMode = () => {
@@ -64,14 +64,14 @@ function MainSettings() {
     playSound(v);
   };
 
-  const toggleStrictCheckin = () => {
-    localStorage.setItem('strictCheckin', (!strictCheckin).toString());
-    setStrictCheckin(!strictCheckin);
+  const toggleStrictCheckIn = () => {
+    localStorage.setItem('strictCheckIn', (!strictCheckIn).toString());
+    setstrictCheckIn(!strictCheckIn);
   };
 
-  const toggleCheckoutEnabled = () => {
-    localStorage.setItem('checkoutEnabled', (!checkoutEnabled).toString());
-    setCheckoutEnabled(!checkoutEnabled);
+  const toggleCheckOutEnabled = () => {
+    localStorage.setItem('checkOutEnabled', (!checkOutEnabled).toString());
+    setcheckOutEnabled(!checkOutEnabled);
   };
 
   return (
@@ -86,8 +86,8 @@ function MainSettings() {
         <SettingToggle
           title="Require registration completion"
           description="If enabled, only completed (approved/paid) registrations can be checked in"
-          checked={strictCheckin}
-          onToggle={toggleStrictCheckin}
+          checked={strictCheckIn}
+          onToggle={toggleStrictCheckIn}
         />
         <SettingDropdown
           title="Check-in sound effect"
@@ -105,9 +105,9 @@ function MainSettings() {
       <SettingsSection title="Check-out">
         <SettingToggle
           title="Check-out"
-          description="Use this app for check-out instead."
-          checked={checkoutEnabled}
-          onToggle={toggleCheckoutEnabled}
+          description="Use this app for check-out instead"
+          checked={checkOutEnabled}
+          onToggle={toggleCheckOutEnabled}
         />
       </SettingsSection>
       <SettingsSection title="Appearance">

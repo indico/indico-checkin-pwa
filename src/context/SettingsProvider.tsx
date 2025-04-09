@@ -9,10 +9,10 @@ interface SettingsContextProps {
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
-  strictCheckin: boolean;
-  setStrictCheckin: (v: boolean) => void;
-  checkoutEnabled: boolean;
-  setCheckoutEnabled: (v: boolean) => void;
+  strictCheckIn: boolean;
+  setstrictCheckIn: (v: boolean) => void;
+  checkOutEnabled: boolean;
+  setcheckOutEnabled: (v: boolean) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -24,10 +24,10 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
-  strictCheckin: false,
-  setStrictCheckin: () => {},
-  checkoutEnabled: false,
-  setCheckoutEnabled: () => {},
+  strictCheckIn: false,
+  setstrictCheckIn: () => {},
+  checkOutEnabled: false,
+  setcheckOutEnabled: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -47,11 +47,11 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
-  const storedStrictCheckin = JSON.parse(localStorage.getItem('strictCheckin') || 'false');
-  const [strictCheckin, setStrictCheckin] = useState(storedStrictCheckin);
+  const storedstrictCheckIn = JSON.parse(localStorage.getItem('strictCheckIn') || 'false');
+  const [strictCheckIn, setstrictCheckIn] = useState(storedstrictCheckIn);
 
-  const storedCheckoutEnabled = JSON.parse(localStorage.getItem('checkoutEnabled') || 'false');
-  const [checkoutEnabled, setCheckoutEnabled] = useState(storedCheckoutEnabled);
+  const storedcheckOutEnabled = JSON.parse(localStorage.getItem('checkOutEnabled') || 'false');
+  const [checkOutEnabled, setcheckOutEnabled] = useState(storedcheckOutEnabled);
 
   return (
     <SettingsContext.Provider
@@ -64,10 +64,10 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setSoundEffect,
         hapticFeedback,
         setHapticFeedback,
-        strictCheckin,
-        setStrictCheckin,
-        checkoutEnabled,
-        setCheckoutEnabled,
+        strictCheckIn,
+        setstrictCheckIn,
+        checkOutEnabled,
+        setcheckOutEnabled,
       }}
     >
       {children}

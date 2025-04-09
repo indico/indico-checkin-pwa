@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {useLoaderData, useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
-import EventCheckTypeDropdown from '../../Components/CheckTypeDropdown';
+import EventCheckInTypeDropdown from '../../Components/CheckTypeDropdown';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
@@ -59,8 +59,7 @@ function EventPageContent({
   const navigate = useNavigate();
   const handleError = useHandleError();
   const {checkTypes, setCheckTypes} = useCheckTypes();
-  const ownCheckType_ =
-    checkTypes && checkTypes[eventId] ? checkTypes[eventId] : event?.defaultCheckType;
+  const ownCheckType_ = checkTypes?.[eventId] ?? event?.defaultCheckType;
   const [ownCheckType, setOwnCheckType] = useState(ownCheckType_);
 
   useEffect(() => {
@@ -158,7 +157,7 @@ function EventPageContent({
         >
           {formatDatetime(event.date)}
         </span>
-        <EventCheckTypeDropdown
+        <EventCheckInTypeDropdown
           values={event.checkTypes}
           selected={ownCheckType ?? event.defaultCheckType}
           onChange={c => {

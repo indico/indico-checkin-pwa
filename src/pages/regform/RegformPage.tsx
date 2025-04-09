@@ -142,8 +142,7 @@ function RegformPageContent({
       if (!event || !regform) {
         return;
       }
-      const ownCheckType =
-        checkTypes && checkTypes[eventId] ? checkTypes[eventId] : event?.defaultCheckType;
+      const ownCheckType = checkTypes?.[eventId] ?? event?.defaultCheckType;
 
       await syncEvent(event, controller.signal, handleError);
       await syncRegform(event, regform, controller.signal, handleError, ownCheckType?.id);
