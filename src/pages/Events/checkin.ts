@@ -4,7 +4,7 @@ import {checkInParticipant, checkOutParticipant} from '../../utils/client';
 import {playVibration} from '../../utils/haptics';
 import {playSound} from '../../utils/sound';
 
-async function resetcheckedStateLoading(participant: Participant) {
+async function resetCheckedStateLoading(participant: Participant) {
   await db.participants.update(participant.id, {checkedStateLoading: 0});
 }
 
@@ -14,7 +14,7 @@ async function updateCheckinState(
   newCheckInState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
-    await resetcheckedStateLoading(participant);
+    await resetCheckedStateLoading(participant);
     await db.participants.update(participant.id, {
       checkedIn: newCheckInState,
       checkedStateLoading: 0,
@@ -31,7 +31,7 @@ async function updateCheckoutState(
   newCheckOutState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
-    await resetcheckedStateLoading(participant);
+    await resetCheckedStateLoading(participant);
     await db.participants.update(participant.id, {
       checkedOut: newCheckOutState,
       checkedStateLoading: 0,
@@ -79,7 +79,7 @@ export async function CheckInOrOut(
       }
     }
   } else {
-    await resetcheckedStateLoading(participant);
+    await resetCheckedStateLoading(participant);
     handleError(response, 'Something went wrong when updating check-in status');
   }
 }

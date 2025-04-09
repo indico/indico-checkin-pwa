@@ -7,13 +7,13 @@ export interface CheckType {
   title: string;
 }
 
-interface EventCheckTypeDropdownProps {
+interface EventCheckInTypeDropdownProps {
   values: CheckType[];
   selected: CheckType;
   onChange: (v: CheckType) => void;
 }
 
-function EventCheckTypeDropdown({values, selected, onChange}: EventCheckTypeDropdownProps) {
+function EventCheckInTypeDropdown({values, selected, onChange}: EventCheckInTypeDropdownProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -54,4 +54,4 @@ function EventCheckTypeDropdown({values, selected, onChange}: EventCheckTypeDrop
   );
 }
 
-export default EventCheckTypeDropdown;
+export default EventCheckInTypeDropdown;
