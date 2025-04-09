@@ -46,7 +46,7 @@ export async function CheckInOrOut(
   event: Event,
   regform: Regform,
   participant: Participant,
-  newCheckState: boolean,
+  newCheckInState: boolean,
   sound: string,
   hapticFeedback: boolean,
   handleError: HandleError,
@@ -62,17 +62,17 @@ export async function CheckInOrOut(
       regformId: regform.indicoId,
       participantId: participant.indicoId,
     },
-    newCheckState,
+    newCheckInState,
     checkTypeId
   );
 
   if (response.ok) {
     if (checkOut) {
-      await updateCheckoutState(regform, participant, newCheckState);
+      await updateCheckoutState(regform, participant, newCheckInState);
     } else {
-      await updateCheckinState(regform, participant, newCheckState);
+      await updateCheckinState(regform, participant, newCheckInState);
     }
-    if (newCheckState) {
+    if (newCheckInState) {
       playSound(sound);
       if (hapticFeedback) {
         playVibration.success();
