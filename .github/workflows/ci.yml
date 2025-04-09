@@ -58,7 +58,7 @@ jobs:
           mkdir -p ./lighthouse
           echo "${{ github.event.number }}" >> ./lighthouse/pull-request-id
           echo "${{ steps.lhci.outputs.report_url }}" >> ./lighthouse/report-url
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: lighthouse
           path: lighthouse/
