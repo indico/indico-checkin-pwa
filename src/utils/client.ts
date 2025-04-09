@@ -173,10 +173,11 @@ export async function getRegforms(
   checkTypeId?: number,
   options?: object
 ) {
-  const url = checkTypeId
-    ? `api/checkin/event/${eventId}/forms/?check_type_id=${checkTypeId}`
-    : `api/checkin/event/${eventId}/forms/`;
-  return makeRequest<IndicoRegform[]>(serverId, url, options);
+  return makeRequest<IndicoRegform[]>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${checkTypeId ? `?check_type_id=${checkTypeId}` : ''}`,
+    options
+  );
 }
 
 export async function getRegform(
@@ -184,10 +185,13 @@ export async function getRegform(
   checkTypeId?: number,
   options?: object
 ) {
-  const url = checkTypeId
-    ? `api/checkin/event/${eventId}/forms/${regformId}/?check_type_id=${checkTypeId}`
-    : `api/checkin/event/${eventId}/forms/${regformId}/`;
-  return makeRequest<IndicoRegform>(serverId, url, options);
+  return makeRequest<IndicoRegform>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${regformId}/${
+      checkTypeId ? `check_type_id=${checkTypeId}` : ''
+    }`,
+    options
+  );
 }
 
 export async function getParticipants(
@@ -195,10 +199,13 @@ export async function getParticipants(
   checkTypeId?: number,
   options?: object
 ) {
-  const url = checkTypeId
-    ? `api/checkin/event/${eventId}/forms/${regformId}/registrations/?check_type_id=${checkTypeId}`
-    : `api/checkin/event/${eventId}/forms/${regformId}/registrations/`;
-  return makeRequest<IndicoParticipantList>(serverId, url, options);
+  return makeRequest<IndicoParticipantList>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${
+      checkTypeId ? `?check_type_id=${checkTypeId}` : ''
+    }`,
+    options
+  );
 }
 
 export async function getParticipant(
@@ -206,10 +213,13 @@ export async function getParticipant(
   checkTypeId?: number,
   options?: object
 ) {
-  const url = checkTypeId
-    ? `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}?check_type_id=${checkTypeId}`
-    : `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}/`;
-  return makeRequest<IndicoParticipant>(serverId, url, options);
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}/${
+      checkTypeId ? `?check_type_id=${checkTypeId}` : ''
+    }`,
+    options
+  );
 }
 
 export async function getParticipantByUuid(
@@ -217,10 +227,11 @@ export async function getParticipantByUuid(
   checkTypeId?: number,
   options?: object
 ) {
-  const url = checkTypeId
-    ? `api/checkin/ticket/${uuid}?check_type_id=${checkTypeId}`
-    : `api/checkin/ticket/${uuid}`;
-  return makeRequest<IndicoParticipant>(serverId, url, options);
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/ticket/${uuid}${checkTypeId ? `?check_type_id=${checkTypeId}` : ''}`,
+    options
+  );
 }
 
 export async function checkInParticipant(
