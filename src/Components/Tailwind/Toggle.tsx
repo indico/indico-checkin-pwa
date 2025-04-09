@@ -61,21 +61,21 @@ export const Toggle = ({
   );
 };
 
-interface CheckStateToggleProps {
+interface CheckInStateToggleProps {
   checked: boolean;
   isLoading: boolean;
-  checkState: string;
+  checkInState: string;
   label: string;
   onClick: () => void;
 }
 
-export const CheckStateToggle = ({
+export const CheckInStateToggle = ({
   checked,
   isLoading,
-  checkState,
+  checkInState,
   label,
   onClick,
-}: CheckStateToggleProps) => {
+}: CheckInStateToggleProps) => {
   return (
     <label
       style={{WebkitTapHighlightColor: 'transparent'}}
@@ -114,7 +114,7 @@ export const CheckStateToggle = ({
                           checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                         }`}
           >
-            <span className="pl-1 text-white dark:text-gray-200">{checkState}</span>
+            <span className="pl-1 text-white dark:text-gray-200">{checkInState}</span>
           </div>
           <div className="absolute bottom-[20%] left-0 right-0 top-[20%] z-[1] flex items-center justify-end">
             <span className="pr-4 text-gray-800 dark:text-gray-200">{label}</span>

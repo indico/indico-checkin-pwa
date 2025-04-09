@@ -14,7 +14,7 @@ import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
-import {CheckStateToggle} from '../../Components/Tailwind/Toggle';
+import {CheckInStateToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
 import db, {
   Event,
@@ -164,7 +164,7 @@ function ParticipantPageContent({
       event: Event,
       regform: Regform,
       participant: Participant,
-      newCheckState: boolean,
+      newCheckInState: boolean,
       checkOut: boolean = false,
       checkType: CheckType
     ) => {
@@ -178,7 +178,7 @@ function ParticipantPageContent({
           event,
           regform,
           participant,
-          newCheckState,
+          newCheckInState,
           soundEffect,
           hapticFeedback,
           handleError,
@@ -267,7 +267,7 @@ function ParticipantPageContent({
     });
   };
 
-  const onCheckStateToggle = async (checkOut: boolean) => {
+  const onCheckInStateToggle = async (checkOut: boolean) => {
     if (!event || !regform || !participant) {
       return;
     }
@@ -357,20 +357,20 @@ function ParticipantPageContent({
               Check: {ownCheckType ? ownCheckType.title : event.defaultCheckType.title}
             </span>
             {checkOutEnabled ? (
-              <CheckStateToggle
+              <CheckInStateToggle
                 checked={participant.checkedOut}
                 isLoading={!!participant.checkedStateLoading}
-                checkState="Checked out"
+                checkInState="Checked out"
                 label="Check out"
-                onClick={() => onCheckStateToggle(true)}
+                onClick={() => onCheckInStateToggle(true)}
               />
             ) : (
-              <CheckStateToggle
+              <CheckInStateToggle
                 checked={participant.checkedIn}
                 isLoading={!!participant.checkedStateLoading}
-                checkState="Checked in"
+                checkInState="Checked in"
                 label="Check in"
-                onClick={() => onCheckStateToggle(false)}
+                onClick={() => onCheckInStateToggle(false)}
               />
             )}
           </div>
