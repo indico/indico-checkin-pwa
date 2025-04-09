@@ -51,6 +51,8 @@ interface _IndicoParticipant {
   registrationDate: string;
   checkedIn: boolean;
   checkedInDt?: string;
+  checkedOut: boolean;
+  checkedOutDt?: string;
   checkinSecret: string;
   occupiedSlots: number;
   registrationData: RegistrationData[];
@@ -147,9 +149,15 @@ async function makeRequest<T>(
     }
     return {ok: false, endpoint, options, err: e, description: 'response.json() failed'};
   }
-
   if (!response.ok) {
-    return {ok: false, status: response.status, endpoint, options, data};
+    return {
+      ok: false,
+      status: response.status,
+      err: data.error?.message,
+      endpoint,
+      options,
+      data,
+    };
   }
 
   data = camelizeKeys(data);
@@ -160,57 +168,98 @@ export async function getEvent({serverId, eventId}: EventLocator, options?: obje
   return makeRequest<IndicoEvent>(serverId, `api/checkin/event/${eventId}/`, options);
 }
 
-export async function getRegforms({serverId, eventId}: EventLocator, options?: object) {
-  return makeRequest<IndicoRegform[]>(serverId, `api/checkin/event/${eventId}/forms/`, options);
+export async function getRegforms(
+  {serverId, eventId}: EventLocator,
+  checkTypeId?: number,
+  options?: object
+) {
+  return makeRequest<IndicoRegform[]>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${checkTypeId ? `?check_type_id=${checkTypeId}` : ''}`,
+    options
+  );
 }
 
-export async function getRegform({serverId, eventId, regformId}: RegformLocator, options?: object) {
+export async function getRegform(
+  {serverId, eventId, regformId}: RegformLocator,
+  checkTypeId?: number,
+  options?: object
+) {
   return makeRequest<IndicoRegform>(
     serverId,
-    `api/checkin/event/${eventId}/forms/${regformId}/`,
+    `api/checkin/event/${eventId}/forms/${regformId}/${
+      checkTypeId ? `check_type_id=${checkTypeId}` : ''
+    }`,
     options
   );
 }
 
 export async function getParticipants(
   {serverId, eventId, regformId}: RegformLocator,
+  checkTypeId?: number,
   options?: object
 ) {
   return makeRequest<IndicoParticipantList>(
     serverId,
-    `api/checkin/event/${eventId}/forms/${regformId}/registrations/`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${
+      checkTypeId ? `?check_type_id=${checkTypeId}` : ''
+    }`,
     options
   );
 }
 
 export async function getParticipant(
   {serverId, eventId, regformId, participantId}: ParticipantLocator,
+  checkTypeId?: number,
   options?: object
 ) {
   return makeRequest<IndicoParticipant>(
     serverId,
-    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}/${
+      checkTypeId ? `?check_type_id=${checkTypeId}` : ''
+    }`,
     options
   );
 }
 
 export async function getParticipantByUuid(
   {serverId, uuid}: {serverId: number; uuid: string},
+  checkTypeId?: number,
   options?: object
 ) {
-  return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/${uuid}`, options);
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/ticket/${uuid}${checkTypeId ? `?check_type_id=${checkTypeId}` : ''}`,
+    options
+  );
 }
 
 export async function checkInParticipant(
   {serverId, eventId, regformId, participantId}: ParticipantLocator,
-  checkInState: boolean
+  checkInState: boolean,
+  checkTypeId?: number
 ) {
   return makeRequest<IndicoParticipant>(
     serverId,
     `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
     {
       method: 'PATCH',
-      body: JSON.stringify({checked_in: checkInState}),
+      body: JSON.stringify({checked_in: checkInState, check_type_id: checkTypeId}),
+    }
+  );
+}
+
+export async function checkOutParticipant(
+  {serverId, eventId, regformId, participantId}: ParticipantLocator,
+  checkOutState: boolean,
+  checkTypeId?: number
+) {
+  return makeRequest<IndicoParticipant>(
+    serverId,
+    `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({checked_out: checkOutState, check_type_id: checkTypeId}),
     }
   );
 }

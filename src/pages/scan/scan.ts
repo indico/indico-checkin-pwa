@@ -1,5 +1,6 @@
 import {NavigateFunction} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
+import {EventCheckTypesMap} from '../../context/CheckTypeProvider';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
 import db, {
   addEventIfNotExists,
@@ -85,7 +86,8 @@ export async function handleParticipant(
   errorModal: ErrorModalFunction,
   handleError: HandleError,
   navigate: NavigateFunction,
-  autoCheckin: boolean
+  autoCheckin: boolean,
+  checkTypes: EventCheckTypesMap
 ) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
@@ -96,10 +98,13 @@ export async function handleParticipant(
     return;
   }
 
-  const response = await getParticipant({
-    serverId: server.id,
-    uuid: data.checkinSecret ?? '',
-  });
+  let response = await getParticipant(
+    {
+      serverId: server.id,
+      uuid: data.checkinSecret ?? '',
+    },
+    2
+  );
 
   if (response.ok) {
     const {id, eventId, regformId, ...rest} = response.data;
@@ -110,6 +115,23 @@ export async function handleParticipant(
         content: 'Scan an event QR code first and try again.',
       });
       return;
+    }
+
+    // Remove comment: Maybe a better option would have been the include the eventId in the QR code so that
+    // I can use it to get the checkTypeId and not need to get the participant twice???
+    // but I didn't want to change/increase the size of the QR code.
+    const eventCheckType = checkTypes && checkTypes[eventId] ? checkTypes[eventId] : undefined;
+    if (eventCheckType?.id !== event.defaultCheckType?.id) {
+      response = await getParticipant(
+        {
+          serverId: server.id,
+          uuid: data.checkinSecret ?? '',
+        },
+        eventCheckType?.id
+      );
+      if (!response.ok) {
+        handleError(response, 'Could not fetch participant data');
+      }
     }
 
     const regform = await db.regforms.get({indicoId: regformId, eventId: event.id});

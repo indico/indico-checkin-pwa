@@ -9,6 +9,10 @@ interface SettingsContextProps {
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
+  strictCheckIn: boolean;
+  setstrictCheckIn: (v: boolean) => void;
+  checkOutEnabled: boolean;
+  setcheckOutEnabled: (v: boolean) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -20,6 +24,10 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
+  strictCheckIn: false,
+  setstrictCheckIn: () => {},
+  checkOutEnabled: false,
+  setcheckOutEnabled: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -39,6 +47,12 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
+  const storedstrictCheckIn = JSON.parse(localStorage.getItem('strictCheckIn') || 'false');
+  const [strictCheckIn, setstrictCheckIn] = useState(storedstrictCheckIn);
+
+  const storedcheckOutEnabled = JSON.parse(localStorage.getItem('checkOutEnabled') || 'false');
+  const [checkOutEnabled, setcheckOutEnabled] = useState(storedcheckOutEnabled);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -50,6 +64,10 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setSoundEffect,
         hapticFeedback,
         setHapticFeedback,
+        strictCheckIn,
+        setstrictCheckIn,
+        checkOutEnabled,
+        setcheckOutEnabled,
       }}
     >
       {children}

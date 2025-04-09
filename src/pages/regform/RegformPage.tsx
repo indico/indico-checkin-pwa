@@ -24,6 +24,7 @@ import {
   useLiveParticipants,
   useLiveRegform,
 } from '../../db/db';
+import useCheckTypes from '../../hooks/useCheckTypes';
 import {useHandleError} from '../../hooks/useError';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {wait} from '../../utils/wait';
@@ -90,6 +91,7 @@ function RegformPageContent({
     searchValue: savedFilters?.searchValue || '',
     filters: savedFilters?.filters || makeDefaultFilterState(),
   });
+  const {checkTypes} = useCheckTypes();
 
   const setSearchData = (data: SearchData) => {
     _setSearchData(data);
@@ -106,10 +108,11 @@ function RegformPageContent({
       if (!event || !regform) {
         return;
       }
+      const ownCheckType = checkTypes?.[eventId] ?? event?.defaultCheckType;
 
       await syncEvent(event, controller.signal, handleError);
-      await syncRegform(event, regform, controller.signal, handleError);
-      await syncParticipants(event, regform, controller.signal, handleError);
+      await syncRegform(event, regform, controller.signal, handleError, ownCheckType?.id);
+      await syncParticipants(event, regform, controller.signal, handleError, ownCheckType?.id);
     }
 
     async function sync() {
