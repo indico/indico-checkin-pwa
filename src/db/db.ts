@@ -75,6 +75,12 @@ export interface RegistrationData {
 
 export type RegistrationState = 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
 
+export interface RegistrationTag {
+  id: number;
+  title: string;
+  color: string;
+}
+
 interface _Participant {
   indicoId: number;
   regformId: number;
@@ -92,6 +98,7 @@ interface _Participant {
   currency: string;
   formattedPrice: string;
   isPaid: boolean;
+  tags: string[] | RegistrationTag[];
 }
 
 export interface Participant extends _Participant {

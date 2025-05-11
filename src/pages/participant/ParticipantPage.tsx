@@ -41,6 +41,7 @@ import AccompanyingPersons from './AccompanyingPersons';
 import {Field, Section, getAccompanyingPersons} from './fields';
 import {PaymentWarning, markAsUnpaid} from './payment';
 import {RegistrationState} from './RegistrationState';
+import {RegistrationTag} from './RegistrationTag';
 
 const debounce = makeDebounce(300);
 
@@ -253,6 +254,9 @@ function ParticipantPageContent({
             />
             <div className="flex flex-wrap items-center justify-center gap-2">
               <RegistrationState state={participant.state} />
+              {participant.tags.map(tag => (
+                <RegistrationTag key={typeof tag === 'string' ? tag : tag.id} tag={tag} />
+              ))}
               {participant.price > 0 && (
                 <span
                   className="w-fit rounded-full bg-purple-100 px-2.5 py-1 text-sm font-medium
