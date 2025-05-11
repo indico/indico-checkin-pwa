@@ -4,10 +4,10 @@ export function RegistrationTag({tag}: {tag: _RegistrationTag | string}) {
   let title: string, color: string, colorClasses: string;
   if (typeof tag === 'string') {
     title = tag;
-    color = 'gray';
+    color = 'grey';
   } else {
     title = tag.title;
-    color = tag.color;
+    color = tag.color || 'grey';
   }
   /**
    * We must translate the SUI color to Tailwind CSS classes. Class names must be fully

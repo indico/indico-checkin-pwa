@@ -1,11 +1,28 @@
 import {ReactNode} from 'react';
 import {FunnelIcon as FunnelIconOutline} from '@heroicons/react/24/outline';
 import {FunnelIcon, XMarkIcon, ArrowUpIcon, CheckIcon} from '@heroicons/react/24/solid';
+import {RegistrationTag, RegistrationTagColor} from '../../db/db';
 import {titleCase} from '../../utils/case';
 import Button from './Button';
 import Typography from './Typography';
 
 const registrationStates = ['complete', 'pending', 'unpaid', 'rejected', 'withdrawn'];
+
+const tagColorClasses: Record<RegistrationTagColor, string> = {
+  red: 'bg-red-500',
+  green: 'bg-green-500',
+  blue: 'bg-blue-500',
+  yellow: 'bg-yellow-500',
+  purple: 'bg-purple-500',
+  pink: 'bg-pink-500',
+  orange: 'bg-orange-500',
+  violet: 'bg-violet-500',
+  teal: 'bg-teal-500',
+  olive: 'bg-lime-300',
+  brown: 'bg-amber-900',
+  grey: 'bg-neutral-500',
+  black: 'bg-stone-950',
+};
 
 export type RegistrationState = 'complete' | 'pending' | 'unpaid' | 'rejected' | 'withdrawn';
 
@@ -22,6 +39,8 @@ interface RegistrationStateFilterData {
   withdrawn: boolean;
 }
 
+type RegistrationTagsFilterData = Record<number, boolean>;
+
 type SortKey = 'fullName' | 'registrationDate';
 
 interface SortFilterData {
@@ -32,6 +51,7 @@ interface SortFilterData {
 export interface Filters {
   checkedIn: CheckedInFilterData;
   state: RegistrationStateFilterData;
+  tags: RegistrationTagsFilterData;
   sortBy: SortFilterData;
 }
 
@@ -45,6 +65,7 @@ export function makeDefaultFilterState() {
       rejected: false,
       withdrawn: false,
     },
+    tags: {},
     sortBy: {key: 'fullName' as SortKey, ascending: true},
   };
 }
@@ -64,12 +85,14 @@ export function ParticipantFilters({
   filters,
   setFilters,
   onClose,
+  registrationTags,
 }: {
   filters: Filters;
   setFilters: (v: Filters) => void;
   onClose: () => void;
+  registrationTags: RegistrationTag[];
 }) {
-  const {checkedIn, state, sortBy} = filters;
+  const {checkedIn, state, tags, sortBy} = filters;
   const reset = () => setFilters(makeDefaultFilterState());
 
   return (
@@ -93,6 +116,11 @@ export function ParticipantFilters({
           onChange={v => setFilters({...filters, checkedIn: v})}
         />
         <RegistrationStateFilter state={state} onChange={v => setFilters({...filters, state: v})} />
+        <RegistrationTagsFilter
+          tags={tags}
+          onChange={v => setFilters({...filters, tags: v})}
+          registrationTags={registrationTags}
+        />
         <SortFilter sortBy={sortBy} onChange={v => setFilters({...filters, sortBy: v})} />
         <div className="mt-6 flex justify-between">
           <Button onClick={onClose} className="basis-full justify-center" variant="success">
@@ -159,6 +187,45 @@ export function RegistrationStateFilter({
               onClick={() => onChange({...state, [s]: !active})}
             >
               {titleCase(s)}
+            </FilterButton>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function RegistrationTagsFilter({
+  tags,
+  onChange,
+  registrationTags,
+}: {
+  tags: RegistrationTagsFilterData;
+  onChange: (v: RegistrationTagsFilterData) => void;
+  registrationTags: RegistrationTag[];
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Typography variant="body3" className="font-semibold uppercase text-gray-500">
+        Tags
+      </Typography>
+      <div className="flex flex-wrap gap-2">
+        {registrationTags.map(t => {
+          const active = tags[t.id];
+          return (
+            <FilterButton
+              key={t.id}
+              active={active}
+              onClick={() => onChange({...tags, [t.id]: !active})}
+            >
+              {t.color && (
+                <div
+                  className={`mr-2 h-3 w-3 rounded-full border border-gray-700 ${
+                    tagColorClasses[t.color]
+                  }`}
+                />
+              )}
+              {t.title}
             </FilterButton>
           );
         })}
@@ -249,8 +316,8 @@ export function FilterButton({
       <button
         type="button"
         onClick={onClick}
-        className="flex rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-center text-sm
-                   font-medium text-white focus:outline-none dark:bg-blue-700 dark:text-gray-200"
+        className="flex items-center rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-center
+                   text-sm font-medium text-white focus:outline-none dark:bg-blue-700 dark:text-gray-200"
       >
         {children}
       </button>
@@ -260,7 +327,7 @@ export function FilterButton({
       <button
         type="button"
         onClick={onClick}
-        className="flex rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium
+        className="flex items-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium
                    text-gray-900 focus:outline-none dark:border-gray-900 dark:bg-gray-900 dark:text-gray-400"
       >
         {children}

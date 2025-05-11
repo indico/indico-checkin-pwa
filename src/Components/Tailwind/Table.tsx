@@ -8,7 +8,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import {Participant} from '../../db/db';
+import {Participant, RegistrationTag} from '../../db/db';
 import {
   Filters,
   ParticipantFilters,
@@ -32,10 +32,12 @@ export function TableFilters({
   searchData,
   setSearchData,
   resultCount,
+  registrationTags,
 }: {
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
   resultCount: number;
+  registrationTags: RegistrationTag[];
 }) {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const {filters, searchValue} = searchData;
@@ -61,6 +63,7 @@ export function TableFilters({
             filters={filters}
             setFilters={setFilters}
             onClose={() => setFiltersVisible(false)}
+            registrationTags={registrationTags}
           />
         </div>
       )}
@@ -77,11 +80,13 @@ export default function Table({
   participants,
   searchData,
   setSearchData: _setSearchData,
+  registrationTags,
   onRowClick,
 }: {
   participants: Participant[];
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
+  registrationTags: RegistrationTag[];
   onRowClick: (p: Participant) => void;
 }) {
   const defaultVisibleParticipants = getNumberVisibleParticipants();
@@ -96,7 +101,7 @@ export default function Table({
   };
 
   const filteredParticipants = useMemo(
-    () => filterParticipants(participants, searchData),
+    () => filterParticipants(participants, searchData, registrationTags),
     [participants, searchData]
   );
   const dummyRowHeight =
@@ -150,6 +155,7 @@ export default function Table({
         searchData={searchData}
         setSearchData={setSearchData}
         resultCount={filteredParticipants.length}
+        registrationTags={registrationTags}
       />
       <div className="mx-4 mt-2">
         {rows.length === 0 && (
@@ -199,7 +205,11 @@ const DummyRow = forwardRef(function DummyRow(
   );
 });
 
-function filterParticipants(participants: Participant[], data: SearchData) {
+function filterParticipants(
+  participants: Participant[],
+  data: SearchData,
+  registrationTags: RegistrationTag[]
+) {
   const {searchValue, filters} = data;
 
   return participants
@@ -216,9 +226,19 @@ function filterParticipants(participants: Participant[], data: SearchData) {
         .filter(([, v]) => v)
         .map(([k]) => k);
 
+      const tagValues = Object.entries(filters.tags)
+        .filter(([, v]) => v)
+        .map(([k]) => k);
+
       return (
         (checkedInValues.length === 0 || checkedInValues.includes(p.checkedIn)) &&
         (stateValues.length === 0 || stateValues.includes(p.state)) &&
+        (tagValues.length === 0 ||
+          p.tags.some(t => {
+            const tagId =
+              typeof t === 'string' ? registrationTags.find(r => r.title === t)?.id : t.id;
+            return tagId && tagValues.includes(tagId.toString());
+          })) &&
         p.fullName.toLowerCase().includes(searchValue)
       );
     })
@@ -361,10 +381,12 @@ export function TableSkeleton({
   searchData,
   setSearchData,
   participantCount,
+  registrationTags,
 }: {
   participantCount: number;
   searchData: SearchData;
   setSearchData: (data: SearchData) => void;
+  registrationTags: RegistrationTag[];
 }) {
   const rowsPerScreen = Math.ceil(window.innerHeight / ROW_HEIGHT_PX);
   const minRows = 2 * rowsPerScreen;
@@ -372,7 +394,12 @@ export function TableSkeleton({
 
   return (
     <div>
-      <TableFilters searchData={searchData} setSearchData={setSearchData} resultCount={0} />
+      <TableFilters
+        searchData={searchData}
+        setSearchData={setSearchData}
+        resultCount={0}
+        registrationTags={registrationTags}
+      />
       <div className="mx-4 mt-2">
         <table className="w-full overflow-hidden rounded-xl text-left text-sm text-gray-500 dark:text-gray-400">
           <tbody>
