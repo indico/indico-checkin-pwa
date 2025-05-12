@@ -254,9 +254,6 @@ function ParticipantPageContent({
             />
             <div className="flex flex-wrap items-center justify-center gap-2">
               <RegistrationState state={participant.state} />
-              {participant.tags.map(tag => (
-                <RegistrationTag key={typeof tag === 'string' ? tag : tag.id} tag={tag} />
-              ))}
               {participant.price > 0 && (
                 <span
                   className="w-fit rounded-full bg-purple-100 px-2.5 py-1 text-sm font-medium
@@ -265,6 +262,11 @@ function ParticipantPageContent({
                   {participant.formattedPrice}
                 </span>
               )}
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {participant.tags.map(tag => (
+                <RegistrationTag key={typeof tag === 'string' ? tag : tag.id} tag={tag} />
+              ))}
             </div>
           </div>
 
