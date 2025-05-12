@@ -62,8 +62,8 @@ export function RegistrationTag({tag}: {tag: _RegistrationTag | string}) {
 
   return (
     <span
-      className={`white-space-nowrap font-medißum w-fit overflow-hidden truncate rounded-full
-                  border px-2.5 py-1 text-sm ${colorClasses}`}
+      className={`white-space-nowrap w-fit overflow-hidden truncate rounded-full border
+                  px-2.5 py-1 text-sm font-medium ${colorClasses}`}
       style={{maxWidth: '80vw'}}
     >
       {title}

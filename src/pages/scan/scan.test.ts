@@ -31,6 +31,7 @@ const dummyEvent = {
   title: 'Dummy event',
   date: '2020-01-01',
   deleted: 0 as IDBBoolean,
+  registrationTags: [],
 };
 
 const dummyRegform = {
@@ -62,6 +63,7 @@ const dummyParticipant = {
   isPaidLoading: 0 as IDBBoolean,
   notes: '',
   deleted: 0 as IDBBoolean,
+  tags: [],
 };
 
 async function createDummyServer() {
