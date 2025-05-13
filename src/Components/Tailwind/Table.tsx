@@ -101,7 +101,7 @@ export default function Table({
   };
 
   const filteredParticipants = useMemo(
-    () => filterParticipants(participants, searchData, registrationTags),
+    () => filterParticipants(participants, searchData),
     [participants, searchData]
   );
   const dummyRowHeight =
@@ -205,11 +205,7 @@ const DummyRow = forwardRef(function DummyRow(
   );
 });
 
-function filterParticipants(
-  participants: Participant[],
-  data: SearchData,
-  registrationTags: RegistrationTag[]
-) {
+function filterParticipants(participants: Participant[], data: SearchData) {
   const {searchValue, filters} = data;
 
   return participants
@@ -234,11 +230,7 @@ function filterParticipants(
         (checkedInValues.length === 0 || checkedInValues.includes(p.checkedIn)) &&
         (stateValues.length === 0 || stateValues.includes(p.state)) &&
         (tagValues.length === 0 ||
-          p.tags.some(t => {
-            const tagId =
-              typeof t === 'string' ? registrationTags.find(r => r.title === t)?.id : t.id;
-            return tagId && tagValues.includes(tagId.toString());
-          })) &&
+          p.tags.some(t => tagValues.includes(typeof t === 'string' ? t : t.title))) &&
         p.fullName.toLowerCase().includes(searchValue)
       );
     })

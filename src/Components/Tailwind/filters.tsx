@@ -39,7 +39,7 @@ interface RegistrationStateFilterData {
   withdrawn: boolean;
 }
 
-type RegistrationTagsFilterData = Record<number, boolean>;
+type RegistrationTagsFilterData = Record<string, boolean>;
 
 type SortKey = 'fullName' | 'registrationDate';
 
@@ -211,12 +211,12 @@ export function RegistrationTagsFilter({
       </Typography>
       <div className="flex flex-wrap gap-2">
         {registrationTags.map(t => {
-          const active = tags[t.id];
+          const active = tags[t.title];
           return (
             <FilterButton
               key={t.id}
               active={active}
-              onClick={() => onChange({...tags, [t.id]: !active})}
+              onClick={() => onChange({...tags, [t.title]: !active})}
             >
               {t.color && (
                 <div
