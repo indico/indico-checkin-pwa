@@ -41,6 +41,7 @@ import AccompanyingPersons from './AccompanyingPersons';
 import {Field, Section, getAccompanyingPersons} from './fields';
 import {PaymentWarning, markAsUnpaid} from './payment';
 import {RegistrationState} from './RegistrationState';
+import {RegistrationTag} from './RegistrationTag';
 
 const debounce = makeDebounce(300);
 
@@ -261,6 +262,11 @@ function ParticipantPageContent({
                   {participant.formattedPrice}
                 </span>
               )}
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {participant.tags.map(tag => (
+                <RegistrationTag key={typeof tag === 'string' ? tag : tag.id} tag={tag} />
+              ))}
             </div>
           </div>
 

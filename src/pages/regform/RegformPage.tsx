@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useLoaderData, useNavigate} from 'react-router-dom';
 import {
   CalendarDaysIcon,
@@ -17,6 +17,7 @@ import {
   Event,
   Participant,
   Regform,
+  RegistrationTag,
   deleteRegform as _deleteRegform,
   getEvent,
   getRegform,
@@ -98,6 +99,28 @@ function RegformPageContent({
     localStorage.setItem('regforms', JSON.stringify(regforms));
   };
 
+  /**
+   * Get the registration tags from the props or the participants
+   */
+  const registrationTags = useMemo((): RegistrationTag[] => {
+    if (!event) {
+      return [];
+    } else if (event.registrationTags) {
+      return event.registrationTags;
+    } else if (!participants) {
+      return [];
+    }
+    return [
+      ...new Set(
+        participants.flatMap(({tags}): string[] =>
+          tags.every(t => typeof t === 'string') ? tags : []
+        )
+      ),
+    ]
+      .sort((a, b) => a.localeCompare(b))
+      .map((title, id): RegistrationTag => ({id, title}));
+  }, [event, participants]);
+
   useEffect(() => {
     const controller = new AbortController();
     async function _sync() {
@@ -160,6 +183,7 @@ function RegformPageContent({
             participantCount={participantCount}
             searchData={searchData}
             setSearchData={setSearchData}
+            registrationTags={registrationTags}
           />
         </div>
       )}
@@ -170,6 +194,7 @@ function RegformPageContent({
             participants={participants}
             searchData={searchData}
             setSearchData={setSearchData}
+            registrationTags={registrationTags}
             onRowClick={async (p: Participant) => {
               await wait(50);
               navigate(`/event/${event.id}/${regform.id}/${p.id}`, {state: {fromRegform: true}});

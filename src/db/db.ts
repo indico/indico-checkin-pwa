@@ -25,6 +25,7 @@ export interface _Event {
   baseUrl: string;
   title: string;
   date: string;
+  registrationTags?: RegistrationTag[];
 }
 
 export interface Event extends _Event {
@@ -75,6 +76,27 @@ export interface RegistrationData {
 
 export type RegistrationState = 'complete' | 'pending' | 'rejected' | 'withdrawn' | 'unpaid';
 
+export type RegistrationTagColor =
+  | 'red'
+  | 'green'
+  | 'blue'
+  | 'yellow'
+  | 'purple'
+  | 'pink'
+  | 'orange'
+  | 'violet'
+  | 'teal'
+  | 'olive'
+  | 'brown'
+  | 'black'
+  | 'grey';
+
+export interface RegistrationTag {
+  id: number;
+  title: string;
+  color?: RegistrationTagColor;
+}
+
 interface _Participant {
   indicoId: number;
   regformId: number;
@@ -92,6 +114,7 @@ interface _Participant {
   currency: string;
   formattedPrice: string;
   isPaid: boolean;
+  tags: string[] | RegistrationTag[];
 }
 
 export interface Participant extends _Participant {
