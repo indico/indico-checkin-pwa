@@ -68,6 +68,17 @@ export default function RegformPage() {
   );
 }
 
+function loadStoredData() {
+  const data = JSON.parse(localStorage.getItem('regforms') || '{}');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Object.values(data).forEach((item: any) => {
+    if (item.filters && item.filters.tags === undefined) {
+      item.filters.tags = {};
+    }
+  });
+  return data;
+}
+
 function RegformPageContent({
   eventId,
   regformId,
@@ -86,7 +97,7 @@ function RegformPageContent({
   const navigate = useNavigate();
   const handleError = useHandleError();
   const [isSyncing, setIsSyncing] = useState(false);
-  const savedFilters = JSON.parse(localStorage.getItem('regforms') || '{}')[regformId];
+  const savedFilters = loadStoredData()[regformId];
   const [searchData, _setSearchData] = useState({
     searchValue: savedFilters?.searchValue || '',
     filters: savedFilters?.filters || makeDefaultFilterState(),
@@ -94,7 +105,7 @@ function RegformPageContent({
 
   const setSearchData = (data: SearchData) => {
     _setSearchData(data);
-    const regforms = JSON.parse(localStorage.getItem('regforms') || '{}');
+    const regforms = loadStoredData();
     regforms[regformId] = data;
     localStorage.setItem('regforms', JSON.stringify(regforms));
   };
