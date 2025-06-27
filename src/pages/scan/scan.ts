@@ -1,6 +1,7 @@
 import {NavigateFunction} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
+import {QRCodePatterns} from '../../context/SettingsProvider';
 import db, {
   addEventIfNotExists,
   addParticipant,
@@ -9,12 +10,16 @@ import db, {
   updateParticipant,
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
-import {getParticipantByUuid as getParticipant} from '../../utils/client';
+import {
+  getParticipantByUuid as getParticipant,
+  getParticipantDataFromCustomQRCode,
+} from '../../utils/client';
 import {
   discoveryEndpoint,
   redirectUri,
   QRCodeEventData,
   QRCodeParticipantData,
+  parseQRCodeParticipantData,
 } from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
@@ -53,7 +58,9 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
 export async function handleEvent(
   data: QRCodeEventData,
   errorModal: ErrorModalFunction,
-  navigate: NavigateFunction
+  navigate: NavigateFunction,
+  qrCodePatterns: QRCodePatterns,
+  setQRCodePatterns: (v: QRCodePatterns) => void
 ) {
   // Check if the serverData is already in indexedDB
   const server = await getServer({baseUrl: data.server.baseUrl});
@@ -71,7 +78,17 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-
+    if (data.regex && typeof data.regex.name === 'string') {
+      const newQRCodePatterns = {
+        ...qrCodePatterns,
+        [data.regex.name]: {
+          ...data.regex,
+          baseUrl: server.baseUrl,
+        },
+      };
+      setQRCodePatterns(newQRCodePatterns);
+      localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
+    }
     navigate(`/event/${id}`, {replace: true});
   } else {
     // Perform OAuth2 Authorization Code Flow
@@ -140,4 +157,36 @@ export async function handleParticipant(
   } else {
     handleError(response, 'Could not fetch participant data');
   }
+}
+
+export async function parseCustomQRCodeData(
+  decodedText: string,
+  errorModal: ErrorModalFunction,
+  qrCodePatterns: QRCodePatterns
+): Promise<QRCodeParticipantData | null> {
+  for (const pattern of Object.values(qrCodePatterns)) {
+    const regex = new RegExp(pattern.pattern);
+    if (regex.test(decodedText)) {
+      const server = await db.servers.get({baseUrl: pattern.baseUrl});
+      if (!server) {
+        errorModal({
+          title: 'The server of this participant does not exist',
+          content: 'Scan an event QR code first and try again.',
+        });
+        return null;
+      }
+      const response = await getParticipantDataFromCustomQRCode({
+        serverId: server.id,
+        data: decodedText,
+        name: pattern.name,
+      });
+      if (response.ok) {
+        const parsedData = parseQRCodeParticipantData(response.data);
+        if (parsedData) {
+          return parsedData;
+        }
+      }
+    }
+  }
+  return null;
 }

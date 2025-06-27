@@ -15,12 +15,12 @@ import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
-import {handleEvent, handleParticipant} from './scan';
+import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin} = useSettings();
+  const {autoCheckin, qrCodePatterns, setQRCodePatterns} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
@@ -53,14 +53,17 @@ export default function ScanPage() {
       }
 
       try {
-        await handleEvent(scannedData, errorModal, navigate);
+        await handleEvent(scannedData, errorModal, navigate, qrCodePatterns, setQRCodePatterns);
       } catch (e) {
         handleError(e, 'Error processing QR code');
       }
       return;
     }
 
-    const parsedData = parseQRCodeParticipantData(scannedData);
+    let parsedData = parseQRCodeParticipantData(scannedData);
+    if (!parsedData) {
+      parsedData = await parseCustomQRCodeData(decodedText, errorModal, qrCodePatterns);
+    }
     if (parsedData) {
       try {
         await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);

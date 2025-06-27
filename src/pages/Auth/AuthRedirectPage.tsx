@@ -6,6 +6,7 @@ import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
+import useSettings from '../../hooks/useSettings';
 import {wait} from '../../utils/wait';
 import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
 
@@ -36,6 +37,7 @@ const AuthRedirectPage = () => {
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<{title?: string; description?: string} | null>(null);
+  const {qrCodePatterns, setQRCodePatterns} = useSettings();
 
   useEffect(() => {
     const onLoad = async () => {
@@ -112,6 +114,18 @@ const AuthRedirectPage = () => {
           description: e instanceof Error ? e.message : '',
         });
         return;
+      }
+
+      if (eventData.regex && typeof eventData.regex.name === 'string') {
+        const newQRCodePatterns = {
+          ...qrCodePatterns,
+          [eventData.regex.name]: {
+            ...eventData.regex,
+            baseUrl: baseUrl,
+          },
+        };
+        setQRCodePatterns(newQRCodePatterns);
+        localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
       }
 
       setSuccess(true);

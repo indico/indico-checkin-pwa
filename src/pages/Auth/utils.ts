@@ -9,6 +9,11 @@ interface QRCodeServerData {
   scope: string;
 }
 
+interface QRCodeRegexPattern {
+  pattern: string;
+  name: string;
+}
+
 export interface QRCodeEventData {
   eventId: number;
   regformId: number;
@@ -16,6 +21,7 @@ export interface QRCodeEventData {
   date: string;
   regformTitle: string;
   server: QRCodeServerData;
+  regex?: QRCodeRegexPattern;
 }
 
 export function validateEventData(data: unknown): data is QRCodeEventData {
@@ -49,6 +55,26 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
     return false;
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
+    return false;
+  }
+  const regex = data?.regex ?? {};
+  if (regex && !isRecord(regex)) {
+    return false;
+  }
+  if (regex && isRecord(regex) && 'name' in regex && 'pattern' in regex) {
+    const {name: regexName, pattern: regexPattern} = regex;
+    if (typeof regexName !== 'string') {
+      return false;
+    }
+    if (typeof regexPattern !== 'string') {
+      return false;
+    }
+    try {
+      new RegExp(regexPattern);
+    } catch {
+      return false;
+    }
+  } else {
     return false;
   }
   return true;

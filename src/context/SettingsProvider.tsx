@@ -1,5 +1,12 @@
 import {ReactNode, createContext, useState} from 'react';
 
+export interface QRCodePatterns {
+  [key: string]: {
+    name: string;
+    pattern: string;
+    baseUrl: string;
+  };
+}
 interface SettingsContextProps {
   darkMode: boolean;
   setDarkMode: (v: boolean) => void;
@@ -9,6 +16,8 @@ interface SettingsContextProps {
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
+  qrCodePatterns: QRCodePatterns;
+  setQRCodePatterns: (v: QRCodePatterns) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -20,6 +29,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
+  qrCodePatterns: {},
+  setQRCodePatterns: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -39,6 +50,9 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
+  const storedQRCodePatterns = JSON.parse(localStorage.getItem('qrCodePatterns') || '{}');
+  const [qrCodePatterns, setQRCodePatterns] = useState(storedQRCodePatterns);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -50,6 +64,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setSoundEffect,
         hapticFeedback,
         setHapticFeedback,
+        qrCodePatterns,
+        setQRCodePatterns,
       }}
     >
       {children}
