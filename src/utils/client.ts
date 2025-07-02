@@ -238,8 +238,8 @@ export async function getParticipantDataFromCustomQRCode({
   data: string;
   name: string;
 }) {
-  return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/custom-qr-code/`, {
+  return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/custom-qr-code`, {
     method: 'POST',
-    body: JSON.stringify({data: data, name: name}),
+    body: JSON.stringify({data: data, qr_name: name}),
   });
 }
