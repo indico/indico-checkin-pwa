@@ -116,14 +116,18 @@ const AuthRedirectPage = () => {
         return;
       }
 
-      if (eventData.regex && typeof eventData.regex.name === 'string') {
-        const newQRCodePatterns = {
-          ...qrCodePatterns,
-          [eventData.regex.name]: {
-            ...eventData.regex,
-            baseUrl: baseUrl,
-          },
-        };
+      if (eventData.regex && Array.isArray(eventData.regex)) {
+        const regex = eventData.regex;
+        let newQRCodePatterns = {...qrCodePatterns};
+        for (const reg of regex) {
+          newQRCodePatterns = {
+            ...newQRCodePatterns,
+            [reg.name]: {
+              ...reg,
+              baseUrl: baseUrl,
+            },
+          };
+        }
         setQRCodePatterns(newQRCodePatterns);
         localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
       }

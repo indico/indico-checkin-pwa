@@ -57,25 +57,32 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
     return false;
   }
-  const regex = data?.regex ?? {};
-  if (regex && !isRecord(regex)) {
+  const regex = data?.regex ?? [];
+  if (regex && !Array.isArray(regex)) {
     return false;
   }
-  if (regex && isRecord(regex) && 'name' in regex && 'pattern' in regex) {
-    const {name: regexName, pattern: regexPattern} = regex;
-    if (typeof regexName !== 'string') {
-      return false;
+  if (Array.isArray(regex)) {
+    for (const item of regex) {
+      if (!isRecord(item)) {
+        return false;
+      }
+      if ('name' in item && 'pattern' in item) {
+        const {name: regexName, pattern: regexPattern} = item;
+        if (typeof regexName !== 'string') {
+          return false;
+        }
+        if (typeof regexPattern !== 'string') {
+          return false;
+        }
+        try {
+          new RegExp(regexPattern);
+        } catch {
+          return false;
+        }
+      } else {
+        return false;
+      }
     }
-    if (typeof regexPattern !== 'string') {
-      return false;
-    }
-    try {
-      new RegExp(regexPattern);
-    } catch {
-      return false;
-    }
-  } else {
-    return false;
   }
   return true;
 }

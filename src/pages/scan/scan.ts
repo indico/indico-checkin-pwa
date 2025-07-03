@@ -78,14 +78,18 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-    if (data.regex && typeof data.regex.name === 'string') {
-      const newQRCodePatterns = {
-        ...qrCodePatterns,
-        [data.regex.name]: {
-          ...data.regex,
-          baseUrl: server.baseUrl,
-        },
-      };
+    if (data.regex && Array.isArray(data.regex)) {
+      const regex = data.regex;
+      let newQRCodePatterns = {...qrCodePatterns};
+      for (const reg of regex) {
+        newQRCodePatterns = {
+          ...newQRCodePatterns,
+          [reg.name]: {
+            ...reg,
+            baseUrl: server.baseUrl,
+          },
+        };
+      }
       setQRCodePatterns(newQRCodePatterns);
       localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
     }
