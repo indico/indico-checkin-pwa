@@ -7,6 +7,7 @@ import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
 import useSettings from '../../hooks/useSettings';
+import {isRecord} from '../../utils/typeguards';
 import {wait} from '../../utils/wait';
 import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
 
@@ -37,7 +38,7 @@ const AuthRedirectPage = () => {
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<{title?: string; description?: string} | null>(null);
-  const {qrCodePatterns, setQRCodePatterns} = useSettings();
+  const {customQRCodes, setCustomQRCodes} = useSettings();
 
   useEffect(() => {
     const onLoad = async () => {
@@ -116,20 +117,20 @@ const AuthRedirectPage = () => {
         return;
       }
 
-      if (eventData.regex && Array.isArray(eventData.regex)) {
-        const regex = eventData.regex;
-        let newQRCodePatterns = {...qrCodePatterns};
-        for (const reg of regex) {
-          newQRCodePatterns = {
-            ...newQRCodePatterns,
-            [reg.name]: {
-              ...reg,
+      if (eventData.customCodeHandlers && isRecord(eventData.customCodeHandlers)) {
+        const customCodeHandlers = eventData.customCodeHandlers;
+        let newCustomQRCodes = {...customQRCodes};
+        for (const customCodeHandler in customCodeHandlers) {
+          newCustomQRCodes = {
+            ...newCustomQRCodes,
+            [customCodeHandler]: {
+              regex: customCodeHandlers[customCodeHandler],
               baseUrl: baseUrl,
             },
           };
         }
-        setQRCodePatterns(newQRCodePatterns);
-        localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
+        setCustomQRCodes(newCustomQRCodes);
+        localStorage.setItem('customQRCodes', JSON.stringify(newCustomQRCodes));
       }
 
       setSuccess(true);

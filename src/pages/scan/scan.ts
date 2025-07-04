@@ -1,7 +1,7 @@
 import {NavigateFunction} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import {QRCodePatterns} from '../../context/SettingsProvider';
+import {CustomQRCodes} from '../../context/SettingsProvider';
 import db, {
   addEventIfNotExists,
   addParticipant,
@@ -14,6 +14,7 @@ import {
   getParticipantByUuid as getParticipant,
   getParticipantDataFromCustomQRCode,
 } from '../../utils/client';
+import {isRecord} from '../../utils/typeguards';
 import {
   discoveryEndpoint,
   redirectUri,
@@ -59,8 +60,8 @@ export async function handleEvent(
   data: QRCodeEventData,
   errorModal: ErrorModalFunction,
   navigate: NavigateFunction,
-  qrCodePatterns: QRCodePatterns,
-  setQRCodePatterns: (v: QRCodePatterns) => void
+  customQRCodes: CustomQRCodes,
+  setCustomQRCodes: (v: CustomQRCodes) => void
 ) {
   // Check if the serverData is already in indexedDB
   const server = await getServer({baseUrl: data.server.baseUrl});
@@ -78,20 +79,20 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-    if (data.regex && Array.isArray(data.regex)) {
-      const regex = data.regex;
-      let newQRCodePatterns = {...qrCodePatterns};
-      for (const reg of regex) {
-        newQRCodePatterns = {
-          ...newQRCodePatterns,
-          [reg.name]: {
-            ...reg,
+    if (data.customCodeHandlers && isRecord(data.customCodeHandlers)) {
+      const customCodeHandlers = data.customCodeHandlers;
+      let newCustomQRCodes = {...customQRCodes};
+      for (const customCodeHandler in customCodeHandlers) {
+        newCustomQRCodes = {
+          ...newCustomQRCodes,
+          [customCodeHandler]: {
+            regex: customCodeHandlers[customCodeHandler],
             baseUrl: server.baseUrl,
           },
         };
       }
-      setQRCodePatterns(newQRCodePatterns);
-      localStorage.setItem('qrCodePatterns', JSON.stringify(newQRCodePatterns));
+      setCustomQRCodes(newCustomQRCodes);
+      localStorage.setItem('customQRCodes', JSON.stringify(newCustomQRCodes));
     }
     navigate(`/event/${id}`, {replace: true});
   } else {
@@ -166,12 +167,18 @@ export async function handleParticipant(
 export async function parseCustomQRCodeData(
   decodedText: string,
   errorModal: ErrorModalFunction,
-  qrCodePatterns: QRCodePatterns
+  customQRCodes: CustomQRCodes
 ): Promise<QRCodeParticipantData | null> {
-  for (const pattern of Object.values(qrCodePatterns)) {
-    const regex = new RegExp(pattern.pattern);
+  for (const customQRCode in customQRCodes) {
+    const customQRCodeData = customQRCodes[customQRCode];
+    let regex;
+    try {
+      regex = new RegExp(customQRCodeData.regex);
+    } catch {
+      return null;
+    }
     if (regex.test(decodedText)) {
-      const server = await db.servers.get({baseUrl: pattern.baseUrl});
+      const server = await db.servers.get({baseUrl: customQRCodeData.baseUrl});
       if (!server) {
         errorModal({
           title: 'The server of this participant does not exist',
@@ -182,7 +189,7 @@ export async function parseCustomQRCodeData(
       const response = await getParticipantDataFromCustomQRCode({
         serverId: server.id,
         data: decodedText,
-        name: pattern.name,
+        qrCodeName: customQRCode,
       });
       if (response.ok) {
         const parsedData = parseQRCodeParticipantData(response.data);

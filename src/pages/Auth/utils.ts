@@ -8,10 +8,8 @@ interface QRCodeServerData {
   clientId: string;
   scope: string;
 }
-
-interface QRCodeRegexPattern {
-  pattern: string;
-  name: string;
+interface CustomQRCodeRegex {
+  [name: string]: string;
 }
 
 export interface QRCodeEventData {
@@ -21,7 +19,7 @@ export interface QRCodeEventData {
   date: string;
   regformTitle: string;
   server: QRCodeServerData;
-  regex?: QRCodeRegexPattern;
+  customCodeHandlers?: CustomQRCodeRegex;
 }
 
 export function validateEventData(data: unknown): data is QRCodeEventData {
@@ -57,29 +55,21 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
     return false;
   }
-  const regex = data?.regex ?? [];
-  if (regex && !Array.isArray(regex)) {
+  const customCodeHandlers = data?.customCodeHandlers ?? {};
+  if (customCodeHandlers && !isRecord(customCodeHandlers)) {
     return false;
   }
-  if (Array.isArray(regex)) {
-    for (const item of regex) {
-      if (!isRecord(item)) {
+  if (isRecord(customCodeHandlers)) {
+    for (const customCodeHandler in customCodeHandlers) {
+      if (typeof customCodeHandler !== 'string') {
         return false;
       }
-      if ('name' in item && 'pattern' in item) {
-        const {name: regexName, pattern: regexPattern} = item;
-        if (typeof regexName !== 'string') {
-          return false;
-        }
-        if (typeof regexPattern !== 'string') {
-          return false;
-        }
-        try {
-          new RegExp(regexPattern);
-        } catch {
-          return false;
-        }
-      } else {
+      if (typeof customCodeHandlers[customCodeHandler] !== 'string') {
+        return false;
+      }
+      try {
+        new RegExp(customCodeHandlers[customCodeHandler]);
+      } catch {
         return false;
       }
     }

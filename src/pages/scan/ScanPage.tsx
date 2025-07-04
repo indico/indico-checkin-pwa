@@ -20,7 +20,7 @@ import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin, qrCodePatterns, setQRCodePatterns} = useSettings();
+  const {autoCheckin, customQRCodes, setCustomQRCodes} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
@@ -53,7 +53,7 @@ export default function ScanPage() {
       }
 
       try {
-        await handleEvent(scannedData, errorModal, navigate, qrCodePatterns, setQRCodePatterns);
+        await handleEvent(scannedData, errorModal, navigate, customQRCodes, setCustomQRCodes);
       } catch (e) {
         handleError(e, 'Error processing QR code');
       }
@@ -62,7 +62,7 @@ export default function ScanPage() {
 
     let parsedData = parseQRCodeParticipantData(scannedData);
     if (!parsedData) {
-      parsedData = await parseCustomQRCodeData(decodedText, errorModal, qrCodePatterns);
+      parsedData = await parseCustomQRCodeData(decodedText, errorModal, customQRCodes);
     }
     if (parsedData) {
       try {

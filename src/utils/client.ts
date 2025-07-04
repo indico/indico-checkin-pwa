@@ -232,14 +232,14 @@ export async function togglePayment(
 export async function getParticipantDataFromCustomQRCode({
   serverId,
   data,
-  name,
+  qrCodeName,
 }: {
   serverId: number;
   data: string;
-  name: string;
+  qrCodeName: string;
 }) {
   return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/custom-qr-code`, {
     method: 'POST',
-    body: JSON.stringify({data: data, qr_name: name}),
+    body: JSON.stringify({data: data, qr_name: qrCodeName}),
   });
 }
