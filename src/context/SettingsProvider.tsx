@@ -9,6 +9,8 @@ interface SettingsContextProps {
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
+  scanDevice: string;
+  setScanDevice: (v: string) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -20,6 +22,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
+  scanDevice: 'Camera',
+  setScanDevice: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -39,6 +43,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
+  const [scanDevice, setScanDevice] = useState(localStorage.getItem('scanDevice') || 'Camera');
+
   return (
     <SettingsContext.Provider
       value={{
@@ -48,6 +54,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setAutoCheckin,
         soundEffect,
         setSoundEffect,
+        scanDevice,
+        setScanDevice,
         hapticFeedback,
         setHapticFeedback,
       }}
