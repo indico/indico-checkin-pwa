@@ -10,6 +10,7 @@ import {useHandleError} from '../hooks/useError';
 import {useLogs} from '../hooks/useLogs';
 import {useConfirmModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
+import {scanDevices} from '../utils/scan_device';
 import {playSound, sounds} from '../utils/sound';
 
 export default function SettingsPage() {
@@ -33,6 +34,8 @@ function MainSettings() {
     setAutoCheckin,
     soundEffect,
     setSoundEffect,
+    scanDevice,
+    setScanDevice,
     hapticFeedback,
     setHapticFeedback,
   } = useSettings();
@@ -60,6 +63,11 @@ function MainSettings() {
     playSound(v);
   };
 
+  const onScanDeviceChange = (v: string) => {
+    localStorage.setItem('scanDevice', v);
+    setScanDevice(v);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Check-in">
@@ -74,6 +82,12 @@ function MainSettings() {
           values={Object.keys(sounds)}
           selected={soundEffect}
           onChange={onSoundEffectChange}
+        />
+        <SettingDropdown
+          title="Check-in device"
+          values={Object.keys(scanDevices).map(k => scanDevices[k as keyof typeof scanDevices])}
+          selected={scanDevice}
+          onChange={onScanDeviceChange}
         />
         <SettingToggle
           title="Haptic feedback"

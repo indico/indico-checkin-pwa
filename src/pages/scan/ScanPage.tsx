@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {
+  ExternalQRScannerDevice,
   FileUploadScanner,
   scanFile,
 } from '../../Components/QrScanner/QrScannerPlugin';
@@ -14,19 +15,23 @@ import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
+import {scanDevices} from '../../utils/scan_device';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
 import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin} = useSettings();
+  const {autoCheckin, scanDevice} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
   const logError = useLogError();
+  const scanWithCamera = scanDevice === scanDevices.camera || scanDevice === scanDevices.both;
+  const scanWithKeyboard =
+    scanDevice === scanDevices.externalKeyboard || scanDevice === scanDevices.both;
 
   async function processCode(decodedText: string) {
     if (processing) {
@@ -116,18 +121,18 @@ export default function ScanPage() {
     }
   };
 
-  const fileUploadVisible = !processing && (isDesktop || import.meta.env.DEV);
+  const fileUploadVisible = !processing && scanWithCamera && (isDesktop || import.meta.env.DEV);
 
   return (
     <div>
       <TopNav backBtnText="Scan" backNavigateTo={-1} />
-      {!processing && (
+      {scanWithCamera && !processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />
         </div>
       )}
       {processing && <LoadingBanner text="Loading.." />}
-      {!processing && !hasPermission && (
+      {!processing && !hasPermission && scanWithCamera && (
         <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
           <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
             <VideoCameraSlashIcon className="w-20 text-gray-500" />
@@ -141,6 +146,20 @@ export default function ScanPage() {
         <div className="mt-6">
           <FileUploadScanner onFileUpload={onFileUpload} />
         </div>
+      )}
+      {scanWithKeyboard && (
+        <>
+          {!scanWithCamera && !processing && (
+            <Typography variant="h3" className="text-center">
+              Awaiting keyboard input...
+            </Typography>
+          )}
+          <ExternalQRScannerDevice
+            qrCodeSuccessCallback={onScanResult}
+            processing={processing}
+            setProcessing={setProcessing}
+          />
+        </>
       )}
     </div>
   );
