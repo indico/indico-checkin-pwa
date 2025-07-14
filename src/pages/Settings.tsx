@@ -32,6 +32,8 @@ function MainSettings() {
     setDarkMode,
     autoCheckin,
     setAutoCheckin,
+    rapidCheckin,
+    setRapidCheckin,
     soundEffect,
     setSoundEffect,
     scanDevice,
@@ -50,6 +52,11 @@ function MainSettings() {
   const toggleAutoCheckin = () => {
     localStorage.setItem('autoCheckin', (!autoCheckin).toString());
     setAutoCheckin(!autoCheckin);
+  };
+
+  const toggleRapidCheckin = () => {
+    localStorage.setItem('rapidCheckin', (!rapidCheckin).toString());
+    setRapidCheckin(!rapidCheckin);
   };
 
   const toggleHapticFeedback = () => {
@@ -77,6 +84,14 @@ function MainSettings() {
           checked={autoCheckin}
           onToggle={toggleAutoCheckin}
         />
+        {autoCheckin && (
+          <SettingToggle
+            title="Rapid check-in"
+            description="Automatically return to the scan page after each check-in"
+            checked={rapidCheckin}
+            onToggle={toggleRapidCheckin}
+          />
+        )}
         <SettingDropdown
           title="Check-in sound effect"
           values={Object.keys(sounds)}

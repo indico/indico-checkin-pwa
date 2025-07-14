@@ -5,6 +5,8 @@ interface SettingsContextProps {
   setDarkMode: (v: boolean) => void;
   autoCheckin: boolean;
   setAutoCheckin: (v: boolean) => void;
+  rapidCheckin: boolean;
+  setRapidCheckin: (v: boolean) => void;
   hapticFeedback: boolean;
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
@@ -18,6 +20,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setDarkMode: () => {},
   autoCheckin: false,
   setAutoCheckin: () => {},
+  rapidCheckin: false,
+  setRapidCheckin: () => {},
   hapticFeedback: false,
   setHapticFeedback: () => {},
   soundEffect: 'None',
@@ -35,8 +39,11 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
     (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [darkMode, setDarkMode] = useState(isDarkMode);
 
-  const storedCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
-  const [autoCheckin, setAutoCheckin] = useState(storedCheckin);
+  const storedAutoCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
+  const [autoCheckin, setAutoCheckin] = useState(storedAutoCheckin);
+
+  const storedRapidCheckin = JSON.parse(localStorage.getItem('rapidCheckin') || 'false');
+  const [rapidCheckin, setRapidCheckin] = useState(storedRapidCheckin);
 
   const storedHapticFeedback = JSON.parse(localStorage.getItem('hapticFeedback') || 'false');
   const [hapticFeedback, setHapticFeedback] = useState(storedHapticFeedback);
@@ -52,6 +59,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setDarkMode,
         autoCheckin,
         setAutoCheckin,
+        rapidCheckin,
+        setRapidCheckin,
         soundEffect,
         setSoundEffect,
         scanDevice,

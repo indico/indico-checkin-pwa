@@ -28,7 +28,7 @@ import db, {
   getParticipant,
 } from '../../db/db';
 import {useHandleError} from '../../hooks/useError';
-import {useErrorModal} from '../../hooks/useModal';
+import {useErrorModal, useModalData} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
@@ -103,12 +103,21 @@ function ParticipantPageContent({
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
+  const isRapidCheckin = useRef<boolean>(
+    !!state.fromScan && !!state?.autoCheckin && !!state?.rapidCheckin
+  );
+  const rapidCheckinTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const handleError = useHandleError();
+  const {closeModal} = useModalData();
 
   useEffect(() => {
-    // remove autoCheckin and fromScan from location state
-    if (state?.autoCheckin !== undefined || state?.fromScan !== undefined) {
-      const {autoCheckin, fromScan, ...rest} = state || {};
+    // remove autoCheckin, rapidCheckin and fromScan state from location state
+    if (
+      state?.autoCheckin !== undefined ||
+      state?.fromScan !== undefined ||
+      state?.rapidCheckin !== undefined
+    ) {
+      const {autoCheckin, fromScan, rapidCheckin, ...rest} = state || {};
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
@@ -128,6 +137,36 @@ function ParticipantPageContent({
       }
     }
   }, [participant, errorModal, hapticFeedback]);
+
+  useEffect(() => {
+    rapidCheckinTimeoutRef.current = setTimeout(() => {
+      if (isRapidCheckin.current) {
+        closeModal();
+        isRapidCheckin.current = false;
+        navigate('/scan');
+      }
+    }, 3000);
+
+    const resetRapidCheckin = () => {
+      isRapidCheckin.current = false;
+      if (rapidCheckinTimeoutRef.current) {
+        clearTimeout(rapidCheckinTimeoutRef.current);
+      }
+    };
+
+    document.addEventListener('scroll', resetRapidCheckin, {passive: true});
+    document.addEventListener('click', resetRapidCheckin, {passive: true});
+    document.addEventListener('pointerdown', resetRapidCheckin, {passive: true});
+    document.addEventListener('touchstart', resetRapidCheckin, {passive: true});
+
+    return () => {
+      clearTimeout(rapidCheckinTimeoutRef.current);
+      document.removeEventListener('scroll', resetRapidCheckin);
+      document.removeEventListener('click', resetRapidCheckin);
+      document.removeEventListener('pointerdown', resetRapidCheckin);
+      document.removeEventListener('touchstart', resetRapidCheckin);
+    };
+  }, []);
 
   const accompanyingPersons = useMemo(() => {
     if (participant?.registrationData) {
