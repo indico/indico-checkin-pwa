@@ -91,7 +91,8 @@ export async function handleParticipant(
   errorModal: ErrorModalFunction,
   handleError: HandleError,
   navigate: NavigateFunction,
-  autoCheckin: boolean
+  autoCheckin: boolean,
+  rapidCheckin: boolean
 ) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
@@ -141,7 +142,7 @@ export async function handleParticipant(
     const participantPage = `/event/${regform.eventId}/${regform.id}/${participantId}`;
     navigate(participantPage, {
       replace: true,
-      state: {autoCheckin, fromScan: true},
+      state: {autoCheckin, rapidCheckin, fromScan: true},
     });
   } else {
     handleError(response, 'Could not fetch participant data');
