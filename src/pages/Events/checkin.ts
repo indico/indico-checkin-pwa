@@ -1,11 +1,11 @@
 import db, {Event, Regform, Participant} from '../../db/db';
 import {HandleError} from '../../hooks/useError';
-import {checkInParticipant} from '../../utils/client';
+import {checkInParticipant, checkOutParticipant} from '../../utils/client';
 import {playVibration} from '../../utils/haptics';
 import {playSound} from '../../utils/sound';
 
-async function resetCheckedInLoading(participant: Participant) {
-  await db.participants.update(participant.id, {checkedInLoading: 0});
+async function resetCheckedStateLoading(participant: Participant) {
+  await db.participants.update(participant.id, {checkedStateLoading: 0});
 }
 
 async function updateCheckinState(
@@ -14,36 +14,64 @@ async function updateCheckinState(
   newCheckInState: boolean
 ) {
   return db.transaction('readwrite', db.regforms, db.participants, async () => {
-    await resetCheckedInLoading(participant);
-    await db.participants.update(participant.id, {checkedIn: newCheckInState, checkedInLoading: 0});
+    await resetCheckedStateLoading(participant);
+    await db.participants.update(participant.id, {
+      checkedIn: newCheckInState,
+      checkedStateLoading: 0,
+    });
     const slots = participant.occupiedSlots;
     const checkedInCount = regform.checkedInCount + (newCheckInState ? slots : -slots);
     await db.regforms.update(regform.id, {checkedInCount});
   });
 }
 
-export async function checkIn(
+async function updateCheckoutState(
+  regform: Regform,
+  participant: Participant,
+  newCheckOutState: boolean
+) {
+  return db.transaction('readwrite', db.regforms, db.participants, async () => {
+    await resetCheckedStateLoading(participant);
+    await db.participants.update(participant.id, {
+      checkedOut: newCheckOutState,
+      checkedStateLoading: 0,
+    });
+    const slots = participant.occupiedSlots;
+    const checkedInCount = regform.checkedInCount + (newCheckOutState ? -slots : slots);
+    await db.regforms.update(regform.id, {checkedInCount});
+  });
+}
+
+export async function CheckInOrOut(
   event: Event,
   regform: Regform,
   participant: Participant,
   newCheckInState: boolean,
   sound: string,
   hapticFeedback: boolean,
-  handleError: HandleError
+  handleError: HandleError,
+  checkOut: boolean,
+  checkTypeId?: number
 ) {
-  await db.participants.update(participant.id, {checkedInLoading: 1});
-  const response = await checkInParticipant(
+  await db.participants.update(participant.id, {checkedStateLoading: 1});
+  const checkParticipant = checkOut ? checkOutParticipant : checkInParticipant;
+  const response = await checkParticipant(
     {
       serverId: event.serverId,
       eventId: event.indicoId,
       regformId: regform.indicoId,
       participantId: participant.indicoId,
     },
-    newCheckInState
+    newCheckInState,
+    checkTypeId
   );
 
   if (response.ok) {
-    await updateCheckinState(regform, participant, newCheckInState);
+    if (checkOut) {
+      await updateCheckoutState(regform, participant, newCheckInState);
+    } else {
+      await updateCheckinState(regform, participant, newCheckInState);
+    }
     if (newCheckInState) {
       playSound(sound);
       if (hapticFeedback) {
@@ -51,7 +79,7 @@ export async function checkIn(
       }
     }
   } else {
-    await resetCheckedInLoading(participant);
+    await resetCheckedStateLoading(participant);
     handleError(response, 'Something went wrong when updating check-in status');
   }
 }

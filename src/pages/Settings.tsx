@@ -35,6 +35,10 @@ function MainSettings() {
     setSoundEffect,
     hapticFeedback,
     setHapticFeedback,
+    strictCheckIn,
+    setstrictCheckIn,
+    checkOutEnabled,
+    setcheckOutEnabled,
   } = useSettings();
 
   const toggleDarkMode = () => {
@@ -60,6 +64,16 @@ function MainSettings() {
     playSound(v);
   };
 
+  const toggleStrictCheckIn = () => {
+    localStorage.setItem('strictCheckIn', (!strictCheckIn).toString());
+    setstrictCheckIn(!strictCheckIn);
+  };
+
+  const toggleCheckOutEnabled = () => {
+    localStorage.setItem('checkOutEnabled', (!checkOutEnabled).toString());
+    setcheckOutEnabled(!checkOutEnabled);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Check-in">
@@ -68,6 +82,12 @@ function MainSettings() {
           description="Check in when a QR code is scanned"
           checked={autoCheckin}
           onToggle={toggleAutoCheckin}
+        />
+        <SettingToggle
+          title="Require registration completion"
+          description="If enabled, only completed (approved/paid) registrations can be checked in"
+          checked={strictCheckIn}
+          onToggle={toggleStrictCheckIn}
         />
         <SettingDropdown
           title="Check-in sound effect"
@@ -80,6 +100,14 @@ function MainSettings() {
           description="Vibrate on certain interactions (e.g. check-in, error etc.)"
           checked={hapticFeedback}
           onToggle={toggleHapticFeedback}
+        />
+      </SettingsSection>
+      <SettingsSection title="Check-out">
+        <SettingToggle
+          title="Check-out"
+          description="Use this app for check-out instead"
+          checked={checkOutEnabled}
+          onToggle={toggleCheckOutEnabled}
         />
       </SettingsSection>
       <SettingsSection title="Appearance">

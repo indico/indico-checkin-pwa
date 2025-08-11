@@ -1,7 +1,8 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useLoaderData, useNavigate} from 'react-router-dom';
 import {CalendarDaysIcon, CheckCircleIcon, UserGroupIcon} from '@heroicons/react/20/solid';
 import {TrashIcon} from '@heroicons/react/24/solid';
+import EventCheckInTypeDropdown from '../../Components/CheckTypeDropdown';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
@@ -15,6 +16,7 @@ import {
   useLiveEvent,
   useLiveRegforms,
 } from '../../db/db';
+import useCheckTypes from '../../hooks/useCheckTypes';
 import {useHandleError} from '../../hooks/useError';
 import {useConfirmModal, useErrorModal} from '../../hooks/useModal';
 import {formatDatetime} from '../../utils/date';
@@ -56,6 +58,9 @@ function EventPageContent({
 }) {
   const navigate = useNavigate();
   const handleError = useHandleError();
+  const {checkTypes, setCheckTypes} = useCheckTypes();
+  const ownCheckType_ = checkTypes?.[eventId] ?? event?.defaultCheckType;
+  const [ownCheckType, setOwnCheckType] = useState(ownCheckType_);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,7 +72,7 @@ function EventPageContent({
       }
 
       await syncEvent(event, controller.signal, handleError);
-      await syncRegforms(event, controller.signal, handleError);
+      await syncRegforms(event, controller.signal, handleError, ownCheckType?.id);
     }
 
     sync().catch(err => {
@@ -75,7 +80,7 @@ function EventPageContent({
     });
 
     return () => controller.abort();
-  }, [eventId, handleError]);
+  }, [eventId, handleError, ownCheckType]);
 
   if (!event) {
     return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
@@ -152,6 +157,16 @@ function EventPageContent({
         >
           {formatDatetime(event.date)}
         </span>
+        <EventCheckInTypeDropdown
+          values={event.checkTypes}
+          selected={ownCheckType ?? event.defaultCheckType}
+          onChange={c => {
+            setOwnCheckType(c);
+            checkTypes[eventId] = c;
+            localStorage.setItem('checkTypes', JSON.stringify(checkTypes));
+            setCheckTypes(checkTypes);
+          }}
+        />
       </div>
       {regformList.length === 0 && <NoRegformsBanner />}
       {regformList.length > 0 && <div className="mt-10 flex flex-col gap-4">{regformList}</div>}
