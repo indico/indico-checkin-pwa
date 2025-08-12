@@ -1,5 +1,12 @@
 import {ReactNode, createContext, useState} from 'react';
 
+export interface CustomQRCodes {
+  [key: string]: {
+    regex: string;
+    baseUrl: string;
+  };
+}
+
 interface SettingsContextProps {
   darkMode: boolean;
   setDarkMode: (v: boolean) => void;
@@ -9,6 +16,8 @@ interface SettingsContextProps {
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
+  customQRCodes: CustomQRCodes;
+  setCustomQRCodes: (v: CustomQRCodes) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -20,6 +29,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
+  customQRCodes: {},
+  setCustomQRCodes: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -39,6 +50,9 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
 
+  const storedCustomQRCodes = JSON.parse(localStorage.getItem('customQRCodes') || '{}');
+  const [customQRCodes, setCustomQRCodes] = useState(storedCustomQRCodes);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -50,6 +64,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setSoundEffect,
         hapticFeedback,
         setHapticFeedback,
+        customQRCodes,
+        setCustomQRCodes,
       }}
     >
       {children}

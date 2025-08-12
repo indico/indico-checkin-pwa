@@ -1,6 +1,7 @@
 import {NavigateFunction} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
+import {CustomQRCodes} from '../../context/SettingsProvider';
 import db, {
   addEventIfNotExists,
   addParticipant,
@@ -9,12 +10,17 @@ import db, {
   updateParticipant,
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
-import {getParticipantByUuid as getParticipant} from '../../utils/client';
+import {
+  getParticipantByUuid as getParticipant,
+  getParticipantDataFromCustomQRCode,
+} from '../../utils/client';
+import {isRecord} from '../../utils/typeguards';
 import {
   discoveryEndpoint,
   redirectUri,
   QRCodeEventData,
   QRCodeParticipantData,
+  parseQRCodeParticipantData,
 } from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
@@ -53,7 +59,9 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
 export async function handleEvent(
   data: QRCodeEventData,
   errorModal: ErrorModalFunction,
-  navigate: NavigateFunction
+  navigate: NavigateFunction,
+  customQRCodes: CustomQRCodes,
+  setCustomQRCodes: (v: CustomQRCodes) => void
 ) {
   // Check if the serverData is already in indexedDB
   const server = await getServer({baseUrl: data.server.baseUrl});
@@ -71,7 +79,21 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-
+    if (data.customCodeHandlers && isRecord(data.customCodeHandlers)) {
+      const customCodeHandlers = data.customCodeHandlers;
+      let newCustomQRCodes = {...customQRCodes};
+      for (const customCodeHandler in customCodeHandlers) {
+        newCustomQRCodes = {
+          ...newCustomQRCodes,
+          [customCodeHandler]: {
+            regex: customCodeHandlers[customCodeHandler],
+            baseUrl: server.baseUrl,
+          },
+        };
+      }
+      setCustomQRCodes(newCustomQRCodes);
+      localStorage.setItem('customQRCodes', JSON.stringify(newCustomQRCodes));
+    }
     navigate(`/event/${id}`, {replace: true});
   } else {
     // Perform OAuth2 Authorization Code Flow
@@ -140,4 +162,42 @@ export async function handleParticipant(
   } else {
     handleError(response, 'Could not fetch participant data');
   }
+}
+
+export async function parseCustomQRCodeData(
+  decodedText: string,
+  errorModal: ErrorModalFunction,
+  customQRCodes: CustomQRCodes
+): Promise<QRCodeParticipantData | null> {
+  for (const customQRCode in customQRCodes) {
+    const customQRCodeData = customQRCodes[customQRCode];
+    let regex;
+    try {
+      regex = new RegExp(customQRCodeData.regex);
+    } catch {
+      return null;
+    }
+    if (regex.test(decodedText)) {
+      const server = await db.servers.get({baseUrl: customQRCodeData.baseUrl});
+      if (!server) {
+        errorModal({
+          title: 'The server of this participant does not exist',
+          content: 'Scan an event QR code first and try again.',
+        });
+        return null;
+      }
+      const response = await getParticipantDataFromCustomQRCode({
+        serverId: server.id,
+        data: decodedText,
+        qrCodeName: customQRCode,
+      });
+      if (response.ok) {
+        const parsedData = parseQRCodeParticipantData(response.data);
+        if (parsedData) {
+          return parsedData;
+        }
+      }
+    }
+  }
+  return null;
 }
