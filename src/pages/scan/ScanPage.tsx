@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {
+  ExternalQRScannerDevice,
   FileUploadScanner,
   scanFile,
 } from '../../Components/QrScanner/QrScannerPlugin';
@@ -15,12 +16,12 @@ import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
-import {handleEvent, handleParticipant} from './scan';
+import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin} = useSettings();
+  const {autoCheckin, rapidCheckin, customQRCodes, setCustomQRCodes} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
@@ -35,11 +36,15 @@ export default function ScanPage() {
     setProcessing(true);
 
     let scannedData;
-    try {
-      scannedData = JSON.parse(decodedText);
-    } catch (e) {
-      handleError(e, 'Error parsing the QRCode data');
-      return;
+    if (decodedText !== '' && !isNaN(Number(decodedText))) {
+      scannedData = decodedText;
+    } else {
+      try {
+        scannedData = JSON.parse(decodedText);
+      } catch (e) {
+        handleError(e, 'Error parsing the QRCode data');
+        return;
+      }
     }
 
     scannedData = camelizeKeys(scannedData);
@@ -53,17 +58,27 @@ export default function ScanPage() {
       }
 
       try {
-        await handleEvent(scannedData, errorModal, navigate);
+        await handleEvent(scannedData, errorModal, navigate, customQRCodes, setCustomQRCodes);
       } catch (e) {
         handleError(e, 'Error processing QR code');
       }
       return;
     }
 
-    const parsedData = parseQRCodeParticipantData(scannedData);
+    let parsedData = parseQRCodeParticipantData(scannedData);
+    if (!parsedData) {
+      parsedData = await parseCustomQRCodeData(decodedText, errorModal, customQRCodes);
+    }
     if (parsedData) {
       try {
-        await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
+        await handleParticipant(
+          parsedData,
+          errorModal,
+          handleError,
+          navigate,
+          autoCheckin,
+          rapidCheckin
+        );
       } catch (e) {
         handleError(e, 'Error processing QR code');
       }
@@ -130,6 +145,13 @@ export default function ScanPage() {
         <div className="mt-6">
           <FileUploadScanner onFileUpload={onFileUpload} />
         </div>
+      )}
+      {(isDesktop || import.meta.env.DEV) && (
+        <ExternalQRScannerDevice
+          qrCodeSuccessCallback={onScanResult}
+          processing={processing}
+          setProcessing={setProcessing}
+        />
       )}
     </div>
   );

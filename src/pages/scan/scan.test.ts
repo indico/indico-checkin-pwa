@@ -92,7 +92,7 @@ describe('test handleParticipant()', () => {
     const navigate = vi.fn();
 
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
     expect(errorModal).toHaveBeenCalledWith({
       title: 'The server of this participant does not exist',
@@ -118,7 +118,7 @@ describe('test handleParticipant()', () => {
       data: {id: 101, eventId: 9999, regformId: 9999, checkinSecret: '1234'},
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
     expect(errorModal).toHaveBeenCalledWith({
       title: 'The event of this participant does not exist',
@@ -144,7 +144,7 @@ describe('test handleParticipant()', () => {
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
     expect(errorModal).toHaveBeenCalledWith({
       title: 'The registration form of this participant does not exist',
@@ -172,13 +172,13 @@ describe('test handleParticipant()', () => {
     });
     expect(errorModal).not.toHaveBeenCalled();
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
     expect(errorModal).not.toHaveBeenCalled();
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true, fromScan: true},
+      state: {autoCheckin: true, fromScan: true, rapidCheckin: false},
     });
   });
 
@@ -199,7 +199,7 @@ describe('test handleParticipant()', () => {
       status: 404,
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
 
     expect(handleError).toHaveBeenCalledWith(
@@ -229,7 +229,7 @@ describe('test handleParticipant()', () => {
       data: {id: 101, eventId: 9999, regformId: 73, checkinSecret: '1234'},
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
 
     expect(errorModal).toHaveBeenCalledWith({
@@ -256,7 +256,7 @@ describe('test handleParticipant()', () => {
       data: {id: 101, eventId: 42, regformId: 9999, checkinSecret: '1234'},
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
 
     expect(errorModal).toHaveBeenCalledWith({
@@ -283,7 +283,7 @@ describe('test handleParticipant()', () => {
       data: {id: 101, eventId: 42, regformId: 73, checkinSecret: '1234'},
     });
     await expect(
-      handleParticipant(data, errorModal, handleError, navigate, true)
+      handleParticipant(data, errorModal, handleError, navigate, true, false)
     ).resolves.not.toThrow();
 
     const participant = await db.participants.get(1);
@@ -302,7 +302,7 @@ describe('test handleParticipant()', () => {
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true, fromScan: true},
+      state: {autoCheckin: true, fromScan: true, rapidCheckin: false},
     });
   });
 });
@@ -320,8 +320,12 @@ describe('test handleEvent()', () => {
     } as QRCodeEventData;
     const errorModal = vi.fn();
     const navigate = vi.fn();
+    const customQRCodes = {};
+    const setCustomQRCodes = vi.fn();
 
-    await expect(handleEvent(data, errorModal, navigate)).resolves.not.toThrow();
+    await expect(
+      handleEvent(data, errorModal, navigate, customQRCodes, setCustomQRCodes)
+    ).resolves.not.toThrow();
 
     const event = await db.events.get(1);
     const regform = await db.regforms.get(1);

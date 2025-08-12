@@ -3,6 +3,11 @@ import {MutableRefObject, useEffect, useRef, useState, useCallback} from 'react'
 import {ArrowUpTrayIcon} from '@heroicons/react/24/solid';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats} from 'html5-qrcode';
 import {useLogError} from '../../hooks/useError';
+import {useErrorModal} from '../../hooks/useModal';
+import useSettings from '../../hooks/useSettings';
+import {parseQRCodeParticipantData, validateEventData} from '../../pages/Auth/utils';
+import {parseCustomQRCodeData} from '../../pages/scan/scan';
+import {camelizeKeys} from '../../utils/case';
 import {checkCameraPermissions} from '../../utils/media';
 import {TorchButton} from './TorchButton';
 import classes from './QrScanner.module.css';
@@ -162,4 +167,85 @@ export function FileUploadScanner({
       <div id={qrcodeFileRegionId}></div>
     </div>
   );
+}
+
+interface ExternalQRScannerDeviceProps {
+  qrCodeSuccessCallback: (decodedText: string, decodedResult: unknown) => void;
+  processing: boolean;
+  setProcessing: (processing: boolean) => void;
+}
+
+export function ExternalQRScannerDevice({
+  qrCodeSuccessCallback,
+  processing,
+  setProcessing,
+}: ExternalQRScannerDeviceProps) {
+  const qrCodeInputRef = useRef<HTMLInputElement | null>(null);
+  const scannedStringRef = useRef('');
+  const currentKeyRef = useRef('');
+  const {customQRCodes} = useSettings();
+  const errorModal = useErrorModal();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  async function handleScan(decodedText: string) {
+    let scannedData;
+    if (decodedText !== '' && !isNaN(Number(decodedText))) {
+      scannedData = decodedText;
+    } else {
+      try {
+        scannedData = JSON.parse(decodedText);
+      } catch {
+        return;
+      }
+    }
+    scannedData = camelizeKeys(scannedData);
+    if (!validateEventData(scannedData) && !parseQRCodeParticipantData(scannedData)) {
+      const parsedData = await parseCustomQRCodeData(decodedText, errorModal, customQRCodes);
+      if (!parsedData) {
+        return;
+      }
+    }
+    await qrCodeSuccessCallback(decodedText, null);
+  }
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (scannedStringRef.current?.length > 3) {
+        setProcessing(true);
+      }
+      if (e.key !== 'Enter' && e.key !== 'Tab' && e.key.length === 1) {
+        scannedStringRef.current += e.key;
+      } else if (scannedStringRef.current !== '' && (e.key === 'Enter' || e.key === 'Tab')) {
+        currentKeyRef.current = e.key;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      const currentScannedString = scannedStringRef.current;
+      timeoutRef.current = setTimeout(async () => {
+        if (currentKeyRef.current === 'Enter' || currentKeyRef.current === 'Tab') {
+          currentKeyRef.current = '';
+          await handleScan(scannedStringRef.current);
+          scannedStringRef.current = '';
+          setProcessing(false);
+        }
+        if (currentScannedString === scannedStringRef.current) {
+          setProcessing(false);
+          scannedStringRef.current = '';
+        }
+      }, 100);
+    },
+    [setProcessing, handleScan]
+  );
+
+  useEffect(() => {
+    if (qrCodeInputRef.current) {
+      qrCodeInputRef.current.focus();
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return <div>{!processing && <input ref={qrCodeInputRef} hidden />}</div>;
 }
