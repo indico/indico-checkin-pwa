@@ -18,6 +18,10 @@ This is a Progressive Web App (PWA) that allows organizers to check in attendees
 3. Setup pre-commit hooks with `npm run prepare`
 4. Run `npm start` to start the development server
 
+## Building production version of the app
+
+1. Run `npm run build` (which executes `vite build` under the hood)
+
 ## Deployed version
 
 The app is deployed for production usage on https://checkin.getindico.io (hosted at CERN's datacenter in Switzerland) and may be freely used by anyone.
