@@ -34,12 +34,14 @@ export default function ScanPage() {
     }
     setProcessing(true);
 
-    let scannedData;
-    try {
-      scannedData = JSON.parse(decodedText);
-    } catch (e) {
-      handleError(e, 'Error parsing the QRCode data');
-      return;
+    let scannedData = await parseCustomQRCodeData(decodedText, errorModal, customQRCodes);
+    if (!scannedData) {
+      try {
+        scannedData = JSON.parse(decodedText);
+      } catch (e) {
+        handleError(e, 'Error parsing the QRCode data');
+        return;
+      }
     }
 
     scannedData = camelizeKeys(scannedData);
@@ -60,10 +62,7 @@ export default function ScanPage() {
       return;
     }
 
-    let parsedData = parseQRCodeParticipantData(scannedData);
-    if (!parsedData) {
-      parsedData = await parseCustomQRCodeData(decodedText, errorModal, customQRCodes);
-    }
+    const parsedData = parseQRCodeParticipantData(scannedData);
     if (parsedData) {
       try {
         await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);

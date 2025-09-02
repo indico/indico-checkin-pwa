@@ -13,6 +13,7 @@ import {HandleError} from '../../hooks/useError';
 import {
   getParticipantByUuid as getParticipant,
   getParticipantDataFromCustomQRCode,
+  IndicoParticipant,
 } from '../../utils/client';
 import {isRecord} from '../../utils/typeguards';
 import {
@@ -20,7 +21,6 @@ import {
   redirectUri,
   QRCodeEventData,
   QRCodeParticipantData,
-  parseQRCodeParticipantData,
 } from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
@@ -168,7 +168,7 @@ export async function parseCustomQRCodeData(
   decodedText: string,
   errorModal: ErrorModalFunction,
   customQRCodes: CustomQRCodes
-): Promise<QRCodeParticipantData | null> {
+): Promise<IndicoParticipant | null> {
   for (const customQRCode in customQRCodes) {
     const customQRCodeData = customQRCodes[customQRCode];
     let regex;
@@ -192,10 +192,7 @@ export async function parseCustomQRCodeData(
         qrCodeName: customQRCode,
       });
       if (response.ok) {
-        const parsedData = parseQRCodeParticipantData(response.data);
-        if (parsedData) {
-          return parsedData;
-        }
+        return response.data;
       }
     }
   }
