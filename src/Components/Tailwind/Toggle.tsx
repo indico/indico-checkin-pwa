@@ -61,13 +61,21 @@ export const Toggle = ({
   );
 };
 
-interface CheckinToggleProps {
+interface CheckInStateToggleProps {
   checked: boolean;
   isLoading: boolean;
+  checkInState: string;
+  label: string;
   onClick: () => void;
 }
 
-export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps) => {
+export const CheckInStateToggle = ({
+  checked,
+  isLoading,
+  checkInState,
+  label,
+  onClick,
+}: CheckInStateToggleProps) => {
   return (
     <label
       style={{WebkitTapHighlightColor: 'transparent'}}
@@ -84,7 +92,7 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
       />
       <div
         className={`peer relative flex h-16 w-44 items-center rounded-full
-                    bg-gray-200 px-5 after:absolute after:left-[4px] after:top-[4px] after:z-[3]
+                    bg-gray-200 px-3 after:absolute after:left-[4px] after:top-[4px] after:z-[3]
                     after:h-14 after:w-14 after:rounded-full
                     after:border after:border-gray-300 after:bg-white after:transition-all
                     after:duration-[200ms] after:content-[''] peer-checked:bg-blue-600
@@ -106,10 +114,10 @@ export const CheckinToggle = ({checked, isLoading, onClick}: CheckinToggleProps)
                           checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                         }`}
           >
-            <span className="pl-1 text-white dark:text-gray-200">Checked in</span>
+            <span className="pl-1 text-white dark:text-gray-200">{checkInState}</span>
           </div>
           <div className="absolute bottom-[20%] left-0 right-0 top-[20%] z-[1] flex items-center justify-end">
-            <span className="pr-4 text-gray-800 dark:text-gray-200">Check in</span>
+            <span className="pr-4 text-gray-800 dark:text-gray-200">{label}</span>
           </div>
         </div>
       </div>

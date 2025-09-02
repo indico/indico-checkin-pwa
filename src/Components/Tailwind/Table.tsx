@@ -7,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   UserGroupIcon,
   XMarkIcon,
+  ArrowLeftCircleIcon,
 } from '@heroicons/react/20/solid';
 import {Participant, RegistrationTag} from '../../db/db';
 import {
@@ -114,6 +115,7 @@ export default function Table({
         key={p.id}
         fullName={p.fullName}
         checkedIn={p.checkedIn}
+        checkedOut={p.checkedOut}
         state={p.state}
         isEven={i % 2 === 0}
         onClick={() => onRowClick(p)}
@@ -250,12 +252,13 @@ function filterParticipants(participants: Participant[], data: SearchData) {
 interface RowProps {
   fullName: string;
   checkedIn: boolean;
+  checkedOut: boolean;
   state: RegistrationState;
   onClick: () => void;
   isEven: boolean;
 }
 
-function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
+function Row({fullName, checkedIn, checkedOut, state, onClick, isEven}: RowProps) {
   const background: HTMLElement['className'] = isEven
     ? 'bg-gray-200 dark:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-600'
     : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600';
@@ -285,6 +288,7 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
             {state === 'pending' && <ExclamationCircleIcon className="h-6 w-6 text-yellow-500" />}
             {state === 'unpaid' && <BanknotesIcon className="h-6 w-6 text-yellow-500" />}
             {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
+            {checkedOut && <ArrowLeftCircleIcon className="h-6 w-6 text-red-500" />}
           </div>
         </div>
       </td>

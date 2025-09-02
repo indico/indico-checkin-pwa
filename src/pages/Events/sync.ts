@@ -66,9 +66,15 @@ export async function syncEvent(event: Event, signal: AbortSignal, handleError: 
   return syncEvents([event], signal, handleError);
 }
 
-export async function syncRegforms(event: Event, signal: AbortSignal, handleError: HandleError) {
+export async function syncRegforms(
+  event: Event,
+  signal: AbortSignal,
+  handleError: HandleError,
+  checkTypeId?: number
+) {
   const response = await getRegforms(
     {serverId: event.serverId, eventId: event.indicoId},
+    checkTypeId,
     {
       signal,
     }
@@ -94,10 +100,16 @@ export async function syncRegform(
   event: Event,
   regform: Regform,
   signal: AbortSignal,
-  handleError: HandleError
+  handleError: HandleError,
+  checkTypeId?: number
 ) {
   const response = await getRegform(
-    {serverId: event.serverId, eventId: event.indicoId, regformId: regform.indicoId},
+    {
+      serverId: event.serverId,
+      eventId: event.indicoId,
+      regformId: regform.indicoId,
+    },
+    checkTypeId,
     {
       signal,
     }
@@ -116,10 +128,12 @@ export async function syncParticipants(
   event: Event,
   regform: Regform,
   signal: AbortSignal,
-  handleError: HandleError
+  handleError: HandleError,
+  checkTypeId?: number
 ) {
   const response = await getParticipants(
     {serverId: event.serverId, eventId: event.indicoId, regformId: regform.indicoId},
+    checkTypeId,
     {
       signal,
     }
@@ -153,7 +167,8 @@ export async function syncParticipant(
   regform: Regform,
   participant: Participant,
   signal: AbortSignal,
-  handleError: HandleError
+  handleError: HandleError,
+  checkTypeId?: number
 ) {
   const response = await getParticipant(
     {
@@ -162,6 +177,7 @@ export async function syncParticipant(
       regformId: regform.indicoId,
       participantId: participant.indicoId,
     },
+    checkTypeId,
     {
       signal,
     }

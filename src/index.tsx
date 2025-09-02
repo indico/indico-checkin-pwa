@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import {CheckTypeProvider} from './context/CheckTypeProvider';
 import {LogsProvider} from './context/LogsProvider';
 import {ModalContextProvider} from './context/ModalContextProvider';
 import {SettingsProvider} from './context/SettingsProvider';
@@ -13,7 +14,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 // DB
 async function runDBCleanup() {
   await db.transaction('readwrite', db.participants, async () => {
-    await db.participants.where({checkedInLoading: 1}).modify({checkedInLoading: 0});
+    await db.participants.where({checkedStateLoading: 1}).modify({checkedStateLoading: 0});
     await db.participants.where({isPaidLoading: 1}).modify({isPaidLoading: 0});
   });
 }
@@ -26,7 +27,9 @@ root.render(
     <ModalContextProvider>
       <SettingsProvider>
         <LogsProvider>
-          <App />
+          <CheckTypeProvider>
+            <App />
+          </CheckTypeProvider>
         </LogsProvider>
       </SettingsProvider>
     </ModalContextProvider>

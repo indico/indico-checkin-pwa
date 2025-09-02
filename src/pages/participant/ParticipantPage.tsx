@@ -7,13 +7,14 @@ import {
   UserIcon,
   BanknotesIcon,
 } from '@heroicons/react/20/solid';
+import {CheckType} from '../../Components/CheckTypeDropdown';
 import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
-import {CheckinToggle} from '../../Components/Tailwind/Toggle';
+import {CheckInStateToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
 import db, {
   Event,
@@ -26,6 +27,7 @@ import db, {
   getRegform,
   getParticipant,
 } from '../../db/db';
+import useCheckTypes from '../../hooks/useCheckTypes';
 import {useHandleError} from '../../hooks/useError';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
@@ -34,7 +36,7 @@ import {formatDatetime} from '../../utils/date';
 import {makeDebounce} from '../../utils/debounce';
 import {playVibration} from '../../utils/haptics';
 import {playErrorSound} from '../../utils/sound';
-import {checkIn} from '../Events/checkin';
+import {CheckInOrOut} from '../Events/checkin';
 import {syncEvent, syncParticipant, syncRegform} from '../Events/sync';
 import {NotFoundBanner} from '../NotFound';
 import AccompanyingPersons from './AccompanyingPersons';
@@ -97,12 +99,19 @@ function ParticipantPageContent({
   const navigate = useNavigate();
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
-  const {soundEffect, hapticFeedback} = useSettings();
+  const {soundEffect, hapticFeedback, strictCheckIn, checkOutEnabled} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
-  const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
+  const showCheckedInWarning = useRef<boolean>(
+    !!state?.fromScan && !!participant?.checkedIn && !checkOutEnabled
+  );
+  const showCheckedOutWarning = useRef<boolean>(
+    !!state?.fromScan && !!participant?.checkedOut && checkOutEnabled
+  );
   const handleError = useHandleError();
+  const {checkTypes} = useCheckTypes();
+  const ownCheckType = checkTypes && checkTypes[eventId] ? checkTypes[eventId] : undefined;
 
   useEffect(() => {
     // remove autoCheckin and fromScan from location state
@@ -126,6 +135,21 @@ function ParticipantPageContent({
         });
       }
     }
+    if (showCheckedOutWarning.current) {
+      showCheckedOutWarning.current = false;
+      if (participant?.checkedOut && participant?.checkedOutDt) {
+        playErrorSound();
+        if (hapticFeedback) {
+          playVibration.error();
+        }
+        errorModal({
+          title: 'Participant already checked out',
+          content: `This participant was checked out on ${formatDatetime(
+            participant.checkedOutDt
+          )}`,
+        });
+      }
+    }
   }, [participant, errorModal, hapticFeedback]);
 
   const accompanyingPersons = useMemo(() => {
@@ -135,22 +159,31 @@ function ParticipantPageContent({
     return [];
   }, [participant]);
 
-  const performCheckin = useCallback(
-    async (event: Event, regform: Regform, participant: Participant, newCheckinState: boolean) => {
+  const performCheckInOrOut = useCallback(
+    async (
+      event: Event,
+      regform: Regform,
+      participant: Participant,
+      newCheckInState: boolean,
+      checkOut: boolean = false,
+      checkType: CheckType
+    ) => {
       if (offline) {
         errorModal({title: 'You are offline', content: 'Check-in requires an internet connection'});
         return;
       }
 
       try {
-        await checkIn(
+        await CheckInOrOut(
           event,
           regform,
           participant,
-          newCheckinState,
+          newCheckInState,
           soundEffect,
           hapticFeedback,
-          handleError
+          handleError,
+          checkOut,
+          checkType.id
         );
       } catch (e) {
         handleError(e, 'Could not update check-in status');
@@ -170,14 +203,34 @@ function ParticipantPageContent({
       if (!event || !regform || !participant) {
         return;
       }
+      const checktype = ownCheckType ? ownCheckType : event.defaultCheckType;
 
       setAutoCheckin(false);
-      if (autoCheckin && !participant.checkedIn) {
-        await performCheckin(event, regform, participant, true);
+      if (
+        autoCheckin &&
+        ((!participant.checkedIn && !checkOutEnabled) ||
+          (!participant.checkedOut && checkOutEnabled))
+      ) {
+        if (strictCheckIn && participant.state !== 'complete') {
+          errorModal({
+            title: 'Registration incomplete',
+            content:
+              'Only completed registrations are allowed to be checked in. To change this setting, go to the settings page.',
+          });
+          return;
+        }
+        await performCheckInOrOut(event, regform, participant, true, checkOutEnabled, checktype);
       } else {
         await syncEvent(event, controller.signal, handleError);
-        await syncRegform(event, regform, controller.signal, handleError);
-        await syncParticipant(event, regform, participant, controller.signal, handleError);
+        await syncRegform(event, regform, controller.signal, handleError, checktype.id);
+        await syncParticipant(
+          event,
+          regform,
+          participant,
+          controller.signal,
+          handleError,
+          checktype.id
+        );
       }
     }
 
@@ -186,7 +239,18 @@ function ParticipantPageContent({
     });
 
     return () => controller.abort();
-  }, [eventId, regformId, participantId, handleError, autoCheckin, offline, performCheckin]);
+  }, [
+    eventId,
+    regformId,
+    participantId,
+    handleError,
+    autoCheckin,
+    offline,
+    ownCheckType,
+    strictCheckIn,
+    checkOutEnabled,
+    performCheckInOrOut,
+  ]);
 
   if (!event) {
     return <NotFoundBanner text="Event not found" icon={<CalendarDaysIcon />} />;
@@ -203,8 +267,17 @@ function ParticipantPageContent({
     });
   };
 
-  const onCheckInToggle = async () => {
+  const onCheckInStateToggle = async (checkOut: boolean) => {
     if (!event || !regform || !participant) {
+      return;
+    }
+
+    if (strictCheckIn && participant.state !== 'complete') {
+      errorModal({
+        title: 'Registration incomplete',
+        content:
+          'Only completed registrations are allowed to be checked in. To change this setting, go to the settings page.',
+      });
       return;
     }
 
@@ -213,7 +286,16 @@ function ParticipantPageContent({
       return;
     }
 
-    await performCheckin(event, regform, participant, !participant.checkedIn);
+    const checkType = ownCheckType ? ownCheckType : event.defaultCheckType;
+
+    await performCheckInOrOut(
+      event,
+      regform,
+      participant,
+      checkOut ? !participant.checkedOut : !participant.checkedIn,
+      checkOut,
+      checkType
+    );
   };
 
   let registrationData;
@@ -270,12 +352,27 @@ function ParticipantPageContent({
             </div>
           </div>
 
-          <div className="mb-4 mt-4 flex justify-center">
-            <CheckinToggle
-              checked={participant.checkedIn}
-              isLoading={!!participant.checkedInLoading}
-              onClick={onCheckInToggle}
-            />
+          <div className="mb-4 mt-4 flex flex flex-col items-center justify-center gap-2 px-4">
+            <span className={`w-fit text-sm font-medium text-gray-500 dark:text-gray-400`}>
+              Check: {ownCheckType ? ownCheckType.title : event.defaultCheckType.title}
+            </span>
+            {checkOutEnabled ? (
+              <CheckInStateToggle
+                checked={participant.checkedOut}
+                isLoading={!!participant.checkedStateLoading}
+                checkInState="Checked out"
+                label="Check out"
+                onClick={() => onCheckInStateToggle(true)}
+              />
+            ) : (
+              <CheckInStateToggle
+                checked={participant.checkedIn}
+                isLoading={!!participant.checkedStateLoading}
+                checkInState="Checked in"
+                label="Check in"
+                onClick={() => onCheckInStateToggle(false)}
+              />
+            )}
           </div>
           {participant.state === 'unpaid' && (
             <PaymentWarning
