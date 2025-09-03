@@ -8,7 +8,7 @@ interface QRCodeServerData {
   clientId: string;
   scope: string;
 }
-interface CustomQRCodeRegex {
+interface CustomQRCodeHandlers {
   [name: string]: string;
 }
 
@@ -19,7 +19,7 @@ export interface QRCodeEventData {
   date: string;
   regformTitle: string;
   server: QRCodeServerData;
-  customCodeHandlers?: CustomQRCodeRegex;
+  customCodeHandlers: CustomQRCodeHandlers;
 }
 
 export function validateEventData(data: unknown): data is QRCodeEventData {
@@ -55,7 +55,7 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
     return false;
   }
-  const customCodeHandlers = data?.customCodeHandlers ?? {};
+  const customCodeHandlers = data.customCodeHandlers;
   if (customCodeHandlers && !isRecord(customCodeHandlers)) {
     return false;
   }

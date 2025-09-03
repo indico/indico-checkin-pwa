@@ -320,12 +320,8 @@ describe('test handleEvent()', () => {
     } as QRCodeEventData;
     const errorModal = vi.fn();
     const navigate = vi.fn();
-    const customQRCodes = {};
-    const setCustomQRCodes = vi.fn();
 
-    await expect(
-      handleEvent(data, errorModal, navigate, customQRCodes, setCustomQRCodes)
-    ).resolves.not.toThrow();
+    await expect(handleEvent(data, errorModal, navigate)).resolves.not.toThrow();
 
     const event = await db.events.get(1);
     const regform = await db.regforms.get(1);

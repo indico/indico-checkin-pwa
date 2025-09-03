@@ -1,13 +1,14 @@
 import {NavigateFunction} from 'react-router-dom';
 import {OAuth2Client, generateCodeVerifier} from '@badgateway/oauth2-client';
 import {ErrorModalFunction} from '../../context/ModalContextProvider';
-import {CustomQRCodes} from '../../context/SettingsProvider';
 import db, {
   addEventIfNotExists,
   addParticipant,
   addRegformIfNotExists,
   getServer,
+  getServers,
   updateParticipant,
+  updateServer,
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
 import {
@@ -15,7 +16,6 @@ import {
   getParticipantDataFromCustomQRCode,
   IndicoParticipant,
 } from '../../utils/client';
-import {isRecord} from '../../utils/typeguards';
 import {
   discoveryEndpoint,
   redirectUri,
@@ -59,14 +59,15 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
 export async function handleEvent(
   data: QRCodeEventData,
   errorModal: ErrorModalFunction,
-  navigate: NavigateFunction,
-  customQRCodes: CustomQRCodes,
-  setCustomQRCodes: (v: CustomQRCodes) => void
+  navigate: NavigateFunction
 ) {
   // Check if the serverData is already in indexedDB
   const server = await getServer({baseUrl: data.server.baseUrl});
   if (server) {
     // No need to perform authentication
+    if (server.customCodeHandlers !== data.customCodeHandlers) {
+      await updateServer(server.id, data.customCodeHandlers);
+    }
     let id!: number;
     const {eventId: eventIndicoId, regformId: regformIndicoId, title, date, regformTitle} = data;
     await db.transaction('readwrite', db.events, db.regforms, async () => {
@@ -79,21 +80,6 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-    if (data.customCodeHandlers && isRecord(data.customCodeHandlers)) {
-      const customCodeHandlers = data.customCodeHandlers;
-      let newCustomQRCodes = {...customQRCodes};
-      for (const customCodeHandler in customCodeHandlers) {
-        newCustomQRCodes = {
-          ...newCustomQRCodes,
-          [customCodeHandler]: {
-            regex: customCodeHandlers[customCodeHandler],
-            baseUrl: server.baseUrl,
-          },
-        };
-      }
-      setCustomQRCodes(newCustomQRCodes);
-      localStorage.setItem('customQRCodes', JSON.stringify(newCustomQRCodes));
-    }
     navigate(`/event/${id}`, {replace: true});
   } else {
     // Perform OAuth2 Authorization Code Flow
@@ -164,21 +150,36 @@ export async function handleParticipant(
   }
 }
 
+interface CustomCodeHandlerWithBaseUrl {
+  baseUrl: string;
+  name: string;
+  regex: string;
+}
+
 export async function parseCustomQRCodeData(
   decodedText: string,
-  errorModal: ErrorModalFunction,
-  customQRCodes: CustomQRCodes
+  errorModal: ErrorModalFunction
 ): Promise<IndicoParticipant | null> {
-  for (const customQRCode in customQRCodes) {
-    const customQRCodeData = customQRCodes[customQRCode];
+  const availableServers = await getServers();
+  const customCodeHandlers: CustomCodeHandlerWithBaseUrl[] = availableServers.flatMap(server =>
+    server.customCodeHandlers
+      ? Object.entries(server.customCodeHandlers).map(([name, regex]) => ({
+          baseUrl: server.baseUrl,
+          name,
+          regex,
+        }))
+      : []
+  );
+
+  for (const customCodeHandler of customCodeHandlers) {
     let regex;
     try {
-      regex = new RegExp(customQRCodeData.regex);
+      regex = new RegExp(customCodeHandler.regex);
     } catch {
       return null;
     }
     if (regex.test(decodedText)) {
-      const server = await db.servers.get({baseUrl: customQRCodeData.baseUrl});
+      const server = await db.servers.get({baseUrl: customCodeHandler.baseUrl});
       if (!server) {
         errorModal({
           title: 'The server of this participant does not exist',
@@ -189,7 +190,7 @@ export async function parseCustomQRCodeData(
       const response = await getParticipantDataFromCustomQRCode({
         serverId: server.id,
         data: decodedText,
-        qrCodeName: customQRCode,
+        qrCodeName: customCodeHandler.name,
       });
       if (response.ok) {
         return response.data;

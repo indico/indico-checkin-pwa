@@ -6,11 +6,15 @@ import {deepEqual} from '../utils/deep_equal';
 
 export type IDBBoolean = 1 | 0; // IndexedDB doesn't support indexing booleans, so we use {1,0} instead
 
+export interface CustomCodeHandlers {
+  [key: string]: string;
+}
 interface _Server {
   baseUrl: string;
   clientId: string;
   scope: string;
   authToken: string;
+  customCodeHandlers: CustomCodeHandlers;
 }
 export interface Server extends _Server {
   id: number;
@@ -140,7 +144,7 @@ type GetParticipant =
 
 class IndicoCheckin extends Dexie {
   // Declare implicit table properties.
-  // (just to inform Typescript. Instanciated by Dexie in stores() method)
+  // (just to inform Typescript. Instantiated by Dexie in stores() method)
   servers!: EntityTable<Server, 'id'>;
   events!: EntityTable<Event, 'id'>;
   regforms!: EntityTable<Regform, 'id'>;
@@ -148,8 +152,8 @@ class IndicoCheckin extends Dexie {
 
   constructor() {
     super('CheckinDatabase');
-    this.version(2).stores({
-      servers: 'id++, baseUrl, clientId',
+    this.version(3).stores({
+      servers: 'id++, baseUrl, clientId, customCodeHandlers',
       events: 'id++, indicoId, serverId, deleted, [indicoId+serverId]',
       regforms:
         'id++, indicoId, eventId, deleted, [id+eventId], [indicoId+eventId], [eventId+deleted]',
@@ -376,6 +380,10 @@ export async function addParticipants(data: AddParticipant[]) {
   } else {
     return await db.participants.bulkAdd(participants);
   }
+}
+
+export async function updateServer(id: number, data: CustomCodeHandlers) {
+  await db.servers.update(id, {customCodeHandlers: data});
 }
 
 export async function deleteEvent(id: number) {

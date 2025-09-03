@@ -6,8 +6,6 @@ import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
-import useSettings from '../../hooks/useSettings';
-import {isRecord} from '../../utils/typeguards';
 import {wait} from '../../utils/wait';
 import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
 
@@ -38,7 +36,6 @@ const AuthRedirectPage = () => {
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<{title?: string; description?: string} | null>(null);
-  const {customQRCodes, setCustomQRCodes} = useSettings();
 
   useEffect(() => {
     const onLoad = async () => {
@@ -70,6 +67,7 @@ const AuthRedirectPage = () => {
         date,
         regformTitle,
         server: {baseUrl, clientId, scope},
+        customCodeHandlers,
       } = eventData;
 
       // The user is now at the redirectUri (Back to the App), so we can now get the access token
@@ -96,6 +94,7 @@ const AuthRedirectPage = () => {
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
+          customCodeHandlers,
         });
         eventId = await addEvent({
           indicoId: indicoEventId,
@@ -116,23 +115,6 @@ const AuthRedirectPage = () => {
         });
         return;
       }
-
-      if (eventData.customCodeHandlers && isRecord(eventData.customCodeHandlers)) {
-        const customCodeHandlers = eventData.customCodeHandlers;
-        let newCustomQRCodes = {...customQRCodes};
-        for (const customCodeHandler in customCodeHandlers) {
-          newCustomQRCodes = {
-            ...newCustomQRCodes,
-            [customCodeHandler]: {
-              regex: customCodeHandlers[customCodeHandler],
-              baseUrl: baseUrl,
-            },
-          };
-        }
-        setCustomQRCodes(newCustomQRCodes);
-        localStorage.setItem('customQRCodes', JSON.stringify(newCustomQRCodes));
-      }
-
       setSuccess(true);
       await wait(2000).then(() =>
         navigate(`/event/${eventId}`, {
