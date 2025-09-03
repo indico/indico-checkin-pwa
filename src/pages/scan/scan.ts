@@ -65,9 +65,7 @@ export async function handleEvent(
   const server = await getServer({baseUrl: data.server.baseUrl});
   if (server) {
     // No need to perform authentication
-    if (server.customCodeHandlers !== data.customCodeHandlers) {
-      await updateServer(server.id, data.customCodeHandlers);
-    }
+    await updateServer(server.id, data.customCodeHandlers);
     let id!: number;
     const {eventId: eventIndicoId, regformId: regformIndicoId, title, date, regformTitle} = data;
     await db.transaction('readwrite', db.events, db.regforms, async () => {
