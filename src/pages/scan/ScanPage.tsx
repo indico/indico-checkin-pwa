@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
+import {VideoCameraSlashIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {
   ExternalQRScannerDevice,
   FileUploadScanner,
@@ -157,9 +157,14 @@ export default function ScanPage() {
       {scanWithKeyboard && (
         <>
           {!scanWithCamera && !processing && (
-            <Typography variant="h3" className="text-center">
-              Awaiting keyboard input...
-            </Typography>
+            <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
+              <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
+                <QrCodeIcon className="w-20 text-gray-500" />
+                <Typography variant="h3" className="text-center">
+                  Awaiting input from a scanner device
+                </Typography>
+              </div>
+            </div>
           )}
           <ExternalQRScannerDevice
             qrCodeSuccessCallback={onScanResult}
