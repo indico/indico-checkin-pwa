@@ -148,50 +148,28 @@ export async function handleParticipant(
   }
 }
 
-interface CustomCodeHandlerWithBaseUrl {
-  baseUrl: string;
-  name: string;
-  regex: string;
-}
-
 export async function parseCustomQRCodeData(
-  decodedText: string,
-  errorModal: ErrorModalFunction
+  decodedText: string
 ): Promise<IndicoParticipant | null> {
   const availableServers = await getServers();
-  const customCodeHandlers: CustomCodeHandlerWithBaseUrl[] = availableServers.flatMap(server =>
-    server.customCodeHandlers
-      ? Object.entries(server.customCodeHandlers).map(([name, regex]) => ({
-          baseUrl: server.baseUrl,
-          name,
-          regex,
-        }))
-      : []
-  );
-
-  for (const customCodeHandler of customCodeHandlers) {
-    let regex;
-    try {
-      regex = new RegExp(customCodeHandler.regex);
-    } catch {
-      return null;
-    }
-    if (regex.test(decodedText)) {
-      const server = await db.servers.get({baseUrl: customCodeHandler.baseUrl});
-      if (!server) {
-        errorModal({
-          title: 'The server of this participant does not exist',
-          content: 'Scan an event QR code first and try again.',
-        });
-        return null;
+  for (const server of availableServers) {
+    const customCodeHandlers = server.customCodeHandlers;
+    for (const customCodeHandler in customCodeHandlers) {
+      let regex;
+      try {
+        regex = new RegExp(customCodeHandlers[customCodeHandler]);
+      } catch {
+        continue;
       }
-      const response = await getParticipantDataFromCustomQRCode({
-        serverId: server.id,
-        data: decodedText,
-        qrCodeName: customCodeHandler.name,
-      });
-      if (response.ok) {
-        return response.data;
+      if (regex.test(decodedText)) {
+        const response = await getParticipantDataFromCustomQRCode({
+          serverId: server.id,
+          data: decodedText,
+          qrCodeName: customCodeHandler,
+        });
+        if (response.ok) {
+          return response.data;
+        }
       }
     }
   }

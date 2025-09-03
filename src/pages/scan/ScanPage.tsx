@@ -34,7 +34,7 @@ export default function ScanPage() {
     }
     setProcessing(true);
 
-    let scannedData = await parseCustomQRCodeData(decodedText, errorModal);
+    let scannedData = await parseCustomQRCodeData(decodedText);
     if (!scannedData) {
       try {
         scannedData = JSON.parse(decodedText);
