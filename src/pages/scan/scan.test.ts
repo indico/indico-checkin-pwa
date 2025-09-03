@@ -21,6 +21,7 @@ const dummyServer = {
   clientId: '1234',
   scope: 'registrants',
   authToken: '0000',
+  customCodeHandlers: {},
 };
 
 const dummyEvent = {
