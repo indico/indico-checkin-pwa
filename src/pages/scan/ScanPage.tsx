@@ -8,7 +8,7 @@ import QrScannerPlugin, {
 import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
-import {useHandleError} from '../../hooks/useError';
+import {useHandleError, useLogError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
@@ -26,6 +26,7 @@ export default function ScanPage() {
   const handleError = useHandleError();
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
+  const logError = useLogError();
 
   async function processCode(decodedText: string) {
     if (processing) {
@@ -35,7 +36,7 @@ export default function ScanPage() {
     setProcessing(true);
     let validCustomCode, scannedData;
     // eslint-disable-next-line prefer-const
-    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText);
+    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText, logError);
     if (validCustomCode && !scannedData) {
       errorModal({
         title: 'No registration found for custom QR code',
@@ -53,7 +54,7 @@ export default function ScanPage() {
     }
 
     scannedData = camelizeKeys(scannedData);
-    if (validateEventData(scannedData)) {
+    if (validateEventData(scannedData, logError)) {
       if (offline) {
         errorModal({
           title: 'You are offline',

@@ -10,7 +10,7 @@ import db, {
   updateParticipant,
   updateServer,
 } from '../../db/db';
-import {HandleError} from '../../hooks/useError';
+import {HandleError, LogError} from '../../hooks/useError';
 import {
   getParticipantByUuid as getParticipant,
   getParticipantDataFromCustomQRCode,
@@ -149,7 +149,8 @@ export async function handleParticipant(
 }
 
 export async function parseCustomQRCodeData(
-  decodedText: string
+  decodedText: string,
+  logError: LogError
 ): Promise<[boolean, IndicoParticipant | null]> {
   let matchOne = false;
   const availableServers = await getServers();
@@ -162,6 +163,9 @@ export async function parseCustomQRCodeData(
       } catch {
         console.error(
           `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom qr code handler ${customCodeHandler}`
+        );
+        logError(
+          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler: ${customCodeHandler}`
         );
         continue;
       }

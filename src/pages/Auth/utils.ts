@@ -1,3 +1,4 @@
+import {LogError} from '../../hooks/useError';
 import {isRecord} from '../../utils/typeguards';
 
 export const redirectUri = `${window.location.origin}/auth/redirect`;
@@ -22,7 +23,7 @@ export interface QRCodeEventData {
   customCodeHandlers: CustomQRCodeHandlers;
 }
 
-export function validateEventData(data: unknown): data is QRCodeEventData {
+export function validateEventData(data: unknown, logError: LogError): data is QRCodeEventData {
   if (!isRecord(data)) {
     return false;
   }
@@ -70,8 +71,8 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
       try {
         new RegExp(customCodeHandlers[customCodeHandler]);
       } catch {
-        console.error(
-          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler ${customCodeHandler}`
+        logError(
+          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler: ${customCodeHandler}`
         );
         return false;
       }
