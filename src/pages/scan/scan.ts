@@ -161,9 +161,6 @@ export async function parseCustomQRCodeData(
       try {
         regex = new RegExp(customCodeHandlers[customCodeHandler]);
       } catch {
-        console.error(
-          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom qr code handler ${customCodeHandler}`
-        );
         logError(
           `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler: ${customCodeHandler}`
         );
