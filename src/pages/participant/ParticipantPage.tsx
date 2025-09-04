@@ -103,21 +103,20 @@ function ParticipantPageContent({
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
-  const isRapidCheckin = useRef<boolean>(
-    !!state.fromScan && !!state?.autoCheckin && !!state?.rapidCheckin
-  );
-  const rapidCheckinTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const isRapidMode = useRef<boolean>(!!state.fromScan && !!state?.rapidMode);
+  const rapidModeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const rapidModeTimeout = 3000;
   const handleError = useHandleError();
   const {closeModal} = useModalData();
 
   useEffect(() => {
-    // remove autoCheckin, rapidCheckin and fromScan state from location state
+    // remove autoCheckin, rapidMode and fromScan state from location state
     if (
       state?.autoCheckin !== undefined ||
       state?.fromScan !== undefined ||
-      state?.rapidCheckin !== undefined
+      state?.rapidMode !== undefined
     ) {
-      const {autoCheckin, fromScan, rapidCheckin, ...rest} = state || {};
+      const {autoCheckin, fromScan, rapidMode, ...rest} = state || {};
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
@@ -139,32 +138,33 @@ function ParticipantPageContent({
   }, [participant, errorModal, hapticFeedback]);
 
   useEffect(() => {
-    rapidCheckinTimeoutRef.current = setTimeout(() => {
-      if (isRapidCheckin.current) {
+    rapidModeTimeoutRef.current = setTimeout(() => {
+      if (isRapidMode.current) {
         closeModal();
-        isRapidCheckin.current = false;
+        isRapidMode.current = false;
         navigate('/scan');
       }
-    }, 3000);
+    }, rapidModeTimeout);
 
-    const resetRapidCheckin = () => {
-      isRapidCheckin.current = false;
-      if (rapidCheckinTimeoutRef.current) {
-        clearTimeout(rapidCheckinTimeoutRef.current);
+    const resetRapidMode = () => {
+      setShowProgressBar(false);
+      isRapidMode.current = false;
+      if (rapidModeTimeoutRef.current) {
+        clearTimeout(rapidModeTimeoutRef.current);
       }
     };
 
-    document.addEventListener('scroll', resetRapidCheckin, {passive: true});
-    document.addEventListener('click', resetRapidCheckin, {passive: true});
-    document.addEventListener('pointerdown', resetRapidCheckin, {passive: true});
-    document.addEventListener('touchstart', resetRapidCheckin, {passive: true});
+    document.addEventListener('scroll', resetRapidMode, {passive: true});
+    document.addEventListener('click', resetRapidMode, {passive: true});
+    document.addEventListener('pointerdown', resetRapidMode, {passive: true});
+    document.addEventListener('touchstart', resetRapidMode, {passive: true});
 
     return () => {
-      clearTimeout(rapidCheckinTimeoutRef.current);
-      document.removeEventListener('scroll', resetRapidCheckin);
-      document.removeEventListener('click', resetRapidCheckin);
-      document.removeEventListener('pointerdown', resetRapidCheckin);
-      document.removeEventListener('touchstart', resetRapidCheckin);
+      clearTimeout(rapidModeTimeoutRef.current);
+      document.removeEventListener('scroll', resetRapidMode);
+      document.removeEventListener('click', resetRapidMode);
+      document.removeEventListener('pointerdown', resetRapidMode);
+      document.removeEventListener('touchstart', resetRapidMode);
     };
   }, []);
 
