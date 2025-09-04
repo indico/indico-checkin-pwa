@@ -54,7 +54,7 @@ export default function ScanPage() {
     }
 
     scannedData = camelizeKeys(scannedData);
-    if (validateEventData(scannedData, logError)) {
+    if (validateEventData(scannedData, handleError)) {
       if (offline) {
         errorModal({
           title: 'You are offline',

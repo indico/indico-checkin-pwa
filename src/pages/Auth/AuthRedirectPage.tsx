@@ -6,7 +6,7 @@ import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
-import {useLogError} from '../../hooks/useError';
+import {useHandleError} from '../../hooks/useError';
 import {wait} from '../../utils/wait';
 import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
 
@@ -37,7 +37,7 @@ const AuthRedirectPage = () => {
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<{title?: string; description?: string} | null>(null);
-  const logError = useLogError();
+  const handleError = useHandleError();
 
   useEffect(() => {
     const onLoad = async () => {
@@ -57,7 +57,7 @@ const AuthRedirectPage = () => {
         return;
       }
 
-      if (!validateEventData(eventData, logError)) {
+      if (!validateEventData(eventData, handleError)) {
         setError({title: 'Invalid QR Code data'});
         return;
       }
