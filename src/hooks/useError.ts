@@ -109,3 +109,8 @@ export const useHandleError = () => {
  * The type of the function returned by 'useHandleError()'
  */
 export type HandleError = (obj: FailedResponse | unknown, msg: string) => void;
+
+/**
+ * The type of the function returned by 'useLogError()'
+ */
+export type LogError = (msg: string) => void;

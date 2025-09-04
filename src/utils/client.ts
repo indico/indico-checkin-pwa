@@ -228,3 +228,18 @@ export async function togglePayment(
     }
   );
 }
+
+export async function getParticipantDataFromCustomQRCode({
+  serverId,
+  data,
+  qrCodeName,
+}: {
+  serverId: number;
+  data: string;
+  qrCodeName: string;
+}) {
+  return makeRequest<IndicoParticipant>(serverId, `api/checkin/ticket/custom-qr-code`, {
+    method: 'POST',
+    body: JSON.stringify({data: data, qr_name: qrCodeName}),
+  });
+}

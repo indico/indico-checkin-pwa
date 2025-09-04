@@ -1,3 +1,4 @@
+import {HandleError} from '../../hooks/useError';
 import {isRecord} from '../../utils/typeguards';
 
 export const redirectUri = `${window.location.origin}/auth/redirect`;
@@ -8,6 +9,9 @@ interface QRCodeServerData {
   clientId: string;
   scope: string;
 }
+interface CustomQRCodeHandlers {
+  [name: string]: string;
+}
 
 export interface QRCodeEventData {
   eventId: number;
@@ -16,9 +20,13 @@ export interface QRCodeEventData {
   date: string;
   regformTitle: string;
   server: QRCodeServerData;
+  customCodeHandlers: CustomQRCodeHandlers;
 }
 
-export function validateEventData(data: unknown): data is QRCodeEventData {
+export function validateEventData(
+  data: unknown,
+  handleError: HandleError
+): data is QRCodeEventData {
   if (!isRecord(data)) {
     return false;
   }
@@ -50,6 +58,29 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
   }
   if (typeof clientId !== 'string' || typeof scope !== 'string') {
     return false;
+  }
+  const customCodeHandlers = data.customCodeHandlers;
+  if (customCodeHandlers && !isRecord(customCodeHandlers)) {
+    return false;
+  }
+  if (isRecord(customCodeHandlers)) {
+    for (const customCodeHandler in customCodeHandlers) {
+      if (typeof customCodeHandler !== 'string') {
+        return false;
+      }
+      if (typeof customCodeHandlers[customCodeHandler] !== 'string') {
+        return false;
+      }
+      try {
+        new RegExp(customCodeHandlers[customCodeHandler]);
+      } catch (e) {
+        handleError(
+          e,
+          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler: ${customCodeHandler}`
+        );
+        // We don't return false here but that doesn't affect the data that ends up in the DB as it is validated again.
+      }
+    }
   }
   return true;
 }
@@ -129,4 +160,19 @@ function decodeCheckinSecret(base64String: string): string {
   ]
     .map(p => p.join(''))
     .join('-');
+}
+
+export function getCleanCustomCodeHandlers(
+  customCodeHandlers: CustomQRCodeHandlers
+): CustomQRCodeHandlers {
+  return Object.fromEntries(
+    Object.entries(customCodeHandlers).filter(([, value]) => {
+      try {
+        new RegExp(value);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+  );
 }

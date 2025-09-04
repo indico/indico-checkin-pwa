@@ -8,14 +8,14 @@ import QrScannerPlugin, {
 import {Typography} from '../../Components/Tailwind';
 import LoadingBanner from '../../Components/Tailwind/LoadingBanner';
 import TopNav from '../../Components/TopNav';
-import {useHandleError} from '../../hooks/useError';
+import {useHandleError, useLogError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
 import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
-import {handleEvent, handleParticipant} from './scan';
+import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
@@ -26,6 +26,7 @@ export default function ScanPage() {
   const handleError = useHandleError();
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
+  const logError = useLogError();
 
   async function processCode(decodedText: string) {
     if (processing) {
@@ -33,17 +34,27 @@ export default function ScanPage() {
       return;
     }
     setProcessing(true);
-
-    let scannedData;
-    try {
-      scannedData = JSON.parse(decodedText);
-    } catch (e) {
-      handleError(e, 'Error parsing the QRCode data');
+    let validCustomCode, scannedData;
+    // eslint-disable-next-line prefer-const
+    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText, logError);
+    if (validCustomCode && !scannedData) {
+      errorModal({
+        title: 'No registration found for custom QR code',
+        content: 'Could not find a registration matching the provided QR code',
+      });
       return;
+    }
+    if (!scannedData) {
+      try {
+        scannedData = JSON.parse(decodedText);
+      } catch (e) {
+        handleError(e, 'Error parsing the QR code data');
+        return;
+      }
     }
 
     scannedData = camelizeKeys(scannedData);
-    if (validateEventData(scannedData)) {
+    if (validateEventData(scannedData, handleError)) {
       if (offline) {
         errorModal({
           title: 'You are offline',
