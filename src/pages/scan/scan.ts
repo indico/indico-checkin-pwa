@@ -21,6 +21,7 @@ import {
   redirectUri,
   QRCodeEventData,
   QRCodeParticipantData,
+  getCleanCustomCodeHandlers,
 } from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
@@ -65,7 +66,7 @@ export async function handleEvent(
   const server = await getServer({baseUrl: data.server.baseUrl});
   if (server) {
     // No need to perform authentication
-    await updateServer(server.id, data.customCodeHandlers);
+    await updateServer(server.id, getCleanCustomCodeHandlers(data.customCodeHandlers));
     let id!: number;
     const {eventId: eventIndicoId, regformId: regformIndicoId, title, date, regformTitle} = data;
     await db.transaction('readwrite', db.events, db.regforms, async () => {

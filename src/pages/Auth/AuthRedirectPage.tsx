@@ -8,7 +8,13 @@ import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
 import {useHandleError} from '../../hooks/useError';
 import {wait} from '../../utils/wait';
-import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
+import {
+  discoveryEndpoint,
+  getCleanCustomCodeHandlers,
+  QRCodeEventData,
+  redirectUri,
+  validateEventData,
+} from './utils';
 
 async function getToken(baseUrl: string, clientId: string, codeVerifier: string) {
   const client = new OAuth2Client({
@@ -96,7 +102,7 @@ const AuthRedirectPage = () => {
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
-          customCodeHandlers,
+          customCodeHandlers: getCleanCustomCodeHandlers(customCodeHandlers),
         });
         eventId = await addEvent({
           indicoId: indicoEventId,

@@ -78,6 +78,7 @@ export function validateEventData(
           e,
           `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler: ${customCodeHandler}`
         );
+        // We don't return false here but that doesn't affect the data that ends up in the DB as it is validated again.
       }
     }
   }
@@ -159,4 +160,19 @@ function decodeCheckinSecret(base64String: string): string {
   ]
     .map(p => p.join(''))
     .join('-');
+}
+
+export function getCleanCustomCodeHandlers(
+  customCodeHandlers: CustomQRCodeHandlers
+): CustomQRCodeHandlers {
+  return Object.fromEntries(
+    Object.entries(customCodeHandlers).filter(([, value]) => {
+      try {
+        new RegExp(value);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+  );
 }
