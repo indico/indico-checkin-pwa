@@ -179,7 +179,7 @@ describe('test handleParticipant()', () => {
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true, fromScan: true, rapidCheckin: false},
+      state: {autoCheckin: true, fromScan: true, rapidMode: false},
     });
   });
 
@@ -303,7 +303,7 @@ describe('test handleParticipant()', () => {
     expect(navigate.mock.calls).toHaveLength(1);
     expect(navigate).toHaveBeenCalledWith('/event/1/1/1', {
       replace: true,
-      state: {autoCheckin: true, fromScan: true, rapidCheckin: false},
+      state: {autoCheckin: true, fromScan: true, rapidMode: false},
     });
   });
 });
