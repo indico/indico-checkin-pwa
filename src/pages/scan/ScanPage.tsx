@@ -38,7 +38,7 @@ export default function ScanPage() {
     [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText);
     if (validCustomCode && !scannedData) {
       errorModal({
-        title: 'No registration found for custom qr code',
+        title: 'No registration found for custom QR code',
         content: 'Could not find a registration matching the provided QR code',
       });
       return;
@@ -47,7 +47,7 @@ export default function ScanPage() {
       try {
         scannedData = JSON.parse(decodedText);
       } catch (e) {
-        handleError(e, 'Error parsing the QRCode data');
+        handleError(e, 'Error parsing the QR code data');
         return;
       }
     }
