@@ -6,10 +6,16 @@ import db, {
   addParticipant,
   addRegformIfNotExists,
   getServer,
+  getServers,
   updateParticipant,
+  updateServer,
 } from '../../db/db';
 import {HandleError} from '../../hooks/useError';
-import {getParticipantByUuid as getParticipant} from '../../utils/client';
+import {
+  getParticipantByUuid as getParticipant,
+  getParticipantDataFromCustomQRCode,
+  IndicoParticipant,
+} from '../../utils/client';
 import {
   discoveryEndpoint,
   redirectUri,
@@ -59,6 +65,7 @@ export async function handleEvent(
   const server = await getServer({baseUrl: data.server.baseUrl});
   if (server) {
     // No need to perform authentication
+    await updateServer(server.id, data.customCodeHandlers);
     let id!: number;
     const {eventId: eventIndicoId, regformId: regformIndicoId, title, date, regformTitle} = data;
     await db.transaction('readwrite', db.events, db.regforms, async () => {
@@ -71,7 +78,6 @@ export async function handleEvent(
       });
       await addRegformIfNotExists({indicoId: regformIndicoId, eventId: id, title: regformTitle});
     });
-
     navigate(`/event/${id}`, {replace: true});
   } else {
     // Perform OAuth2 Authorization Code Flow
@@ -85,7 +91,8 @@ export async function handleParticipant(
   errorModal: ErrorModalFunction,
   handleError: HandleError,
   navigate: NavigateFunction,
-  autoCheckin: boolean
+  autoCheckin: boolean,
+  rapidMode: boolean
 ) {
   const server = await db.servers.get({baseUrl: data.serverUrl});
   if (!server) {
@@ -135,9 +142,39 @@ export async function handleParticipant(
     const participantPage = `/event/${regform.eventId}/${regform.id}/${participantId}`;
     navigate(participantPage, {
       replace: true,
-      state: {autoCheckin, fromScan: true},
+      state: {autoCheckin, rapidMode, fromScan: true},
     });
   } else {
     handleError(response, 'Could not fetch participant data');
   }
+}
+
+export async function parseCustomQRCodeData(
+  decodedText: string
+): Promise<[boolean, IndicoParticipant | null]> {
+  let matchOne = false;
+  const availableServers = await getServers();
+  for (const server of availableServers) {
+    const customCodeHandlers = server.customCodeHandlers;
+    for (const customCodeHandler in customCodeHandlers) {
+      let regex;
+      try {
+        regex = new RegExp(customCodeHandlers[customCodeHandler]);
+      } catch {
+        continue;
+      }
+      if (regex.test(decodedText)) {
+        matchOne = true;
+        const response = await getParticipantDataFromCustomQRCode({
+          serverId: server.id,
+          data: decodedText,
+          qrCodeName: customCodeHandler,
+        });
+        if (response.ok) {
+          return [true, response.data];
+        }
+      }
+    }
+  }
+  return [matchOne, null];
 }

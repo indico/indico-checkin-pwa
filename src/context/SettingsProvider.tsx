@@ -5,10 +5,14 @@ interface SettingsContextProps {
   setDarkMode: (v: boolean) => void;
   autoCheckin: boolean;
   setAutoCheckin: (v: boolean) => void;
+  rapidMode: boolean;
+  setRapidMode: (v: boolean) => void;
   hapticFeedback: boolean;
   setHapticFeedback: (v: boolean) => void;
   soundEffect: string;
   setSoundEffect: (v: string) => void;
+  scanDevice: string;
+  setScanDevice: (v: string) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -16,10 +20,14 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setDarkMode: () => {},
   autoCheckin: false,
   setAutoCheckin: () => {},
+  rapidMode: false,
+  setRapidMode: () => {},
   hapticFeedback: false,
   setHapticFeedback: () => {},
   soundEffect: 'None',
   setSoundEffect: () => {},
+  scanDevice: 'Camera',
+  setScanDevice: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -31,13 +39,18 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
     (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [darkMode, setDarkMode] = useState(isDarkMode);
 
-  const storedCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
-  const [autoCheckin, setAutoCheckin] = useState(storedCheckin);
+  const storedAutoCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
+  const [autoCheckin, setAutoCheckin] = useState(storedAutoCheckin);
+
+  const storedRapidMode = JSON.parse(localStorage.getItem('rapidMode') || 'false');
+  const [rapidMode, setRapidMode] = useState(storedRapidMode);
 
   const storedHapticFeedback = JSON.parse(localStorage.getItem('hapticFeedback') || 'false');
   const [hapticFeedback, setHapticFeedback] = useState(storedHapticFeedback);
 
   const [soundEffect, setSoundEffect] = useState(localStorage.getItem('soundEffect') || 'None');
+
+  const [scanDevice, setScanDevice] = useState(localStorage.getItem('scanDevice') || 'Camera');
 
   return (
     <SettingsContext.Provider
@@ -46,8 +59,12 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setDarkMode,
         autoCheckin,
         setAutoCheckin,
+        rapidMode,
+        setRapidMode,
         soundEffect,
         setSoundEffect,
+        scanDevice,
+        setScanDevice,
         hapticFeedback,
         setHapticFeedback,
       }}

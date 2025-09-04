@@ -67,6 +67,7 @@ const AuthRedirectPage = () => {
         date,
         regformTitle,
         server: {baseUrl, clientId, scope},
+        customCodeHandlers,
       } = eventData;
 
       // The user is now at the redirectUri (Back to the App), so we can now get the access token
@@ -93,6 +94,7 @@ const AuthRedirectPage = () => {
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
+          customCodeHandlers,
         });
         eventId = await addEvent({
           indicoId: indicoEventId,
@@ -113,7 +115,6 @@ const AuthRedirectPage = () => {
         });
         return;
       }
-
       setSuccess(true);
       await wait(2000).then(() =>
         navigate(`/event/${eventId}`, {
