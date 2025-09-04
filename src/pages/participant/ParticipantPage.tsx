@@ -13,6 +13,7 @@ import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
+import TopProgressBar from '../../Components/Tailwind/ProgressBar';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
 import db, {
@@ -105,6 +106,7 @@ function ParticipantPageContent({
   const isRapidMode = useRef<boolean>(!!state.fromScan && !!state?.rapidMode);
   const rapidModeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const rapidModeTimeout = 3000;
+  const [showProgressBar, setShowProgressBar] = useState<boolean>(isRapidMode.current);
   const handleError = useHandleError();
   const {closeModal} = useModalData();
 
@@ -274,6 +276,7 @@ function ParticipantPageContent({
 
   return (
     <>
+      {showProgressBar && <TopProgressBar duration={rapidModeTimeout} />}
       <div className="px-4">
         <div className="mt-2 flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 px-4">
