@@ -70,6 +70,9 @@ export function validateEventData(data: unknown): data is QRCodeEventData {
       try {
         new RegExp(customCodeHandlers[customCodeHandler]);
       } catch {
+        console.error(
+          `Invalid regex: "${customCodeHandlers[customCodeHandler]}" for custom code handler ${customCodeHandler}`
+        );
         return false;
       }
     }
