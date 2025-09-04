@@ -318,6 +318,7 @@ describe('test handleEvent()', () => {
       title: 'Dummy event',
       date: '2020-01-01',
       regformTitle: 'Dummy regform',
+      customCodeHandlers: {},
     } as QRCodeEventData;
     const errorModal = vi.fn();
     const navigate = vi.fn();
