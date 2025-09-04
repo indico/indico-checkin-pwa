@@ -150,7 +150,8 @@ export async function handleParticipant(
 
 export async function parseCustomQRCodeData(
   decodedText: string
-): Promise<IndicoParticipant | null> {
+): Promise<[boolean, IndicoParticipant | null]> {
+  let matchOne = false;
   const availableServers = await getServers();
   for (const server of availableServers) {
     const customCodeHandlers = server.customCodeHandlers;
@@ -162,16 +163,17 @@ export async function parseCustomQRCodeData(
         continue;
       }
       if (regex.test(decodedText)) {
+        matchOne = true;
         const response = await getParticipantDataFromCustomQRCode({
           serverId: server.id,
           data: decodedText,
           qrCodeName: customCodeHandler,
         });
         if (response.ok) {
-          return response.data;
+          return [true, response.data];
         }
       }
     }
   }
-  return null;
+  return [matchOne, null];
 }

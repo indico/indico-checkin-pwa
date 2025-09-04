@@ -33,8 +33,16 @@ export default function ScanPage() {
       return;
     }
     setProcessing(true);
-
-    let scannedData = await parseCustomQRCodeData(decodedText);
+    let validCustomCode, scannedData;
+    // eslint-disable-next-line prefer-const
+    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText);
+    if (validCustomCode && !scannedData) {
+      errorModal({
+        title: 'No registration found for custom qr code',
+        content: 'Could not find a registration matching the provided QR code',
+      });
+      return;
+    }
     if (!scannedData) {
       try {
         scannedData = JSON.parse(decodedText);
