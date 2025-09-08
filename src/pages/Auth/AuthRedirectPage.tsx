@@ -102,7 +102,7 @@ const AuthRedirectPage = () => {
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
-          customCodeHandlers: getCleanCustomCodeHandlers(customCodeHandlers),
+          customCodeHandlers: getCleanCustomCodeHandlers(customCodeHandlers ?? {}),
         });
         eventId = await addEvent({
           indicoId: indicoEventId,
