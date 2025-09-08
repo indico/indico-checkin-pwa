@@ -97,7 +97,7 @@ function MainSettings() {
           onChange={onSoundEffectChange}
         />
         <SettingDropdown
-          title="Check-in device"
+          title="Scanning device"
           values={Object.keys(scanDevices).map(k => scanDevices[k as keyof typeof scanDevices])}
           selected={scanDevice}
           onChange={onScanDeviceChange}

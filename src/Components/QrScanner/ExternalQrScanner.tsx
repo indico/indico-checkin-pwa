@@ -75,11 +75,11 @@ export default function ExternalQrScanner() {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [autoCheckin]);
 
   return (
     <div className="fixed inset-x-0 top-4 z-50">
-      {processing && <LoadingBanner text="Scanning.." />}
+      {processing && <LoadingBanner text="Scanning..." />}
     </div>
   );
 }
