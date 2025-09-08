@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Download artifact from parent workflow
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs')
@@ -39,7 +39,7 @@ jobs:
       - run: unzip lighthouse.zip
 
       - name: Delete old comments
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs')
@@ -62,7 +62,7 @@ jobs:
             })
 
       - name: Create new comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs')
