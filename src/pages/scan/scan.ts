@@ -11,6 +11,7 @@ import db, {
   updateServer,
 } from '../../db/db';
 import {HandleError, LogError} from '../../hooks/useError';
+import {camelizeKeys} from '../../utils/case';
 import {
   getParticipantByUuid as getParticipant,
   getParticipantDataFromCustomQRCode,
@@ -22,6 +23,8 @@ import {
   QRCodeEventData,
   QRCodeParticipantData,
   getCleanCustomCodeHandlers,
+  validateEventData,
+  parseQRCodeParticipantData,
 } from '../Auth/utils';
 
 async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunction) {
@@ -182,4 +185,80 @@ export async function parseCustomQRCodeData(
     }
   }
   return [matchOne, null];
+}
+
+export async function processCode(
+  decodedText: string,
+  processing: boolean,
+  setProcessing: (processing: boolean) => void,
+  offline: boolean,
+  navigate: NavigateFunction,
+  errorModal: ErrorModalFunction,
+  handleError: HandleError,
+  logError: LogError,
+  autoCheckin: boolean,
+  rapidMode: boolean
+) {
+  if (processing) {
+    // Prevent multiple scans at the same time
+    return;
+  }
+  setProcessing(true);
+  let validCustomCode, scannedData;
+  // eslint-disable-next-line prefer-const
+  [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText, logError);
+  if (validCustomCode && !scannedData) {
+    errorModal({
+      title: 'No registration found for custom QR code',
+      content: 'Could not find a registration matching the provided QR code',
+    });
+    return;
+  }
+  if (!scannedData) {
+    try {
+      scannedData = JSON.parse(decodedText);
+    } catch (e) {
+      handleError(e, 'Error parsing the QR code data');
+      return;
+    }
+  }
+
+  scannedData = camelizeKeys(scannedData);
+  if (validateEventData(scannedData, handleError)) {
+    if (offline) {
+      errorModal({
+        title: 'You are offline',
+        content: 'Internet connection is required to add a registration form',
+      });
+      return;
+    }
+
+    try {
+      await handleEvent(scannedData, errorModal, navigate);
+    } catch (e) {
+      handleError(e, 'Error processing QR code');
+    }
+    return;
+  }
+
+  const parsedData = parseQRCodeParticipantData(scannedData);
+  if (parsedData) {
+    try {
+      await handleParticipant(
+        parsedData,
+        errorModal,
+        handleError,
+        navigate,
+        autoCheckin,
+        rapidMode
+      );
+    } catch (e) {
+      handleError(e, 'Error processing QR code');
+    }
+  } else {
+    errorModal({
+      title: 'QR code data is not valid',
+      content: 'Some fields are missing. Please try again',
+    });
+  }
 }

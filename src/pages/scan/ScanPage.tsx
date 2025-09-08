@@ -2,7 +2,6 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {VideoCameraSlashIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {
-  ExternalQRScannerDevice,
   FileUploadScanner,
   scanFile,
 } from '../../Components/QrScanner/QrScannerPlugin';
@@ -13,11 +12,9 @@ import {useHandleError, useLogError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
-import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
 import {scanDevices} from '../../utils/scan_device';
-import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
-import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
+import {processCode} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
@@ -29,78 +26,23 @@ export default function ScanPage() {
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
   const logError = useLogError();
-  const scanWithCamera = scanDevice === scanDevices.camera || scanDevice === scanDevices.both;
-  const scanWithKeyboard =
-    scanDevice === scanDevices.externalKeyboard || scanDevice === scanDevices.both;
-
-  async function processCode(decodedText: string) {
-    if (processing) {
-      // Prevent multiple scans at the same time
-      return;
-    }
-    setProcessing(true);
-    let validCustomCode, scannedData;
-    // eslint-disable-next-line prefer-const
-    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText, logError);
-    if (validCustomCode && !scannedData) {
-      errorModal({
-        title: 'No registration found for custom QR code',
-        content: 'Could not find a registration matching the provided QR code',
-      });
-      return;
-    }
-    if (!scannedData) {
-      try {
-        scannedData = JSON.parse(decodedText);
-      } catch (e) {
-        handleError(e, 'Error parsing the QR code data');
-        return;
-      }
-    }
-
-    scannedData = camelizeKeys(scannedData);
-    if (validateEventData(scannedData, handleError)) {
-      if (offline) {
-        errorModal({
-          title: 'You are offline',
-          content: 'Internet connection is required to add a registration form',
-        });
-        return;
-      }
-
-      try {
-        await handleEvent(scannedData, errorModal, navigate);
-      } catch (e) {
-        handleError(e, 'Error processing QR code');
-      }
-      return;
-    }
-
-    const parsedData = parseQRCodeParticipantData(scannedData);
-    if (parsedData) {
-      try {
-        await handleParticipant(
-          parsedData,
-          errorModal,
-          handleError,
-          navigate,
-          autoCheckin,
-          rapidMode
-        );
-      } catch (e) {
-        handleError(e, 'Error processing QR code');
-      }
-    } else {
-      errorModal({
-        title: 'QR code data is not valid',
-        content: 'Some fields are missing. Please try again',
-      });
-    }
-  }
+  const scanWithCamera = scanDevice !== scanDevices.externalKeyboard;
+  const scanWithKeyboard = scanDevice !== scanDevices.camera;
 
   const onScanResult = async (decodedText: string, _: unknown) => {
     try {
-      await processCode(decodedText);
+      await processCode(
+        decodedText,
+        processing,
+        setProcessing,
+        offline,
+        navigate,
+        errorModal,
+        handleError,
+        logError,
+        autoCheckin,
+        rapidMode
+      );
     } catch (e) {
       handleError(e, 'Error processing QR code');
     } finally {
@@ -128,7 +70,7 @@ export default function ScanPage() {
     }
   };
 
-  const fileUploadVisible = !processing && scanWithCamera && (isDesktop || import.meta.env.DEV);
+  const fileUploadVisible = !processing && (isDesktop || import.meta.env.DEV);
 
   return (
     <div>
@@ -149,11 +91,6 @@ export default function ScanPage() {
           </div>
         </div>
       )}
-      {fileUploadVisible && (
-        <div className="mt-6">
-          <FileUploadScanner onFileUpload={onFileUpload} />
-        </div>
-      )}
       {scanWithKeyboard && (
         <>
           {!scanWithCamera && !processing && (
@@ -166,12 +103,12 @@ export default function ScanPage() {
               </div>
             </div>
           )}
-          <ExternalQRScannerDevice
-            qrCodeSuccessCallback={onScanResult}
-            processing={processing}
-            setProcessing={setProcessing}
-          />
         </>
+      )}
+      {fileUploadVisible && (
+        <div className="mt-6">
+          <FileUploadScanner onFileUpload={onFileUpload} />
+        </div>
       )}
     </div>
   );
