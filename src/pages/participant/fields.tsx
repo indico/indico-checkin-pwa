@@ -289,7 +289,7 @@ function PictureField({title, description, data}: FieldProps) {
   }
 
   // fallback to showing the filename only if it's not a valid URL
-  const isValidUrl = data.startsWith('http://') || data.startsWith('https://');
+  const isValidUrl = data?.url.startsWith('http://') || data?.url.startsWith('https://');
   if (!isValidUrl) {
     return (
       <div>
@@ -302,7 +302,7 @@ function PictureField({title, description, data}: FieldProps) {
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <img src={data} alt={title} />
+      <img src={data.url} alt={title} />
     </div>
   );
 }
