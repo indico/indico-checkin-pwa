@@ -6,8 +6,15 @@ import {Button, Typography} from '../../Components/Tailwind';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import TopNav from '../../Components/TopNav';
 import {addEvent, addRegform, addServer} from '../../db/db';
+import {useHandleError} from '../../hooks/useError';
 import {wait} from '../../utils/wait';
-import {discoveryEndpoint, QRCodeEventData, redirectUri, validateEventData} from './utils';
+import {
+  discoveryEndpoint,
+  getCleanCustomCodeHandlers,
+  QRCodeEventData,
+  redirectUri,
+  validateEventData,
+} from './utils';
 
 async function getToken(baseUrl: string, clientId: string, codeVerifier: string) {
   const client = new OAuth2Client({
@@ -36,6 +43,7 @@ const AuthRedirectPage = () => {
   const {state} = useLocation();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<{title?: string; description?: string} | null>(null);
+  const handleError = useHandleError();
 
   useEffect(() => {
     const onLoad = async () => {
@@ -55,7 +63,7 @@ const AuthRedirectPage = () => {
         return;
       }
 
-      if (!validateEventData(eventData)) {
+      if (!validateEventData(eventData, handleError)) {
         setError({title: 'Invalid QR Code data'});
         return;
       }
@@ -67,6 +75,7 @@ const AuthRedirectPage = () => {
         date,
         regformTitle,
         server: {baseUrl, clientId, scope},
+        customCodeHandlers,
       } = eventData;
 
       // The user is now at the redirectUri (Back to the App), so we can now get the access token
@@ -93,6 +102,7 @@ const AuthRedirectPage = () => {
           clientId,
           scope,
           authToken: oauth2Token.accessToken,
+          customCodeHandlers: getCleanCustomCodeHandlers(customCodeHandlers ?? {}),
         });
         eventId = await addEvent({
           indicoId: indicoEventId,
@@ -113,7 +123,6 @@ const AuthRedirectPage = () => {
         });
         return;
       }
-
       setSuccess(true);
       await wait(2000).then(() =>
         navigate(`/event/${eventId}`, {
