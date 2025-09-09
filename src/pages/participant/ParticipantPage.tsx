@@ -13,6 +13,7 @@ import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
 import Title from '../../Components/Tailwind/PageTitle';
+import TopProgressBar from '../../Components/Tailwind/ProgressBar';
 import {CheckinToggle} from '../../Components/Tailwind/Toggle';
 import TopNav from '../../Components/TopNav';
 import db, {
@@ -27,7 +28,7 @@ import db, {
   getParticipant,
 } from '../../db/db';
 import {useHandleError} from '../../hooks/useError';
-import {useErrorModal} from '../../hooks/useModal';
+import {useErrorModal, useModalData} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
 import {useIsOffline} from '../../utils/client';
 import {formatDatetime} from '../../utils/date';
@@ -102,12 +103,21 @@ function ParticipantPageContent({
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
+  const isRapidMode = useRef<boolean>(!!state.fromScan && !!state?.rapidMode);
+  const rapidModeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const rapidModeTimeout = 2500;
+  const [showProgressBar, setShowProgressBar] = useState<boolean>(isRapidMode.current);
   const handleError = useHandleError();
+  const {closeModal} = useModalData();
 
   useEffect(() => {
-    // remove autoCheckin and fromScan from location state
-    if (state?.autoCheckin !== undefined || state?.fromScan !== undefined) {
-      const {autoCheckin, fromScan, ...rest} = state || {};
+    // remove autoCheckin, rapidMode and fromScan state from location state
+    if (
+      state?.autoCheckin !== undefined ||
+      state?.fromScan !== undefined ||
+      state?.rapidMode !== undefined
+    ) {
+      const {autoCheckin, fromScan, rapidMode, ...rest} = state || {};
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
@@ -127,6 +137,37 @@ function ParticipantPageContent({
       }
     }
   }, [participant, errorModal, hapticFeedback]);
+
+  useEffect(() => {
+    rapidModeTimeoutRef.current = setTimeout(() => {
+      if (isRapidMode.current) {
+        closeModal();
+        isRapidMode.current = false;
+        navigate('/scan');
+      }
+    }, rapidModeTimeout);
+
+    const resetRapidMode = () => {
+      setShowProgressBar(false);
+      isRapidMode.current = false;
+      if (rapidModeTimeoutRef.current) {
+        clearTimeout(rapidModeTimeoutRef.current);
+      }
+    };
+
+    document.addEventListener('scroll', resetRapidMode, {passive: true});
+    document.addEventListener('click', resetRapidMode, {passive: true});
+    document.addEventListener('pointerdown', resetRapidMode, {passive: true});
+    document.addEventListener('touchstart', resetRapidMode, {passive: true});
+
+    return () => {
+      clearTimeout(rapidModeTimeoutRef.current);
+      document.removeEventListener('scroll', resetRapidMode);
+      document.removeEventListener('click', resetRapidMode);
+      document.removeEventListener('pointerdown', resetRapidMode);
+      document.removeEventListener('touchstart', resetRapidMode);
+    };
+  }, []);
 
   const accompanyingPersons = useMemo(() => {
     if (participant?.registrationData) {
@@ -235,6 +276,7 @@ function ParticipantPageContent({
 
   return (
     <>
+      {showProgressBar && <TopProgressBar duration={rapidModeTimeout} />}
       <div className="px-4">
         <div className="mt-2 flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 px-4">
