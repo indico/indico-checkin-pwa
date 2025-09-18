@@ -73,6 +73,9 @@ function MainSettings() {
   const onScanDeviceChange = (v: string) => {
     localStorage.setItem('scanDevice', v);
     setScanDevice(v);
+    if (v === scanDevices.externalKeyboard) {
+      setRapidMode(false);
+    }
   };
 
   return (
@@ -84,23 +87,25 @@ function MainSettings() {
           checked={autoCheckin}
           onToggle={toggleAutoCheckin}
         />
-        <SettingToggle
-          title="Rapid mode"
-          description="Automatically return to the scan page after each scan"
-          checked={rapidMode}
-          onToggle={toggleRapidMode}
-        />
-        <SettingDropdown
-          title="Check-in sound effect"
-          values={Object.keys(sounds)}
-          selected={soundEffect}
-          onChange={onSoundEffectChange}
-        />
         <SettingDropdown
           title="Scanning device"
           values={Object.keys(scanDevices).map(k => scanDevices[k as keyof typeof scanDevices])}
           selected={scanDevice}
           onChange={onScanDeviceChange}
+        />
+        {scanDevice !== scanDevices.externalKeyboard && (
+          <SettingToggle
+            title="Rapid mode"
+            description="Automatically return to the scan page after each scan"
+            checked={rapidMode}
+            onToggle={toggleRapidMode}
+          />
+        )}
+        <SettingDropdown
+          title="Check-in sound effect"
+          values={Object.keys(sounds)}
+          selected={soundEffect}
+          onChange={onSoundEffectChange}
         />
         <SettingToggle
           title="Haptic feedback"
