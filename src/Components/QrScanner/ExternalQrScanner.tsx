@@ -81,7 +81,7 @@ export default function ExternalQrScanner() {
 
   return (
     <>
-      {true && (
+      {processing && (
         <div className="fixed inset-0 z-50 bg-gray-100 dark:bg-gray-800">
           <TopNav
             backBtnText="Cancel"
