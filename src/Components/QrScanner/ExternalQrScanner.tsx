@@ -6,6 +6,7 @@ import useSettings from '../../hooks/useSettings';
 import {processCode} from '../../pages/scan/scan';
 import {useIsOffline} from '../../utils/client';
 import LoadingBanner from '../Tailwind/LoadingBanner';
+import TopNav from '../TopNav';
 
 export default function ExternalQrScanner() {
   const scannedStringRef = useRef('');
@@ -44,6 +45,7 @@ export default function ExternalQrScanner() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      e.stopPropagation();
       if (scannedStringRef.current?.length > 3) {
         setProcessing(true);
       }
@@ -78,8 +80,19 @@ export default function ExternalQrScanner() {
   }, [autoCheckin]);
 
   return (
-    <div className="fixed inset-x-0 top-4 z-50">
-      {processing && <LoadingBanner text="Scanning..." />}
-    </div>
+    <>
+      {true && (
+        <div className="fixed inset-0 z-50 bg-gray-100 dark:bg-gray-800">
+          <TopNav
+            backBtnText="Cancel"
+            backNavigateTo="/"
+            onBackBtnClick={() => setProcessing(false)}
+          />
+          <div className="flex items-center justify-center">
+            <LoadingBanner text="Scanning..." />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
