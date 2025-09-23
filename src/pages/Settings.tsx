@@ -96,7 +96,7 @@ function MainSettings() {
         {scanDevice !== scanDevices.externalKeyboard && (
           <SettingToggle
             title="Rapid mode"
-            description="Automatically return to the scan page after each scan"
+            description="Automatically return to the scan page after each camera scan"
             checked={rapidMode}
             onToggle={toggleRapidMode}
           />
