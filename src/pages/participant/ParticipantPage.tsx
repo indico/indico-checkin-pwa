@@ -119,6 +119,12 @@ function ParticipantPageContent({
       state?.rapidMode !== undefined
     ) {
       const {autoCheckin, fromScan, rapidMode, ...rest} = state || {};
+      if (fromScan && !!participant?.checkedIn) {
+        showCheckedInWarning.current = true;
+      }
+      if (autoCheckin) {
+        setAutoCheckin(true);
+      }
       navigate('.', {replace: true, state: rest});
     }
   }, [navigate, state]);
