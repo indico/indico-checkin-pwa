@@ -11,6 +11,7 @@ import TopNav from '../TopNav';
 export default function ExternalQrScanner() {
   const scannedStringRef = useRef('');
   const currentKeyRef = useRef('');
+  const cancelTriggeredRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [processing, setProcessing] = useState(false);
   const errorModal = useErrorModal();
@@ -46,6 +47,9 @@ export default function ExternalQrScanner() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       e.stopPropagation();
+      if (cancelTriggeredRef.current) {
+        return;
+      }
       if (scannedStringRef.current?.length > 3) {
         setProcessing(true);
       }
@@ -79,15 +83,24 @@ export default function ExternalQrScanner() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [autoCheckin]);
 
+  const handleCancel = () => {
+    scannedStringRef.current = '';
+    currentKeyRef.current = '';
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    cancelTriggeredRef.current = true;
+    setTimeout(() => {
+      cancelTriggeredRef.current = false;
+    }, 5000);
+    setProcessing(false);
+  };
+
   return (
     <>
       {processing && (
         <div className="fixed inset-0 z-50 bg-gray-100 dark:bg-gray-800">
-          <TopNav
-            backBtnText="Cancel"
-            backNavigateTo="/"
-            onBackBtnClick={() => setProcessing(false)}
-          />
+          <TopNav backBtnText="Cancel" backNavigateTo="/" onBackBtnClick={handleCancel} />
           <div className="flex items-center justify-center">
             <LoadingBanner text="Scanning..." />
           </div>

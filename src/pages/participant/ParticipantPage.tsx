@@ -106,7 +106,7 @@ function ParticipantPageContent({
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
   const isRapidMode = useRef<boolean>(!!state.fromScan && !!state?.rapidMode);
   const rapidModeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const rapidModeTimeout = 2500;
+  const rapidModeTimeout = 3000;
   const [showProgressBar, setShowProgressBar] = useState<boolean>(isRapidMode.current);
   const handleError = useHandleError();
   const {closeModal} = useModalData();
