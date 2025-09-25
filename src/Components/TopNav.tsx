@@ -8,7 +8,6 @@ export default function TopNav({
   backBtnText,
   backNavigateTo,
   settingsItems,
-  onBackBtnClick,
 }: {
   backBtnText?: string;
   backNavigateTo?: string | number;
@@ -22,9 +21,6 @@ export default function TopNav({
   const page = backNavigateTo || '/';
 
   const onClick = async () => {
-    if (onBackBtnClick) {
-      onBackBtnClick();
-    }
     navigate('/');
   };
 
@@ -50,14 +46,8 @@ export default function TopNav({
             await wait(50);
             // Typescript...
             if (typeof page === 'number') {
-              if (onBackBtnClick) {
-                onBackBtnClick();
-              }
               navigate(page);
             } else {
-              if (onBackBtnClick) {
-                onBackBtnClick();
-              }
               navigate(page);
             }
           }}
