@@ -1,3 +1,4 @@
+import ParticipantPicture from '../../Components/ParticipantPicture';
 import {Typography} from '../../Components/Tailwind';
 import {formatDatetime} from '../../utils/date';
 
@@ -11,6 +12,7 @@ export interface FieldProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue: any;
   price?: number;
+  serverId?: number;
 }
 
 export interface Section {
@@ -283,8 +285,11 @@ export function getAccompanyingPersons(sections: Section[]) {
   return persons;
 }
 
-function PictureField({title, description, data}: FieldProps) {
+function PictureField({title, description, data, serverId}: FieldProps) {
   if (!data) {
+    return null;
+  }
+  if (!serverId) {
     return null;
   }
 
@@ -302,7 +307,12 @@ function PictureField({title, description, data}: FieldProps) {
   return (
     <div>
       <FieldHeader title={title} description={description} />
-      <img src={data} alt={title} />
+      <ParticipantPicture
+        pictureUrl={data}
+        serverId={serverId}
+        className="text-gray-800 dark:text-gray-300"
+        alt="title"
+      />
     </div>
   );
 }
