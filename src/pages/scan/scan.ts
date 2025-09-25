@@ -258,7 +258,7 @@ export async function processCode(
   } else {
     errorModal({
       title: 'QR code data is not valid',
-      content: 'Some fields are missing. Please try again',
+      content: 'Some fields are missing - Please try again',
     });
   }
 }
