@@ -311,7 +311,7 @@ function PictureField({title, description, data, serverId}: FieldProps) {
         pictureUrl={data}
         serverId={serverId}
         className="text-gray-800 dark:text-gray-300"
-        alt="title"
+        alt={title}
       />
     </div>
   );
