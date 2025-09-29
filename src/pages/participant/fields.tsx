@@ -294,8 +294,7 @@ function PictureField({title, description, data, serverId}: FieldProps) {
   }
 
   // fallback to showing the filename only if it's not a valid URL
-  const isValidUrl = data.startsWith('http://') || data.startsWith('https://');
-  if (!isValidUrl) {
+  if (!data.startsWith('/')) {
     return (
       <div>
         <FieldHeader title={title} description={description} />
