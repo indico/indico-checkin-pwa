@@ -6,7 +6,7 @@ interface ParticipantPictureProps {
   pictureUrl: string;
   serverId: number;
   className?: string;
-  alt?: string;
+  alt: string;
   useFallback?: boolean;
 }
 
