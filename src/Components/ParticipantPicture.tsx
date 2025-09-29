@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react';
 import {UserIcon} from '@heroicons/react/20/solid';
-import db from '../db/db';
-import {useLogError} from '../hooks/useError';
+import {getParticipantPicture} from '../utils/client';
 
 interface ParticipantPictureProps {
   pictureUrl: string;
@@ -19,39 +18,23 @@ export default function ParticipantPicture({
   useFallback = false,
 }: ParticipantPictureProps) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
-  const logError = useLogError();
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     let url: string | null = null;
 
-    const fetchPicture = async () => {
-      const server = await db.servers.get(serverId);
-      if (!server) {
-        logError(`Server (id <${serverId}>) not found in IndexedDB`);
-        return null;
+    (async () => {
+      const response = await getParticipantPicture(serverId, pictureUrl, {
+        signal: controller.signal,
+      });
+      if (response.ok) {
+        url = URL.createObjectURL(response.data);
+        setObjectUrl(url);
       }
-      try {
-        const resp = await fetch(pictureUrl, {
-          headers: {Authorization: `Bearer ${server.authToken}`},
-        });
-        if (!resp.ok) {
-          throw new Error(`${resp.status} ${resp.statusText}`);
-        }
-        const blob = await resp.blob();
-        url = URL.createObjectURL(blob);
-        if (!cancelled) {
-          setObjectUrl(url);
-        }
-      } catch (e) {
-        logError(`Error fetching participant picture: ${e}`);
-        return null;
-      }
-    };
+    })();
 
-    fetchPicture();
     return () => {
-      cancelled = true;
+      controller.abort();
       if (url) {
         URL.revokeObjectURL(url);
       }
