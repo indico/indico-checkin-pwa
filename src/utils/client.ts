@@ -106,7 +106,8 @@ type Response<T> = SuccessfulResponse<T> | FailedResponse;
 async function makeRequest<T>(
   serverId: number,
   endpoint: string,
-  options: object = {}
+  options: object = {},
+  asBlob: boolean = false
 ): Promise<Response<T>> {
   const server = await db.servers.get(serverId);
   if (!server) {
@@ -135,6 +136,16 @@ async function makeRequest<T>(
     }
     // Assume everything else is a network issue (impossible to distinguish from other TypeErrors)
     return {ok: false, network: true, endpoint, options, err: e};
+  }
+
+  if (asBlob && response.ok) {
+    let blob;
+    try {
+      blob = await response.blob();
+    } catch (e) {
+      return {ok: false, endpoint, options, err: e, description: 'response.blob() failed'};
+    }
+    return {ok: true, status: response.status, data: blob as T};
   }
 
   let data;
@@ -192,6 +203,14 @@ export async function getParticipant(
     `api/checkin/event/${eventId}/forms/${regformId}/registrations/${participantId}`,
     options
   );
+}
+
+export async function getParticipantPicture(
+  serverId: number,
+  pictureUrl: string,
+  options?: object
+) {
+  return makeRequest<Blob>(serverId, pictureUrl, options, true);
 }
 
 export async function getParticipantByUuid(

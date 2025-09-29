@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/20/solid';
 import GrowingTextArea from '../../Components/GrowingTextArea';
 import IconFeather from '../../Components/Icons/Feather';
+import ParticipantPicture from '../../Components/ParticipantPicture';
 import {Typography} from '../../Components/Tailwind';
 import IndicoLink from '../../Components/Tailwind/IndicoLink';
 import {LoadingIndicator} from '../../Components/Tailwind/LoadingIndicator';
@@ -227,6 +228,7 @@ function ParticipantPageContent({
         isFirst: i === 0,
         isLast: i === length - 1,
         isUnique: length === 1,
+        serverId: event.serverId,
       };
 
       return <RegistrationSection key={section.id} {...section} />;
@@ -239,10 +241,12 @@ function ParticipantPageContent({
         <div className="mt-2 flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 px-4">
             {participant.personalDataPicture ? (
-              <img
-                src={participant.personalDataPicture}
+              <ParticipantPicture
+                pictureUrl={participant.personalDataPicture}
+                serverId={event.serverId}
+                className="h-32 w-32 rounded-full text-gray-800 shadow-lg dark:text-gray-300"
                 alt="Personal data"
-                className="h-32 w-32 rounded-full shadow-lg"
+                useFallback
               />
             ) : (
               <UserIcon className="w-16 text-blue-600 dark:text-blue-700" />
@@ -342,10 +346,11 @@ interface SectionProps extends Section {
   isFirst: boolean;
   isLast: boolean;
   isUnique: boolean;
+  serverId: number;
 }
 
 function RegistrationSection(section: SectionProps) {
-  const {title, fields, isFirst, isLast, isUnique} = section;
+  const {title, fields, isFirst, isLast, isUnique, serverId} = section;
   const [isOpen, setIsOpen] = useState(false);
 
   let border = '';
@@ -396,7 +401,7 @@ function RegistrationSection(section: SectionProps) {
           className={`flex flex-col gap-2 border-l border-r px-5 py-5 dark:border-gray-700 ${expandedBorder}`}
         >
           {fields.map(field => (
-            <Field key={field.id} {...field} />
+            <Field key={field.id} {...field} serverId={serverId} />
           ))}
         </div>
       </div>
