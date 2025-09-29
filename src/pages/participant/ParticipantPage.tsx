@@ -246,7 +246,7 @@ function ParticipantPageContent({
                 serverId={event.serverId}
                 className="h-32 w-32 rounded-full text-gray-800 shadow-lg dark:text-gray-300"
                 alt="Personal data"
-                useFallback={true}
+                useFallback
               />
             ) : (
               <UserIcon className="w-16 text-blue-600 dark:text-blue-700" />
