@@ -19,7 +19,7 @@ export interface Section {
   id: number;
   title: string;
   description: string;
-  fields: FieldProps[];
+  fields: Omit<FieldProps, 'serverId'>[];
 }
 
 interface Choice {
