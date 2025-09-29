@@ -12,7 +12,7 @@ export interface FieldProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue: any;
   price?: number;
-  serverId?: number;
+  serverId: number;
 }
 
 export interface Section {
