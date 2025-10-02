@@ -9,6 +9,7 @@ import {
   ScrollRestoration,
 } from 'react-router-dom';
 import BottomNav from './Components/BottomNav';
+import ExternalQrScanner from './Components/QrScanner/ExternalQrScanner';
 import Modal from './Components/Tailwind/Modal/Modal';
 import db, {
   getEvent,
@@ -29,6 +30,7 @@ import {NotFoundPage} from './pages/NotFound';
 import ParticipantPage from './pages/participant/ParticipantPage';
 import RegformPage from './pages/regform/RegformPage';
 import SettingsPage from './pages/Settings';
+import {scanDevices} from './utils/scan_device';
 
 // Expose the db instance as a global variable for easier debugging
 (window as typeof window & {db: typeof db}).db = db;
@@ -54,6 +56,7 @@ const getNumericParams = (params: Params) => {
 
 function RootPage() {
   const {pathname} = useLocation();
+  const {scanDevice} = useSettings();
   const bottomNavVisible = pathname !== '/scan' && pathname !== '/auth/redirect';
 
   return (
@@ -61,6 +64,7 @@ function RootPage() {
       <ScrollRestoration />
       <Outlet />
       {bottomNavVisible && <BottomNav />}
+      {scanDevice !== scanDevices.camera && <ExternalQrScanner />}
     </>
   );
 }

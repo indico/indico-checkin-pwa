@@ -10,6 +10,7 @@ import {useHandleError} from '../hooks/useError';
 import {useLogs} from '../hooks/useLogs';
 import {useConfirmModal} from '../hooks/useModal';
 import useSettings from '../hooks/useSettings';
+import {scanDevices} from '../utils/scan_device';
 import {playSound, sounds} from '../utils/sound';
 
 export default function SettingsPage() {
@@ -31,8 +32,12 @@ function MainSettings() {
     setDarkMode,
     autoCheckin,
     setAutoCheckin,
+    rapidMode,
+    setRapidMode,
     soundEffect,
     setSoundEffect,
+    scanDevice,
+    setScanDevice,
     hapticFeedback,
     setHapticFeedback,
   } = useSettings();
@@ -49,6 +54,11 @@ function MainSettings() {
     setAutoCheckin(!autoCheckin);
   };
 
+  const toggleRapidMode = () => {
+    localStorage.setItem('rapidMode', (!rapidMode).toString());
+    setRapidMode(!rapidMode);
+  };
+
   const toggleHapticFeedback = () => {
     localStorage.setItem('hapticFeedback', (!hapticFeedback).toString());
     setHapticFeedback(!hapticFeedback);
@@ -60,6 +70,14 @@ function MainSettings() {
     playSound(v);
   };
 
+  const onScanDeviceChange = (v: string) => {
+    localStorage.setItem('scanDevice', v);
+    setScanDevice(v);
+    if (v === scanDevices.externalKeyboard) {
+      setRapidMode(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Check-in">
@@ -69,6 +87,20 @@ function MainSettings() {
           checked={autoCheckin}
           onToggle={toggleAutoCheckin}
         />
+        <SettingDropdown
+          title="Scanning device"
+          values={Object.keys(scanDevices).map(k => scanDevices[k as keyof typeof scanDevices])}
+          selected={scanDevice}
+          onChange={onScanDeviceChange}
+        />
+        {scanDevice !== scanDevices.externalKeyboard && (
+          <SettingToggle
+            title="Rapid mode"
+            description="Automatically return to the scan page after each camera scan"
+            checked={rapidMode}
+            onToggle={toggleRapidMode}
+          />
+        )}
         <SettingDropdown
           title="Check-in sound effect"
           values={Object.keys(sounds)}

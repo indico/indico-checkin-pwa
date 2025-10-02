@@ -12,6 +12,7 @@ export default function TopNav({
   backBtnText?: string;
   backNavigateTo?: string | number;
   settingsItems?: SettingsItem[];
+  onBackBtnClick?: () => void;
 }) {
   const navigate = useNavigate();
   const {pathname} = useLocation();
@@ -19,10 +20,14 @@ export default function TopNav({
   const btnText = backBtnText || '';
   const page = backNavigateTo || '/';
 
+  const onClick = async () => {
+    navigate('/');
+  };
+
   if (pathname === '/') {
     return (
       <div className="mb-4 flex justify-between bg-blue-600 p-2 dark:bg-blue-700">
-        <div className="flex h-12 items-center gap-4" onClick={() => navigate('/')}>
+        <div className="flex h-12 items-center gap-4" onClick={onClick}>
           <img src={Logo} alt="Logo" width={48} height={48}></img>
           <span className="whitespace-nowrap text-xl font-semibold text-white dark:text-gray-200">
             Indico check-in

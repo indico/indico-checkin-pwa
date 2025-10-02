@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {VideoCameraSlashIcon} from '@heroicons/react/20/solid';
+import {VideoCameraSlashIcon, QrCodeIcon} from '@heroicons/react/20/solid';
 import QrScannerPlugin, {
   FileUploadScanner,
   scanFile,
@@ -12,83 +12,37 @@ import {useHandleError, useLogError} from '../../hooks/useError';
 import {useMediaQuery} from '../../hooks/useMediaQuery';
 import {useErrorModal} from '../../hooks/useModal';
 import useSettings from '../../hooks/useSettings';
-import {camelizeKeys} from '../../utils/case';
 import {useIsOffline} from '../../utils/client';
-import {validateEventData, parseQRCodeParticipantData} from '../Auth/utils';
-import {handleEvent, handleParticipant, parseCustomQRCodeData} from './scan';
+import {scanDevices} from '../../utils/scan_device';
+import {processCode} from './scan';
 
 export default function ScanPage() {
   const [hasPermission, setHasPermission] = useState(true);
   const [processing, setProcessing] = useState(false); // Determines if a QR Code is being processed
-  const {autoCheckin} = useSettings();
+  const {autoCheckin, rapidMode, scanDevice} = useSettings();
   const navigate = useNavigate();
   const errorModal = useErrorModal();
   const handleError = useHandleError();
   const offline = useIsOffline();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
   const logError = useLogError();
-
-  async function processCode(decodedText: string) {
-    if (processing) {
-      // Prevent multiple scans at the same time
-      return;
-    }
-    setProcessing(true);
-    let validCustomCode, scannedData;
-    // eslint-disable-next-line prefer-const
-    [validCustomCode, scannedData] = await parseCustomQRCodeData(decodedText, logError);
-    if (validCustomCode && !scannedData) {
-      errorModal({
-        title: 'No registration found for custom QR code',
-        content: 'Could not find a registration matching the provided QR code',
-      });
-      return;
-    }
-    if (!scannedData) {
-      try {
-        scannedData = JSON.parse(decodedText);
-      } catch (e) {
-        handleError(e, 'Error parsing the QR code data');
-        return;
-      }
-    }
-
-    scannedData = camelizeKeys(scannedData);
-    if (validateEventData(scannedData, handleError)) {
-      if (offline) {
-        errorModal({
-          title: 'You are offline',
-          content: 'Internet connection is required to add a registration form',
-        });
-        return;
-      }
-
-      try {
-        await handleEvent(scannedData, errorModal, navigate);
-      } catch (e) {
-        handleError(e, 'Error processing QR code');
-      }
-      return;
-    }
-
-    const parsedData = parseQRCodeParticipantData(scannedData);
-    if (parsedData) {
-      try {
-        await handleParticipant(parsedData, errorModal, handleError, navigate, autoCheckin);
-      } catch (e) {
-        handleError(e, 'Error processing QR code');
-      }
-    } else {
-      errorModal({
-        title: 'QR code data is not valid',
-        content: 'Some fields are missing. Please try again',
-      });
-    }
-  }
+  const scanWithCamera = scanDevice !== scanDevices.externalKeyboard;
+  const scanWithKeyboard = scanDevice !== scanDevices.camera;
 
   const onScanResult = async (decodedText: string, _: unknown) => {
     try {
-      await processCode(decodedText);
+      await processCode(
+        decodedText,
+        processing,
+        setProcessing,
+        offline,
+        navigate,
+        errorModal,
+        handleError,
+        logError,
+        autoCheckin,
+        rapidMode
+      );
     } catch (e) {
       handleError(e, 'Error processing QR code');
     } finally {
@@ -121,13 +75,13 @@ export default function ScanPage() {
   return (
     <div>
       <TopNav backBtnText="Scan" backNavigateTo={-1} />
-      {!processing && (
+      {scanWithCamera && !processing && (
         <div className="mt-[-1rem]">
           <QrScannerPlugin qrCodeSuccessCallback={onScanResult} onPermRefused={onPermRefused} />
         </div>
       )}
       {processing && <LoadingBanner text="Loading.." />}
-      {!processing && !hasPermission && (
+      {!processing && !hasPermission && scanWithCamera && (
         <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
           <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
             <VideoCameraSlashIcon className="w-20 text-gray-500" />
@@ -136,6 +90,20 @@ export default function ScanPage() {
             </Typography>
           </div>
         </div>
+      )}
+      {scanWithKeyboard && (
+        <>
+          {!scanWithCamera && !processing && (
+            <div className="mx-4 mt-2 rounded-xl bg-gray-100 dark:bg-gray-800">
+              <div className="flex flex-col items-center justify-center gap-2 px-6 pb-12 pt-10">
+                <QrCodeIcon className="w-20 text-gray-500" />
+                <Typography variant="h3" className="text-center">
+                  Awaiting input from a scanner device
+                </Typography>
+              </div>
+            </div>
+          )}
+        </>
       )}
       {fileUploadVisible && (
         <div className="mt-6">
