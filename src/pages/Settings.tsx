@@ -112,8 +112,8 @@ function MainSettings() {
           />
         )}
         <SettingToggle
-          title="Require registration complete"
-          description="Check-in only registrations with complete (approved/paid) registration state"
+          title="Require completed registrations"
+          description="Only check-in participants with a completed (approved or paid) registration state"
           checked={requireRegistrationStateComplete}
           onToggle={toggleRequireRegistrationStateComplete}
         />
