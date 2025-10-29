@@ -273,7 +273,14 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
     >
       <td className="max-w-0 p-4">
         <div className="flex items-center justify-between">
-          <Typography variant="body1" className={fullNameClass}>
+          <Typography
+            variant="body1"
+            className={
+              state === 'rejected' || state === 'withdrawn'
+                ? `${fullNameClass} line-through`
+                : fullNameClass
+            }
+          >
             {fullName}
           </Typography>
           <div className="flex">
