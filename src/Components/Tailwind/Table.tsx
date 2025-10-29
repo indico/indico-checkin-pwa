@@ -284,7 +284,7 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
             {fullName}
           </Typography>
           <div className="flex">
-            {state === 'pending' && <ExclamationCircleIcon className="h-6 w-6 text-yellow-500" />}
+            {state === 'pending' && <ClockIcon className="h-6 w-6 text-yellow-500" />}
             {state === 'unpaid' && <BanknotesIcon className="h-6 w-6 text-yellow-500" />}
             {state === 'withdrawn' && <ArrowUturnLeftIcon className="h-6 w-6 text-red-500" />}
             {state === 'rejected' && <XCircleIcon className="h-6 w-6 text-red-500" />}
