@@ -4,7 +4,7 @@ import {
   ArrowUturnLeftIcon,
   BanknotesIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
+  ClockIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
   XCircleIcon,
