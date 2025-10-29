@@ -1,11 +1,13 @@
 import {ChangeEvent, KeyboardEvent, useState, useMemo, useRef, useEffect, forwardRef} from 'react';
 import {
   ArrowSmallLeftIcon,
+  ArrowUturnLeftIcon,
   BanknotesIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
+  XCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
 import {Participant, RegistrationTag} from '../../db/db';
@@ -271,19 +273,14 @@ function Row({fullName, checkedIn, state, onClick, isEven}: RowProps) {
     >
       <td className="max-w-0 p-4">
         <div className="flex items-center justify-between">
-          <Typography
-            variant="body1"
-            className={
-              state === 'rejected' || state === 'withdrawn'
-                ? `${fullNameClass} line-through`
-                : fullNameClass
-            }
-          >
+          <Typography variant="body1" className={fullNameClass}>
             {fullName}
           </Typography>
           <div className="flex">
             {state === 'pending' && <ExclamationCircleIcon className="h-6 w-6 text-yellow-500" />}
             {state === 'unpaid' && <BanknotesIcon className="h-6 w-6 text-yellow-500" />}
+            {state === 'withdrawn' && <ArrowUturnLeftIcon className="h-6 w-6 text-red-500" />}
+            {state === 'rejected' && <XCircleIcon className="h-6 w-6 text-red-500" />}
             {checkedIn && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
           </div>
         </div>
