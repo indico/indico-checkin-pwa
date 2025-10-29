@@ -99,12 +99,12 @@ function ParticipantPageContent({
   const navigate = useNavigate();
   const {state} = useLocation();
   const [autoCheckin, setAutoCheckin] = useState(state?.autoCheckin ?? false);
-  const {soundEffect, hapticFeedback} = useSettings();
+  const {soundEffect, hapticFeedback, requireRegistrationStateComplete} = useSettings();
   const offline = useIsOffline();
   const errorModal = useErrorModal();
   const [notes, setNotes] = useState(participant?.notes || '');
   const showCheckedInWarning = useRef<boolean>(!!state?.fromScan && !!participant?.checkedIn);
-  const isRapidMode = useRef<boolean>(!!state.fromScan && !!state?.rapidMode);
+  const isRapidMode = useRef<boolean>(!!state?.fromScan && !!state?.rapidMode);
   const rapidModeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const rapidModeTimeout = 3000;
   const [showProgressBar, setShowProgressBar] = useState<boolean>(isRapidMode.current);
@@ -220,7 +220,11 @@ function ParticipantPageContent({
       }
 
       setAutoCheckin(false);
-      if (autoCheckin && !participant.checkedIn) {
+      if (
+        autoCheckin &&
+        !participant.checkedIn &&
+        (!requireRegistrationStateComplete || participant.state === 'complete')
+      ) {
         await performCheckin(event, regform, participant, true);
       } else {
         await syncEvent(event, controller.signal, handleError);
@@ -321,14 +325,15 @@ function ParticipantPageContent({
               ))}
             </div>
           </div>
-
-          <div className="mb-4 mt-4 flex justify-center">
-            <CheckinToggle
-              checked={participant.checkedIn}
-              isLoading={!!participant.checkedInLoading}
-              onClick={onCheckInToggle}
-            />
-          </div>
+          {(!requireRegistrationStateComplete || participant.state === 'complete') && (
+            <div className="mb-4 mt-4 flex justify-center">
+              <CheckinToggle
+                checked={participant.checkedIn}
+                isLoading={!!participant.checkedInLoading}
+                onClick={onCheckInToggle}
+              />
+            </div>
+          )}
           {participant.state === 'unpaid' && (
             <PaymentWarning
               event={event}

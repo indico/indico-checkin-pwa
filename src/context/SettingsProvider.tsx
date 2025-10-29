@@ -13,6 +13,8 @@ interface SettingsContextProps {
   setSoundEffect: (v: string) => void;
   scanDevice: string;
   setScanDevice: (v: string) => void;
+  requireRegistrationStateComplete: boolean;
+  setRequireRegistrationStateComplete: (v: boolean) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -28,6 +30,8 @@ export const SettingsContext = createContext<SettingsContextProps>({
   setSoundEffect: () => {},
   scanDevice: 'Camera',
   setScanDevice: () => {},
+  requireRegistrationStateComplete: false,
+  setRequireRegistrationStateComplete: () => {},
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
@@ -52,6 +56,13 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
 
   const [scanDevice, setScanDevice] = useState(localStorage.getItem('scanDevice') || 'Camera');
 
+  const storedRequireRegistrationStateComplete = JSON.parse(
+    localStorage.getItem('requireRegistrationStateComplete') || 'false'
+  );
+  const [requireRegistrationStateComplete, setRequireRegistrationStateComplete] = useState(
+    storedRequireRegistrationStateComplete
+  );
+
   return (
     <SettingsContext.Provider
       value={{
@@ -67,6 +78,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
         setScanDevice,
         hapticFeedback,
         setHapticFeedback,
+        requireRegistrationStateComplete,
+        setRequireRegistrationStateComplete,
       }}
     >
       {children}

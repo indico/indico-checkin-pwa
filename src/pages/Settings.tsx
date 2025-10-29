@@ -40,6 +40,8 @@ function MainSettings() {
     setScanDevice,
     hapticFeedback,
     setHapticFeedback,
+    requireRegistrationStateComplete,
+    setRequireRegistrationStateComplete,
   } = useSettings();
 
   const toggleDarkMode = () => {
@@ -78,6 +80,14 @@ function MainSettings() {
     }
   };
 
+  const toggleRequireRegistrationStateComplete = () => {
+    localStorage.setItem(
+      'requireRegistrationStateComplete',
+      (!requireRegistrationStateComplete).toString()
+    );
+    setRequireRegistrationStateComplete(!requireRegistrationStateComplete);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <SettingsSection title="Check-in">
@@ -101,6 +111,12 @@ function MainSettings() {
             onToggle={toggleRapidMode}
           />
         )}
+        <SettingToggle
+          title="Require completed registrations"
+          description="Only check-in participants with a completed (approved or paid) registration state"
+          checked={requireRegistrationStateComplete}
+          onToggle={toggleRequireRegistrationStateComplete}
+        />
         <SettingDropdown
           title="Check-in sound effect"
           values={Object.keys(sounds)}
