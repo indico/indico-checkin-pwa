@@ -30,6 +30,10 @@ import {NotFoundPage} from './pages/NotFound';
 import ParticipantPage from './pages/participant/ParticipantPage';
 import RegformPage from './pages/regform/RegformPage';
 import SettingsPage from './pages/Settings';
+import AboutPage from './pages/settings/About';
+import CheckinPage from './pages/settings/Checkin';
+import DebuggingPage from './pages/settings/Debugging';
+import PreferencesPage from './pages/settings/Preferences';
 import {scanDevices} from './utils/scan_device';
 
 // Expose the db instance as a global variable for easier debugging
@@ -120,6 +124,22 @@ const router = createBrowserRouter([
       {
         path: '/settings',
         element: <SettingsPage />,
+      },
+      {
+        path: '/settings/checkin',
+        element: <CheckinPage />,
+      },
+      {
+        path: '/settings/preferences',
+        element: <PreferencesPage />,
+      },
+      {
+        path: '/settings/debug',
+        element: <DebuggingPage />,
+      },
+      {
+        path: '/settings/about',
+        element: <AboutPage />,
       },
       {
         path: '/scan',

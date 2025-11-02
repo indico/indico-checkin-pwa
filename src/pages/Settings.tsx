@@ -1,340 +1,92 @@
-import {ReactNode, useEffect, useState} from 'react';
-import {ChevronDownIcon, DocumentDuplicateIcon, ArrowPathIcon} from '@heroicons/react/20/solid';
+import {useNavigate} from 'react-router-dom';
+import {
+  CheckCircleIcon,
+  PaintBrushIcon,
+  WrenchScrewdriverIcon,
+  QrCodeIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/outline';
 import {Typography} from '../Components/Tailwind';
-import Button, {DangerButton, SimpleButton} from '../Components/Tailwind/Button';
-import {Toggle} from '../Components/Tailwind/Toggle';
 import TopNav from '../Components/TopNav';
-import {Log} from '../context/LogsProvider';
-import db from '../db/db';
-import {useHandleError} from '../hooks/useError';
-import {useLogs} from '../hooks/useLogs';
-import {useConfirmModal} from '../hooks/useModal';
-import useSettings from '../hooks/useSettings';
-import {scanDevices} from '../utils/scan_device';
-import {playSound, sounds} from '../utils/sound';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
+
+  const settingsGroups = [
+    {
+      title: 'Check-in',
+      description: 'Configure check-in behavior and scanning options',
+      icon: CheckCircleIcon,
+      path: '/settings/checkin',
+    },
+    {
+      title: 'Preferences',
+      description: 'Customise the look and feel of the app',
+      icon: PaintBrushIcon,
+      path: '/settings/preferences',
+    },
+    {
+      title: 'Debugging',
+      description: 'Reset options and app logs',
+      icon: WrenchScrewdriverIcon,
+      path: '/settings/debug',
+    },
+    {
+      title: 'About',
+      description: 'App version information',
+      icon: QrCodeIcon,
+      path: '/settings/about',
+    },
+  ];
+
   return (
     <>
-      <TopNav backBtnText="Settings" backNavigateTo={-1} />
-      <div className="flex flex-col gap-6 p-4">
-        <MainSettings />
-        <DebugSettings />
-        <LogSettings />
+      <TopNav backBtnText="Settings" backNavigateTo="/" />
+      <div className="flex flex-col gap-3 p-4">
+        {settingsGroups.map(group => (
+          <SettingsGroupButton
+            key={group.path}
+            title={group.title}
+            description={group.description}
+            icon={group.icon}
+            onClick={() => navigate(group.path)}
+          />
+        ))}
       </div>
     </>
   );
 }
 
-function MainSettings() {
-  const {
-    darkMode,
-    setDarkMode,
-    autoCheckin,
-    setAutoCheckin,
-    rapidMode,
-    setRapidMode,
-    soundEffect,
-    setSoundEffect,
-    scanDevice,
-    setScanDevice,
-    hapticFeedback,
-    setHapticFeedback,
-    requireRegistrationStateComplete,
-    setRequireRegistrationStateComplete,
-  } = useSettings();
+interface SettingsGroupButtonProps {
+  title: string;
+  description: string;
+  icon: React.ForwardRefExoticComponent<
+    Omit<React.SVGProps<SVGSVGElement>, 'ref'> & {
+      title?: string;
+      titleId?: string;
+    } & React.RefAttributes<SVGSVGElement>
+  >;
+  onClick: () => void;
+}
 
-  const toggleDarkMode = () => {
-    // Set the theme preference in localStorage and in the SettingsContext
-    const newDarkMode = !darkMode;
-    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
-    setDarkMode(newDarkMode);
-  };
-
-  const toggleAutoCheckin = () => {
-    localStorage.setItem('autoCheckin', (!autoCheckin).toString());
-    setAutoCheckin(!autoCheckin);
-  };
-
-  const toggleRapidMode = () => {
-    localStorage.setItem('rapidMode', (!rapidMode).toString());
-    setRapidMode(!rapidMode);
-  };
-
-  const toggleHapticFeedback = () => {
-    localStorage.setItem('hapticFeedback', (!hapticFeedback).toString());
-    setHapticFeedback(!hapticFeedback);
-  };
-
-  const onSoundEffectChange = (v: string) => {
-    localStorage.setItem('soundEffect', v);
-    setSoundEffect(v);
-    playSound(v);
-  };
-
-  const onScanDeviceChange = (v: string) => {
-    localStorage.setItem('scanDevice', v);
-    setScanDevice(v);
-    if (v === scanDevices.externalKeyboard) {
-      setRapidMode(false);
-    }
-  };
-
-  const toggleRequireRegistrationStateComplete = () => {
-    localStorage.setItem(
-      'requireRegistrationStateComplete',
-      (!requireRegistrationStateComplete).toString()
-    );
-    setRequireRegistrationStateComplete(!requireRegistrationStateComplete);
-  };
-
+function SettingsGroupButton({title, description, icon: Icon, onClick}: SettingsGroupButtonProps) {
   return (
-    <div className="flex flex-col gap-6">
-      <SettingsSection title="Check-in">
-        <SettingToggle
-          title="Automatic check-in"
-          description="Check in when a QR code is scanned"
-          checked={autoCheckin}
-          onToggle={toggleAutoCheckin}
-        />
-        <SettingDropdown
-          title="Scanning device"
-          values={Object.keys(scanDevices).map(k => scanDevices[k as keyof typeof scanDevices])}
-          selected={scanDevice}
-          onChange={onScanDeviceChange}
-        />
-        {scanDevice !== scanDevices.externalKeyboard && (
-          <SettingToggle
-            title="Rapid mode"
-            description="Automatically return to the scan page after each camera scan"
-            checked={rapidMode}
-            onToggle={toggleRapidMode}
-          />
-        )}
-        <SettingToggle
-          title="Require completed registrations"
-          description="Only check-in participants with a completed (approved or paid) registration state"
-          checked={requireRegistrationStateComplete}
-          onToggle={toggleRequireRegistrationStateComplete}
-        />
-        <SettingDropdown
-          title="Check-in sound effect"
-          values={Object.keys(sounds)}
-          selected={soundEffect}
-          onChange={onSoundEffectChange}
-        />
-        <SettingToggle
-          title="Haptic feedback"
-          description="Vibrate on certain interactions (e.g. check-in, error etc.)"
-          checked={hapticFeedback}
-          onToggle={toggleHapticFeedback}
-        />
-      </SettingsSection>
-      <SettingsSection title="Appearance">
-        <SettingToggle title="Dark theme" checked={darkMode} onToggle={toggleDarkMode} />
-      </SettingsSection>
-    </div>
-  );
-}
-
-function DebugSettings() {
-  const version = import.meta.env.VITE_APP_VERSION;
-  const confirmModal = useConfirmModal();
-  const handleError = useHandleError();
-
-  async function resetApp() {
-    localStorage.clear();
-    try {
-      await db.delete();
-      await db.open();
-    } catch (e) {
-      handleError(e, 'Error resetting the database');
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <SettingsSection title="Debugging">
-        <Setting title="App version">
-          <Typography variant="body2">{version}</Typography>
-        </Setting>
-        <Setting title="Reset" description="Delete all application data">
-          <DangerButton
-            className="w-fit self-center"
-            onClick={() => {
-              confirmModal({
-                title: 'Are you sure?',
-                content: 'This will permanently delete all application data',
-                confirmBtnText: 'Reset',
-                onConfirm: resetApp,
-              });
-            }}
-          >
-            <ArrowPathIcon className="h-5 min-w-[1.25rem]" />
-            Reset
-          </DangerButton>
-        </Setting>
-      </SettingsSection>
-    </div>
-  );
-}
-
-function LogSettings() {
-  const {logs} = useLogs();
-  const version = import.meta.env.VITE_APP_VERSION;
-  const isProduction = import.meta.env.PROD;
-
-  function onCopy() {
-    const text = `App version: ${version}\n\nLogs:\n${formatLogs(logs)}`;
-    navigator.clipboard.writeText(text);
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <SettingsSection title="Logs">
-        <Setting title="Copy to clipboard">
-          <Button onClick={onCopy}>
-            <DocumentDuplicateIcon className="h-5 min-w-[1.25rem]" />
-          </Button>
-        </Setting>
-        {!isProduction && (
-          <div className="flex items-center justify-between gap-4">
-            {logs.length === 0 && <Typography variant="body2">No logs available</Typography>}
-            {logs.length > 0 && (
-              <div className="flex max-h-[40vh] flex-col-reverse overflow-y-auto">
-                <code className="flex flex-col gap-2">
-                  {logs.map((log, idx) => (
-                    <Typography key={idx} variant="body3" className="break-all">
-                      <LogEntry log={log} />
-                    </Typography>
-                  ))}
-                </code>
-              </div>
-            )}
-          </div>
-        )}
-      </SettingsSection>
-    </div>
-  );
-}
-
-function LogEntry({log}: {log: Log}) {
-  return (
-    <>
-      <b>{log.timestamp.toISOString().slice(0, -5)}</b> {log.severity.toUpperCase().padStart(5)}{' '}
-      {log.message}
-    </>
-  );
-}
-
-export function formatLog(log: Log) {
-  return `${log.timestamp.toISOString().slice(0, -5)} ${log.severity.toUpperCase().padStart(5)} ${
-    log.message
-  }`;
-}
-
-export function formatLogs(logs: Log[]) {
-  return logs.map(formatLog).join('\n');
-}
-
-function SettingsSection({title, children}: {title: string; children: ReactNode}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="border-b border-slate-200 pb-2 dark:border-slate-700">
-        <Typography variant="body3" className="font-semibold uppercase text-gray-500">
+    <button
+      onClick={onClick}
+      className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 text-left transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+    >
+      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+        <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+      </div>
+      <div className="flex-1">
+        <Typography variant="h4" className="font-semibold">
           {title}
         </Typography>
+        <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          {description}
+        </Typography>
       </div>
-      <div className="flex flex-col gap-4">{children}</div>
-    </div>
-  );
-}
-
-interface SettingProps {
-  title: string;
-  description?: string;
-  onClick?: () => void;
-  children: ReactNode;
-}
-
-function Setting({title, description, onClick, children}: SettingProps) {
-  return (
-    <div className="flex items-center justify-between gap-4" onClick={onClick}>
-      <div>
-        <Typography variant="h4">{title}</Typography>
-        {description && <Typography variant="body2">{description}</Typography>}
-      </div>
-      <div>{children}</div>
-    </div>
-  );
-}
-
-interface SettingToggleProps {
-  title: string;
-  description?: string;
-  checked: boolean;
-  onToggle: () => void;
-}
-
-function SettingToggle({title, description, checked, onToggle}: SettingToggleProps) {
-  return (
-    <Setting title={title} description={description} onClick={onToggle}>
-      <Toggle size="md" checked={checked} />
-    </Setting>
-  );
-}
-
-interface SettingsDropdownProps {
-  title: string;
-  description?: string;
-  values: string[];
-  selected: string;
-  onChange: (v: string) => void;
-}
-
-function SettingDropdown({title, description, values, selected, onChange}: SettingsDropdownProps) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const onOutsideClick = () => setVisible(false);
-    document.addEventListener('click', onOutsideClick);
-    return () => document.removeEventListener('click', onOutsideClick);
-  }, []);
-
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div>
-        <Typography variant="h4">{title}</Typography>
-        {description && <Typography variant="body2">{description}</Typography>}
-      </div>
-      <div className="relative">
-        <SimpleButton
-          onClick={e => {
-            e.stopPropagation();
-            setVisible(v => !v);
-          }}
-        >
-          {selected}
-          <ChevronDownIcon className="h-5 min-w-[1.25rem]" />
-        </SimpleButton>
-        <div
-          className={`absolute right-0 z-10 w-44 divide-y divide-gray-100 rounded-lg bg-white shadow dark:bg-gray-700 ${
-            visible ? '' : 'hidden'
-          }`}
-        >
-          <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-            {values.map(v => (
-              <li
-                key={v}
-                onClick={() => onChange(v)}
-                className="block cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-              >
-                {v}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
+      <ChevronRightIcon className="h-5 w-5 flex-shrink-0 text-gray-400" />
+    </button>
   );
 }

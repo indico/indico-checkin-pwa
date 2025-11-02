@@ -1,8 +1,12 @@
-import {ReactNode, createContext, useState} from 'react';
+import {createContext, ReactNode, useState, useCallback, useEffect} from 'react';
 
-interface SettingsContextProps {
+export type ThemeMode = 'light' | 'system' | 'dark';
+
+interface SettingsContextValue {
   darkMode: boolean;
   setDarkMode: (v: boolean) => void;
+  themeMode: ThemeMode;
+  setThemeMode: (v: ThemeMode) => void;
   autoCheckin: boolean;
   setAutoCheckin: (v: boolean) => void;
   rapidMode: boolean;
@@ -17,9 +21,11 @@ interface SettingsContextProps {
   setRequireRegistrationStateComplete: (v: boolean) => void;
 }
 
-export const SettingsContext = createContext<SettingsContextProps>({
+export const SettingsContext = createContext<SettingsContextValue>({
   darkMode: false,
   setDarkMode: () => {},
+  themeMode: 'system',
+  setThemeMode: () => {},
   autoCheckin: false,
   setAutoCheckin: () => {},
   rapidMode: false,
@@ -35,13 +41,50 @@ export const SettingsContext = createContext<SettingsContextProps>({
 });
 
 export const SettingsProvider = ({children}: {children: ReactNode}) => {
-  // On render, check if the user has a theme preference. If not, check if their system is set to dark mode. If so, set the theme to dark.
-  // If neither, set the theme to light.
-  const storedTheme = localStorage.getItem('theme');
-  const isDarkMode =
-    storedTheme === 'dark' ||
-    (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const [darkMode, setDarkMode] = useState(isDarkMode);
+  // TODO: Maybe move this into its own separate file/hook?
+  // Work out the actual dark mode based on theme mode
+  const getEffectiveDarkMode = useCallback((mode: ThemeMode): boolean => {
+    if (mode === 'dark') return true;
+    if (mode === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }, []);
+
+  const getInitialTheme = (): ThemeMode => {
+    const storedTheme = localStorage.getItem('theme') as ThemeMode | null;
+    if (storedTheme) {
+      return storedTheme;
+    }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'system' : 'light';
+  };
+
+  const [themeMode, setThemeModeInternal] = useState<ThemeMode>(getInitialTheme);
+  const [darkMode, setDarkMode] = useState(getEffectiveDarkMode(themeMode));
+
+  const setThemeMode = useCallback(
+    (mode: ThemeMode) => {
+      setThemeModeInternal(mode);
+      localStorage.setItem('theme', mode);
+      setDarkMode(getEffectiveDarkMode(mode));
+    },
+    [getEffectiveDarkMode]
+  );
+
+  // Update the theme when the system (OS) theme changes
+  useEffect(() => {
+    if (themeMode !== 'system') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, [themeMode]);
 
   const storedAutoCheckin = JSON.parse(localStorage.getItem('autoCheckin') || 'false');
   const [autoCheckin, setAutoCheckin] = useState(storedAutoCheckin);
@@ -68,6 +111,8 @@ export const SettingsProvider = ({children}: {children: ReactNode}) => {
       value={{
         darkMode,
         setDarkMode,
+        themeMode,
+        setThemeMode,
         autoCheckin,
         setAutoCheckin,
         rapidMode,

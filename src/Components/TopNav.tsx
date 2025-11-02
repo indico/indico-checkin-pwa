@@ -1,6 +1,6 @@
 import {useLocation, useNavigate} from 'react-router-dom';
 import {ArrowSmallLeftIcon} from '@heroicons/react/20/solid';
-import Logo from '../assets/logo.png';
+import Logo from '../assets/logo.svg';
 import {wait} from '../utils/wait';
 import DropdownSettings, {SettingsItem} from './DropdownSettings';
 
@@ -23,7 +23,7 @@ export default function TopNav({
     return (
       <div className="mb-4 flex justify-between bg-blue-600 p-2 dark:bg-blue-700">
         <div className="flex h-12 items-center gap-4" onClick={() => navigate('/')}>
-          <img src={Logo} alt="Logo" width={48} height={48}></img>
+          <img src={Logo} alt="Logo" width={45} height={45}></img>
           <span className="whitespace-nowrap text-xl font-semibold text-white dark:text-gray-200">
             Indico check-in
           </span>
