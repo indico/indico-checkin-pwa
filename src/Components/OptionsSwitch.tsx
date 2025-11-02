@@ -1,4 +1,4 @@
-import Typography from './Typography';
+import Typography from './Tailwind/Typography';
 
 export interface SwitchOption<T extends string> {
   value: T;

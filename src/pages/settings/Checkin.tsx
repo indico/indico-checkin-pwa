@@ -1,6 +1,5 @@
-import {Typography} from '../../Components/Tailwind';
-import {OptionsSwitch, SwitchOption} from '../../Components/Tailwind/OptionsSwitch';
-import {Toggle} from '../../Components/Tailwind/Toggle';
+import {OptionsSwitch, SwitchOption} from '../../Components/OptionsSwitch';
+import {SettingToggle} from '../../Components/SettingsToggle';
 import TopNav from '../../Components/TopNav';
 import useSettings from '../../hooks/useSettings';
 import {scanDevices, scanDeviceIcons} from '../../utils/scan_device';
@@ -81,26 +80,5 @@ export default function CheckinPage() {
         />
       </div>
     </>
-  );
-}
-
-interface SettingToggleProps {
-  title: string;
-  description?: string;
-  checked: boolean;
-  onToggle: () => void;
-}
-
-function SettingToggle({title, description, checked, onToggle}: SettingToggleProps) {
-  return (
-    <div className="flex items-center justify-between gap-4" onClick={onToggle}>
-      <div>
-        <Typography variant="h4">{title}</Typography>
-        {description && <Typography variant="body2">{description}</Typography>}
-      </div>
-      <div>
-        <Toggle size="md" checked={checked} />
-      </div>
-    </div>
   );
 }
