@@ -5,8 +5,8 @@ import {SettingToggle} from '../../Components/SettingsToggle';
 import {Typography} from '../../Components/Tailwind';
 import {SimpleButton} from '../../Components/Tailwind/Button';
 import TopNav from '../../Components/TopNav';
-import {ThemeMode} from '../../context/SettingsProvider';
 import useSettings from '../../hooks/useSettings';
+import {ThemeMode} from '../../hooks/useTheme';
 import {playSound, sounds} from '../../utils/sound';
 
 const themeOptions: SwitchOption<ThemeMode>[] = [
