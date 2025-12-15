@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up NodeJS
         uses: actions/setup-node@v6
@@ -58,7 +58,7 @@ jobs:
           mkdir -p ./lighthouse
           echo "${{ github.event.number }}" >> ./lighthouse/pull-request-id
           echo "${{ steps.lhci.outputs.report_url }}" >> ./lighthouse/report-url
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: lighthouse
           path: lighthouse/
