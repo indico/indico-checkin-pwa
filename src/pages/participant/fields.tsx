@@ -66,7 +66,11 @@ export function Field(field: FieldProps) {
     case 'accommodation':
       return <AccommodationField {...(field as ChoiceFieldProps)} />;
     case 'accompanying_persons':
-      return <AccompanyingPersonsField {...field} />;
+      return Array.isArray(field.data) ? (
+        <AccompanyingPersonsField {...field} />
+      ) : (
+        <TextField {...field} />
+      );
     case 'picture':
       return <PictureField {...field} />;
     default:
@@ -277,7 +281,7 @@ export function getAccompanyingPersons(sections: Section[]) {
   const persons = [];
   for (const section of sections) {
     for (const field of section.fields) {
-      if (field.inputType === 'accompanying_persons') {
+      if (field.inputType === 'accompanying_persons' && Array.isArray(field.data)) {
         persons.push(...field.data);
       }
     }
