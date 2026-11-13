@@ -47,6 +47,17 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
   sessionStorage.setItem('codeVerifier', codeVerifier);
 
   try {
+    // @ts-expect-error calling private method on purpose for better error handling
+    await client.discover();
+  } catch (e) {
+    errorModal({
+      title: 'OAuth initialization failed',
+      content: `Indico OAuth metadata unavailable: ${e instanceof Error ? e.message : 'unknown'}`,
+    });
+    return;
+  }
+
+  try {
     // Redirect the user to the Authentication Server (OAuth2 Server)
     // Which will redirect the user back to the redirectUri (Back to the App)
     document.location = await client.authorizationCode.getAuthorizeUri({
@@ -56,7 +67,10 @@ async function startOAuthFlow(data: QRCodeEventData, errorModal: ErrorModalFunct
       scope: [scope],
     });
   } catch (e) {
-    errorModal({title: 'OAuth authorization failed', content: e instanceof Error ? e.message : ''});
+    errorModal({
+      title: 'OAuth initialization failed',
+      content: `Could not build auth URL: ${e instanceof Error ? e.message : 'unknown'}`,
+    });
   }
 }
 
